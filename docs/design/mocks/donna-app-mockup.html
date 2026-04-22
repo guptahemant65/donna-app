@@ -3,1469 +3,1058 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Donna — v5</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>donna</title>
 <style>
-/* ── Reset ─────────────────────────────────────────── */
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-:root {
-  /* Surfaces */
-  --bg:         #1a1918;
-  --surface:    #232120;
-  --surface-2:  #2a2826;
-  --surface-3:  #312f2c;
-
-  /* Text */
-  --text:       #e8e0d4;
-  --text-2:     #8a8078;
-  --text-3:     #5e574f;
-
-  /* Accent */
-  --gold:       #c9a84c;
-  --gold-dim:   rgba(201, 168, 76, 0.15);
-  --gold-line:  rgba(201, 168, 76, 0.35);
-
-  /* Status — muted, sophisticated */
-  --amber:      rgba(204, 160, 72, 0.6);
-  --sage:       rgba(120, 160, 110, 0.55);
-  --rose:       rgba(190, 110, 100, 0.6);
-  --steel:      rgba(120, 150, 190, 0.55);
-
-  /* Typography */
-  --serif:      'Cormorant Garamond', Georgia, serif;
-  --sans:       'Source Sans 3', 'Segoe UI', sans-serif;
-  --mono:       'JetBrains Mono', 'Cascadia Code', monospace;
-
-  /* Spacing */
-  --gap:        20px;
-  --gap-lg:     32px;
-  --gap-sm:     12px;
-  --radius:     3px;
-
-  /* Easing */
-  --ease:       cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-::selection {
-  background: var(--gold-dim);
-  color: var(--text);
-}
-
-html {
-  font-variant-numeric: tabular-nums;
-}
-
-body {
-  font-family: var(--sans);
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.6;
-  color: var(--text);
-  background: #111;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* ── App Shell ─────────────────────────────────────── */
-.app {
-  width: 980px;
-  height: 720px;
-  background: var(--bg);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  position: relative;
-}
-
-/* ── Titlebar ──────────────────────────────────────── */
-.titlebar {
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  background: var(--surface);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  -webkit-app-region: drag;
-  flex-shrink: 0;
-  user-select: none;
-}
-
-.titlebar-brand {
-  font-family: var(--serif);
-  font-size: 16px;
-  font-weight: 400;
-  color: var(--text-2);
-  letter-spacing: 0.02em;
-}
-
-.titlebar-date {
-  font-family: var(--sans);
-  font-size: 12px;
-  font-weight: 300;
-  color: var(--text-3);
-  letter-spacing: 0.04em;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.titlebar-controls {
-  display: flex;
-  gap: 0;
-  -webkit-app-region: no-drag;
-}
-
-.titlebar-controls button {
-  background: none;
-  border: none;
-  color: var(--text-3);
-  width: 36px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: color 0.15s, background 0.15s;
-}
-
-.titlebar-controls button:hover {
-  color: var(--text-2);
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.titlebar-controls button:last-child:hover {
-  background: rgba(190, 110, 100, 0.3);
-  color: var(--text);
-}
-
-.titlebar-controls button:focus-visible {
-  outline: 1px solid var(--gold-line);
-  outline-offset: -1px;
-}
-
-.titlebar-controls svg {
-  width: 14px;
-  height: 14px;
-  stroke: currentColor;
-  stroke-width: 1.2;
-  fill: none;
-}
-
-/* ── Content ───────────────────────────────────────── */
-.content {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: var(--gap-lg) var(--gap-lg) var(--gap);
-  scroll-behavior: smooth;
-}
-
-/* ── Command Input ─────────────────────────────────── */
-.command-wrap {
-  position: relative;
-  margin-bottom: var(--gap-lg);
-}
-
-.command-input {
-  width: 100%;
-  background: var(--surface);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: var(--radius);
-  padding: 12px 60px 12px 16px;
-  font-family: var(--sans);
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--text);
-  outline: none;
-  transition: border-color 0.2s var(--ease);
-}
-
-.command-input::placeholder {
-  color: var(--text-3);
-  font-weight: 300;
-}
-
-.command-input:focus {
-  border-color: var(--gold-line);
-}
-
-.command-hint {
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--text-3);
-  pointer-events: none;
-  background: var(--surface-2);
-  padding: 2px 6px;
-  border-radius: 2px;
-  letter-spacing: 0.02em;
-}
-
-/* Command Palette Dropdown */
-.command-palette {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  background: var(--surface-2);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: var(--radius);
-  display: none;
-  z-index: 100;
-  max-height: 240px;
-  overflow-y: auto;
-}
-
-.command-palette.open {
-  display: block;
-}
-
-.command-item {
-  padding: 10px 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  transition: background 0.1s;
-}
-
-.command-item:hover,
-.command-item.active {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.command-item.active {
-  border-left: 2px solid var(--gold);
-  padding-left: 14px;
-}
-
-.command-item-icon {
-  color: var(--text-3);
-  font-size: 12px;
-  width: 18px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.command-item-label {
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--text);
-}
-
-.command-item-desc {
-  font-size: 12px;
-  font-weight: 300;
-  color: var(--text-3);
-  margin-left: auto;
-}
-
-/* ── Greeting ──────────────────────────────────────── */
-.greeting {
-  margin-bottom: var(--gap-lg);
-}
-
-.greeting-text {
-  font-family: var(--serif);
-  font-size: 28px;
-  font-weight: 400;
-  color: var(--gold);
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-}
-
-.greeting-rule {
-  width: 180px;
-  height: 1px;
-  background: linear-gradient(to right, var(--gold-line), transparent);
-  margin-top: 10px;
-  border: none;
-}
-
-/* ── Columns ───────────────────────────────────────── */
-.columns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--gap);
-  margin-bottom: var(--gap-lg);
-}
-
-/* ── Section Headers ───────────────────────────────── */
-.section-title {
-  font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-3);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: var(--gap-sm);
-}
-
-.section-subtitle {
-  font-family: var(--sans);
-  font-size: 12px;
-  font-weight: 300;
-  color: var(--text-3);
-  margin-top: -8px;
-  margin-bottom: var(--gap-sm);
-}
-
-/* ── Morning Panel ─────────────────────────────────── */
-.morning-panel {
-  display: flex;
-  flex-direction: column;
-}
-
-.morning-count {
-  font-family: var(--sans);
-  font-size: 13px;
-  font-weight: 300;
-  color: var(--text-2);
-  margin-bottom: var(--gap);
-}
-
-/* Attention Items */
-.attention-item {
-  border-left: 2px solid transparent;
-  padding: 10px 0 10px 14px;
-  cursor: pointer;
-  transition: background 0.15s var(--ease);
-  position: relative;
-}
-
-.attention-item + .attention-item {
-  border-top: 1px solid rgba(255, 255, 255, 0.03);
-}
-
-.attention-item:hover {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.attention-item[data-status="pr"]       { border-left-color: var(--steel); }
-.attention-item[data-status="incident"] { border-left-color: var(--rose); }
-.attention-item[data-status="meeting"]  { border-left-color: var(--amber); }
-
-.attention-header {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.attention-indicator {
-  font-size: 10px;
-  color: var(--text-3);
-  transition: transform 0.3s var(--ease);
-  display: inline-block;
-}
-
-.attention-item.expanded .attention-indicator {
-  transform: rotate(90deg);
-}
-
-.attention-label {
-  font-family: var(--sans);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text);
-}
-
-.attention-type {
-  font-family: var(--sans);
-  font-size: 10px;
-  font-weight: 400;
-  font-variant: all-small-caps;
-  letter-spacing: 0.06em;
-  color: var(--text-3);
-}
-
-.attention-meta {
-  font-size: 12px;
-  font-weight: 300;
-  color: var(--text-2);
-  margin-top: 2px;
-  padding-left: 18px;
-}
-
-.attention-detail {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.3s var(--ease);
-  padding-left: 18px;
-}
-
-.attention-item.expanded .attention-detail {
-  grid-template-rows: 1fr;
-}
-
-.attention-detail-inner {
-  overflow: hidden;
-}
-
-.attention-detail-text {
-  font-size: 13px;
-  font-weight: 300;
-  color: var(--text-2);
-  line-height: 1.7;
-  padding-top: 8px;
-  padding-bottom: 4px;
-}
-
-.attention-detail-text a {
-  color: var(--gold);
-  text-decoration: none;
-  border-bottom: 1px solid var(--gold-line);
-  transition: border-color 0.15s;
-}
-
-.attention-detail-text a:hover {
-  border-bottom-color: var(--gold);
-}
-
-.attention-detail-text a:focus-visible {
-  outline: 1px solid var(--gold-line);
-  outline-offset: 2px;
-}
-
-/* ── Right Column ──────────────────────────────────── */
-.right-column {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap);
-}
-
-/* Right Column Tabs */
-.right-tabs {
-  display: flex;
-  gap: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  margin-bottom: 4px;
-}
-
-.right-tab {
-  font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-3);
-  padding: 0 0 8px;
-  margin-right: 20px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  position: relative;
-  transition: color 0.15s;
-}
-
-.right-tab:hover {
-  color: var(--text-2);
-}
-
-.right-tab.active {
-  color: var(--text-2);
-}
-
-.right-tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: var(--gold-line);
-}
-
-.right-tab:focus-visible {
-  outline: 1px solid var(--gold-line);
-  outline-offset: 2px;
-}
-
-/* Tab Panels */
-.tab-panel {
-  display: none;
-}
-
-.tab-panel.active {
-  display: block;
-}
-
-/* Sprint Panel */
-.sprint-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: var(--gap-sm);
-}
-
-.sprint-name {
-  font-family: var(--sans);
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text);
-}
-
-.sprint-meta {
-  font-size: 12px;
-  font-weight: 300;
-  color: var(--text-3);
-}
-
-.sprint-progress {
-  height: 2px;
-  background: var(--surface-3);
-  border-radius: 1px;
-  margin-bottom: var(--gap);
-  overflow: hidden;
-}
-
-.sprint-progress-fill {
-  height: 100%;
-  width: 63%;
-  background: linear-gradient(to right, var(--gold), rgba(201, 168, 76, 0.2));
-  border-radius: 1px;
-}
-
-.work-item {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 6px 0;
-}
-
-.work-item + .work-item {
-  border-top: 1px solid rgba(255, 255, 255, 0.025);
-}
-
-.work-item-status {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  position: relative;
-  top: 1px;
-}
-
-.work-item-status.active   { background: var(--amber); }
-.work-item-status.done     { background: var(--sage); }
-.work-item-status.planned  { background: var(--text-3); }
-
-.work-item-text {
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--text);
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.work-item-type {
-  font-size: 10px;
-  font-weight: 400;
-  font-variant: all-small-caps;
-  letter-spacing: 0.06em;
-  color: var(--text-3);
-  flex-shrink: 0;
-}
-
-.more-link {
-  font-size: 12px;
-  font-weight: 300;
-  color: var(--text-3);
-  margin-top: 6px;
-  cursor: pointer;
-  transition: color 0.15s;
-}
-
-.more-link:hover {
-  color: var(--text-2);
-}
-
-/* Incidents Panel */
-.incident-item {
-  border-left: 2px solid var(--rose);
-  padding: 8px 0 8px 12px;
-}
-
-.incident-item + .incident-item {
-  margin-top: 10px;
-}
-
-.incident-id {
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--text-2);
-}
-
-.incident-sev {
-  font-size: 10px;
-  font-variant: all-small-caps;
-  letter-spacing: 0.06em;
-  color: var(--rose);
-  margin-left: 8px;
-}
-
-.incident-title {
-  font-size: 13px;
-  color: var(--text);
-  margin-top: 2px;
-}
-
-.incident-meta {
-  font-size: 12px;
-  font-weight: 300;
-  color: var(--text-3);
-  margin-top: 2px;
-}
-
-/* PRs Panel */
-.pr-item {
-  border-left: 2px solid var(--steel);
-  padding: 8px 0 8px 12px;
-}
-
-.pr-item + .pr-item {
-  margin-top: 10px;
-}
-
-.pr-number {
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--text-2);
-}
-
-.pr-branch {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--text-3);
-  margin-left: 6px;
-}
-
-.pr-title {
-  font-size: 13px;
-  color: var(--text);
-  margin-top: 2px;
-}
-
-.pr-meta {
-  font-size: 12px;
-  font-weight: 300;
-  color: var(--text-3);
-  margin-top: 2px;
-}
-
-/* ── Conversation ──────────────────────────────────── */
-.conversation {
-  background: var(--surface);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: var(--radius);
-  padding: var(--gap);
-}
-
-.conversation-messages {
-  max-height: 200px;
-  overflow-y: auto;
-  scroll-behavior: smooth;
-  margin-bottom: var(--gap);
-}
-
-.message {
-  margin-bottom: var(--gap);
-}
-
-.message:last-child {
-  margin-bottom: 0;
-}
-
-.message-harvey {
-  text-align: right;
-}
-
-.message-sender {
-  font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-3);
-  margin-bottom: 4px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.message-sender.donna-sender {
-  color: var(--text-3);
-  border-bottom: 1px solid var(--gold-line);
-  padding-bottom: 1px;
-}
-
-.message-time {
-  font-size: 11px;
-  font-weight: 300;
-  color: var(--text-3);
-  margin-left: 8px;
-  text-transform: none;
-  letter-spacing: 0;
-}
-
-.message-body {
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.7;
-  color: var(--text);
-}
-
-.message-harvey .message-body {
-  color: var(--text-2);
-  font-weight: 300;
-}
-
-.message-body code {
-  font-family: var(--mono);
-  font-size: 12px;
-  background: rgba(255, 255, 255, 0.04);
-  padding: 1px 5px;
-  border-radius: 2px;
-  color: var(--text);
-}
-
-.message-body .data-point {
-  font-weight: 500;
-  color: var(--text);
-}
-
-/* Chat Input */
-.chat-input-wrap {
-  position: relative;
-}
-
-.chat-input {
-  width: 100%;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 8px 36px 8px 0;
-  font-family: var(--sans);
-  font-size: 14px;
-  font-weight: 300;
-  color: var(--text);
-  outline: none;
-  transition: border-color 0.2s var(--ease);
-}
-
-.chat-input::placeholder {
-  color: var(--text-3);
-  font-weight: 300;
-}
-
-.chat-input:focus {
-  border-bottom-color: var(--gold-line);
-}
-
-.chat-send {
-  position: absolute;
-  right: 0;
-  bottom: 8px;
-  background: none;
-  border: none;
-  color: var(--text-3);
-  font-size: 14px;
-  cursor: pointer;
-  transition: color 0.15s;
-  padding: 0 4px;
-}
-
-.chat-send:hover {
-  color: var(--gold);
-}
-
-.chat-send:focus-visible {
-  outline: 1px solid var(--gold-line);
-  outline-offset: 2px;
-}
-
-/* ── Toast ─────────────────────────────────────────── */
-.toast {
-  position: absolute;
-  top: 50px;
-  right: 16px;
-  background: rgba(42, 40, 38, 0.92);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-left: 2px solid var(--sage);
-  padding: 12px 36px 12px 14px;
-  max-width: 340px;
-  z-index: 200;
-  opacity: 0;
-  transform: translateX(20px);
-  transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
-  pointer-events: none;
-}
-
-.toast.visible {
-  opacity: 1;
-  transform: translateX(0);
-  pointer-events: auto;
-}
-
-.toast-text {
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--text);
-  line-height: 1.5;
-}
-
-.toast-text code {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--text-2);
-}
-
-.toast-meta {
-  font-size: 11px;
-  font-weight: 300;
-  color: var(--text-3);
-  margin-top: 4px;
-}
-
-.toast-close {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: none;
-  border: none;
-  color: var(--text-3);
-  font-size: 12px;
-  cursor: pointer;
-  padding: 2px 4px;
-  transition: color 0.15s;
-}
-
-.toast-close:hover {
-  color: var(--text);
-}
-
-.toast-close:focus-visible {
-  outline: 1px solid var(--gold-line);
-  outline-offset: 2px;
-}
-
-/* ── Load Animation ────────────────────────────────── */
-.fade-in {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.fade-in.visible {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
-}
-
-/* ── Scrollbar ─────────────────────────────────────── */
-.content::-webkit-scrollbar,
-.conversation-messages::-webkit-scrollbar,
-.command-palette::-webkit-scrollbar {
-  width: 4px;
-}
-
-.content::-webkit-scrollbar-track,
-.conversation-messages::-webkit-scrollbar-track,
-.command-palette::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.content::-webkit-scrollbar-thumb,
-.conversation-messages::-webkit-scrollbar-thumb,
-.command-palette::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 2px;
-}
-
-.content::-webkit-scrollbar-thumb:hover,
-.conversation-messages::-webkit-scrollbar-thumb:hover,
-.command-palette::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.14);
-}
-
-/* ── Focus ─────────────────────────────────────────── */
-*:focus-visible {
-  outline: 1px solid var(--gold-line);
-  outline-offset: 2px;
-}
-
-/* ── Reduced Motion ────────────────────────────────── */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --base:#0f0f11;
+  --surface:#18181b;
+  --surface-raised:#27272a;
+  --border:rgba(255,255,255,0.07);
+  --text-primary:#fafafa;
+  --text-secondary:#a1a1aa;
+  --text-tertiary:#52525b;
+  --accent:#6366f1;
+  --accent-glow:rgba(99,102,241,0.15);
+  --amber:rgba(245,158,11,0.7);
+  --green:rgba(34,197,94,0.6);
+  --red:rgba(239,68,68,0.6);
+  --blue:rgba(59,130,246,0.6);
+  --mono:'Cascadia Code','JetBrains Mono','Fira Code',monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',system-ui,sans-serif;
+  --radius:12px;
+  --radius-sm:8px;
+  --transition-fast:100ms ease;
+  --transition-med:150ms ease;
+}
+html,body{
+  height:100%;
+  font-family:var(--sans);
+  background:var(--base);
+  color:var(--text-primary);
+  font-size:13px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+body{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#09090b;
+}
+
+/* ── Window ── */
+.window{
+  width:720px;
+  height:560px;
+  background:var(--base);
+  border-radius:var(--radius);
+  border:1px solid var(--border);
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  position:relative;
+}
+
+/* ── Titlebar ── */
+.titlebar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 16px;
+  flex-shrink:0;
+  user-select:none;
+  -webkit-app-region:drag;
+}
+.titlebar-brand{
+  font-size:13px;
+  font-weight:400;
+  color:var(--text-secondary);
+  letter-spacing:0.01em;
+}
+.titlebar-hint{
+  font-size:11px;
+  font-weight:400;
+  color:var(--text-tertiary);
+  font-family:var(--mono);
+}
+
+/* ── Search ── */
+.search-bar{
+  padding:0 16px 0;
+  flex-shrink:0;
+}
+.search-input-wrap{
+  position:relative;
+  display:flex;
+  align-items:center;
+}
+.search-input{
+  width:100%;
+  background:var(--surface-raised);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:8px 60px 8px 32px;
+  font-family:var(--sans);
+  font-size:13px;
+  font-weight:400;
+  color:var(--text-primary);
+  outline:none;
+  transition:border-color var(--transition-med),box-shadow var(--transition-med);
+}
+.search-input::placeholder{color:var(--text-tertiary)}
+.search-input:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 2px var(--accent-glow);
+}
+.search-icon{
+  position:absolute;
+  left:10px;
+  color:var(--text-tertiary);
+  pointer-events:none;
+  font-size:13px;
+  line-height:1;
+}
+.search-shortcut{
+  position:absolute;
+  right:10px;
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--text-tertiary);
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:1px 5px;
+  pointer-events:none;
+}
+
+/* ── Command dropdown ── */
+.cmd-dropdown{
+  display:none;
+  position:absolute;
+  top:100%;
+  left:0;right:0;
+  margin-top:4px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:4px;
+  z-index:100;
+  max-height:220px;
+  overflow-y:auto;
+  box-shadow:0 8px 24px rgba(0,0,0,0.4);
+}
+.cmd-dropdown.visible{display:block}
+.cmd-item{
+  padding:6px 10px;
+  border-radius:4px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:var(--text-secondary);
+  font-size:12px;
+  transition:background var(--transition-fast);
+}
+.cmd-item:hover,.cmd-item.active{background:var(--surface-raised);color:var(--text-primary)}
+.cmd-item-icon{color:var(--text-tertiary);font-size:11px;width:14px;text-align:center}
+
+/* ── Tabs ── */
+.tab-bar{
+  display:flex;
+  gap:0;
+  padding:0 16px;
+  margin-top:10px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  user-select:none;
+}
+.tab{
+  padding:8px 14px 9px;
+  font-size:12px;
+  font-weight:500;
+  color:var(--text-tertiary);
+  cursor:pointer;
+  position:relative;
+  transition:color var(--transition-med);
+  border:none;
+  background:none;
+  font-family:var(--sans);
+  outline:none;
+}
+.tab:hover{color:var(--text-secondary)}
+.tab.active{color:var(--text-primary)}
+.tab.active::after{
+  content:'';
+  position:absolute;
+  bottom:-1px;
+  left:8px;right:8px;
+  height:2px;
+  background:var(--accent);
+  border-radius:1px;
+}
+
+/* ── Content ── */
+.content{
+  flex:1;
+  overflow-y:auto;
+  padding:16px;
+  position:relative;
+}
+.content::-webkit-scrollbar{width:4px}
+.content::-webkit-scrollbar-track{background:transparent}
+.content::-webkit-scrollbar-thumb{background:var(--surface-raised);border-radius:2px}
+
+.tab-panel{
+  display:none;
+  opacity:0;
+  transition:opacity var(--transition-med);
+}
+.tab-panel.active{display:block;opacity:1}
+
+/* ── Overview ── */
+.overview-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  margin-bottom:4px;
+}
+.overview-date{font-weight:400;color:var(--text-secondary);font-size:12px}
+.overview-time{font-family:var(--mono);font-size:11px;color:var(--text-tertiary)}
+.overview-count{
+  font-size:13px;
+  font-weight:500;
+  color:var(--text-primary);
+  margin:12px 0 8px;
+}
+.overview-sep{
+  border:none;
+  border-top:1px solid var(--border);
+  margin:8px 0;
+}
+.overview-item{
+  padding:8px 0;
+  cursor:pointer;
+  transition:background var(--transition-fast);
+  border-radius:4px;
+  padding:8px 6px;
+}
+.overview-item:hover{background:rgba(255,255,255,0.03)}
+.overview-item-row{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+}
+.overview-item-indicator{
+  color:var(--text-tertiary);
+  font-size:12px;
+  transition:transform 200ms ease;
+  flex-shrink:0;
+}
+.overview-item.expanded .overview-item-indicator{transform:rotate(90deg)}
+.overview-item-title{
+  font-size:13px;
+  font-weight:400;
+  color:var(--text-primary);
+  flex:1;
+}
+.overview-item-time{
+  font-size:11px;
+  font-family:var(--mono);
+  color:var(--text-tertiary);
+  flex-shrink:0;
+}
+.overview-item-meta{
+  font-size:12px;
+  color:var(--text-tertiary);
+  margin-left:20px;
+  margin-top:2px;
+}
+.overview-item-detail{
+  display:grid;
+  grid-template-rows:0fr;
+  transition:grid-template-rows 250ms ease;
+  margin-left:20px;
+}
+.overview-item.expanded .overview-item-detail{grid-template-rows:1fr}
+.overview-item-detail-inner{
+  overflow:hidden;
+  font-size:12px;
+  color:var(--text-secondary);
+  line-height:1.6;
+  padding-top:0;
+}
+.overview-item.expanded .overview-item-detail-inner{padding-top:6px}
+
+.sprint-summary{
+  margin-top:16px;
+  padding-top:12px;
+  border-top:1px solid var(--border);
+}
+.sprint-summary-text{
+  font-size:12px;
+  color:var(--text-secondary);
+  margin-bottom:8px;
+}
+.sprint-summary-text span{color:var(--text-primary);font-weight:500}
+.progress-bar{
+  height:4px;
+  background:var(--surface-raised);
+  border-radius:2px;
+  overflow:hidden;
+}
+.progress-fill{
+  height:100%;
+  background:var(--accent);
+  border-radius:2px;
+  transition:width 400ms ease;
+}
+.progress-label{
+  font-size:11px;
+  color:var(--text-tertiary);
+  margin-top:4px;
+  text-align:right;
+}
+
+/* ── Chat ── */
+.chat-wrap{display:flex;flex-direction:column;height:100%}
+.chat-messages{flex:1;overflow-y:auto;padding-bottom:8px}
+.chat-messages::-webkit-scrollbar{width:4px}
+.chat-messages::-webkit-scrollbar-track{background:transparent}
+.chat-messages::-webkit-scrollbar-thumb{background:var(--surface-raised);border-radius:2px}
+.chat-msg{margin-bottom:16px}
+.chat-msg-header{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  margin-bottom:3px;
+}
+.chat-msg-name{font-size:12px;font-weight:600;color:var(--text-primary)}
+.chat-msg-name.donna{
+  color:var(--accent);
+  text-decoration:underline;
+  text-underline-offset:2px;
+  text-decoration-color:rgba(99,102,241,0.3);
+}
+.chat-msg-time{font-size:11px;color:var(--text-tertiary)}
+.chat-msg-body{
+  font-size:13px;
+  color:var(--text-secondary);
+  line-height:1.65;
+}
+.chat-msg-body .num{color:var(--text-primary);font-weight:500}
+.chat-msg-body code,.chat-msg-body .mono{
+  font-family:var(--mono);
+  font-size:12px;
+  background:rgba(255,255,255,0.04);
+  padding:1px 4px;
+  border-radius:3px;
+}
+.chat-input-wrap{
+  padding-top:8px;
+  border-top:1px solid var(--border);
+  flex-shrink:0;
+}
+.chat-input{
+  width:100%;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:10px 40px 10px 12px;
+  font-family:var(--sans);
+  font-size:13px;
+  color:var(--text-primary);
+  outline:none;
+  resize:none;
+  transition:border-color var(--transition-med),box-shadow var(--transition-med);
+}
+.chat-input::placeholder{color:var(--text-tertiary)}
+.chat-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-glow)}
+.chat-input-wrap{position:relative}
+.chat-send-hint{
+  position:absolute;
+  right:12px;
+  bottom:18px;
+  font-size:12px;
+  color:var(--text-tertiary);
+}
+
+/* ── Sprint ── */
+.sprint-header{margin-bottom:16px}
+.sprint-title{font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:8px}
+.sprint-group{margin-bottom:16px}
+.sprint-group-label{
+  font-size:11px;
+  font-weight:500;
+  color:var(--text-secondary);
+  margin-bottom:6px;
+}
+.sprint-sep{border:none;border-top:1px solid var(--border);margin-bottom:8px}
+.sprint-item{
+  display:flex;
+  align-items:center;
+  padding:5px 6px;
+  border-radius:4px;
+  gap:10px;
+  transition:background var(--transition-fast);
+}
+.sprint-item:hover{background:rgba(255,255,255,0.03)}
+.sprint-item-type{
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--text-tertiary);
+  width:32px;
+  flex-shrink:0;
+}
+.sprint-item-id{
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--text-tertiary);
+  width:36px;
+  flex-shrink:0;
+}
+.sprint-item-title{
+  font-size:13px;
+  color:var(--text-primary);
+  flex:1;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.sprint-item-status{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  flex-shrink:0;
+}
+.sprint-item-status.active{background:var(--amber)}
+.sprint-item-status.done{background:var(--green)}
+.sprint-show-more{
+  font-size:12px;
+  color:var(--text-tertiary);
+  cursor:pointer;
+  padding:4px 6px;
+  margin-top:2px;
+  border:none;
+  background:none;
+  font-family:var(--sans);
+}
+.sprint-show-more:hover{color:var(--text-secondary)}
+
+/* ── PRs ── */
+.pr-group{margin-bottom:16px}
+.pr-group-label{font-size:11px;font-weight:500;color:var(--text-secondary);margin-bottom:6px}
+.pr-sep{border:none;border-top:1px solid var(--border);margin-bottom:8px}
+.pr-item{
+  padding:6px;
+  border-radius:4px;
+  margin-bottom:6px;
+  transition:background var(--transition-fast);
+  cursor:default;
+}
+.pr-item:hover{background:rgba(255,255,255,0.03)}
+.pr-item-row{display:flex;align-items:baseline;gap:8px}
+.pr-item-number{font-family:var(--mono);font-size:12px;color:var(--text-tertiary);flex-shrink:0}
+.pr-item-branch{font-size:13px;color:var(--text-primary);flex:1}
+.pr-item-author{font-size:12px;color:var(--text-secondary);flex-shrink:0}
+.pr-item-meta{font-size:11px;color:var(--text-tertiary);margin-left:44px;margin-top:2px}
+
+/* ── Incidents ── */
+.inc-group{margin-bottom:16px}
+.inc-group-label{font-size:11px;font-weight:500;color:var(--text-secondary);margin-bottom:6px}
+.inc-sep{border:none;border-top:1px solid var(--border);margin-bottom:8px}
+.inc-item{
+  padding:6px;
+  border-radius:4px;
+  margin-bottom:6px;
+  transition:background var(--transition-fast);
+}
+.inc-item:hover{background:rgba(255,255,255,0.03)}
+.inc-item-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.inc-item-id{font-family:var(--mono);font-size:12px;color:var(--text-tertiary);flex-shrink:0}
+.inc-item-sev{font-size:11px;font-weight:600;flex-shrink:0}
+.inc-item-sev.sev1{color:var(--red)}
+.inc-item-sev.sev2{color:var(--amber)}
+.inc-item-sev.sev3{color:var(--text-tertiary)}
+.inc-item-cluster{font-family:var(--mono);font-size:11px;color:var(--text-secondary);flex:1}
+.inc-item-time{font-family:var(--mono);font-size:11px;color:var(--text-tertiary);flex-shrink:0}
+.inc-item-detail{font-size:12px;color:var(--text-tertiary);margin-left:0;margin-top:3px;line-height:1.5}
+.inc-item-resolved{
+  font-size:11px;
+  color:var(--text-tertiary);
+  margin-left:0;
+}
+
+/* ── Toast ── */
+.toast{
+  position:absolute;
+  bottom:12px;
+  right:12px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:10px 14px;
+  max-width:300px;
+  font-size:12px;
+  color:var(--text-secondary);
+  border-left:2px solid var(--green);
+  opacity:0;
+  transform:translateY(10px);
+  transition:opacity 200ms ease,transform 200ms ease;
+  pointer-events:none;
+  z-index:200;
+  box-shadow:0 4px 16px rgba(0,0,0,0.3);
+}
+.toast.visible{opacity:1;transform:translateY(0);pointer-events:auto}
+.toast-dismiss{
+  position:absolute;
+  top:4px;right:6px;
+  background:none;border:none;
+  color:var(--text-tertiary);
+  cursor:pointer;
+  font-size:14px;
+  line-height:1;
+  padding:2px;
+}
+.toast-dismiss:hover{color:var(--text-secondary)}
+
+/* ── Reduced motion ── */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    transition-duration:0ms !important;
+    animation-duration:0ms !important;
   }
-  .fade-in {
-    opacity: 1;
-    transform: none;
-  }
-  .toast {
-    transition: none;
-  }
+  .overview-item-detail{transition:none !important}
 }
+
+/* ── Focus visible for keyboard ── */
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.tab:focus-visible{outline-offset:-2px}
 </style>
 </head>
 <body>
 
-<div class="app" role="application" aria-label="Donna — AI Concierge">
-
+<div class="window" role="application" aria-label="donna">
   <!-- Titlebar -->
-  <header class="titlebar" role="banner">
+  <div class="titlebar">
     <span class="titlebar-brand">donna</span>
-    <span class="titlebar-date" id="titlebar-date"></span>
-    <div class="titlebar-controls" role="group" aria-label="Window controls">
-      <button type="button" aria-label="Minimize" tabindex="0">
-        <svg viewBox="0 0 14 14"><line x1="3" y1="7" x2="11" y2="7"/></svg>
-      </button>
-      <button type="button" aria-label="Maximize" tabindex="0">
-        <svg viewBox="0 0 14 14"><rect x="3" y="3" width="8" height="8" rx="0.5"/></svg>
-      </button>
-      <button type="button" aria-label="Close" tabindex="0">
-        <svg viewBox="0 0 14 14"><line x1="3.5" y1="3.5" x2="10.5" y2="10.5"/><line x1="10.5" y1="3.5" x2="3.5" y2="10.5"/></svg>
-      </button>
+    <span class="titlebar-hint">Alt+Space</span>
+  </div>
+
+  <!-- Search -->
+  <div class="search-bar">
+    <div class="search-input-wrap">
+      <span class="search-icon" aria-hidden="true">&#x2315;</span>
+      <input class="search-input" id="searchInput" type="text" placeholder="Search or ask Donna..." autocomplete="off" spellcheck="false" aria-label="Search or command">
+      <span class="search-shortcut">Ctrl+K</span>
+      <div class="cmd-dropdown" id="cmdDropdown" role="listbox"></div>
     </div>
-  </header>
+  </div>
 
-  <!-- Toast Notification -->
-  <aside class="toast" id="toast" role="status" aria-live="polite">
-    <div class="toast-text">Build <code>#2847</code> succeeded on <code>main</code>. 247 tests passed.</div>
-    <div class="toast-meta">12 seconds ago</div>
-    <button class="toast-close" aria-label="Dismiss notification" id="toast-close">✕</button>
-  </aside>
+  <!-- Tabs -->
+  <div class="tab-bar" role="tablist">
+    <button class="tab active" role="tab" aria-selected="true" data-tab="overview" tabindex="0">Overview</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="chat" tabindex="-1">Chat</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="sprint" tabindex="-1">Sprint</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="prs" tabindex="-1">PRs</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="incidents" tabindex="-1">Incidents</button>
+  </div>
 
-  <!-- Main Content -->
-  <main class="content">
+  <!-- Content -->
+  <div class="content">
 
-    <!-- Command Input -->
-    <div class="command-wrap fade-in" style="--delay: 0">
-      <input
-        type="text"
-        class="command-input"
-        id="command-input"
-        placeholder="What do you need?"
-        aria-label="Command palette"
-        autocomplete="off"
-        spellcheck="false"
-      >
-      <span class="command-hint" aria-hidden="true">Ctrl K</span>
-      <div class="command-palette" id="command-palette" role="listbox" aria-label="Commands"></div>
-    </div>
+    <!-- Overview -->
+    <div class="tab-panel active" id="panel-overview" role="tabpanel">
+      <div class="overview-header">
+        <span class="overview-date">Wednesday, April 22</span>
+        <span class="overview-time">9:15 AM</span>
+      </div>
+      <div class="overview-count">3 items need attention</div>
+      <hr class="overview-sep">
 
-    <!-- Greeting -->
-    <div class="greeting fade-in" style="--delay: 1">
-      <div class="greeting-text" id="greeting-text"></div>
-      <hr class="greeting-rule" aria-hidden="true">
-    </div>
-
-    <!-- Two Columns -->
-    <div class="columns">
-
-      <!-- Left: Morning Brief -->
-      <section class="morning-panel fade-in" style="--delay: 2" aria-label="Morning brief">
-        <div class="section-title">Your morning</div>
-        <div class="morning-count">3 items need you</div>
-
-        <div class="attention-item" data-status="pr" tabindex="0" role="button" aria-expanded="false">
-          <div class="attention-header">
-            <span class="attention-indicator" aria-hidden="true">&#x25B8;</span>
-            <span class="attention-label">PR #4821</span>
-            <span class="attention-type">pull request</span>
-          </div>
-          <div class="attention-meta">Sanjeev Krishnan · auth-refactor · 2 hours ago</div>
-          <div class="attention-detail" aria-hidden="true">
-            <div class="attention-detail-inner">
-              <div class="attention-detail-text">
-                Token refresh interceptor refactored from ADAL to MSAL. 14 files changed, 6 reviewers requested. Tests passing on all gates. <a href="#" onclick="return false">View diff</a>
-              </div>
-            </div>
-          </div>
+      <div class="overview-item" data-expandable>
+        <div class="overview-item-row">
+          <span class="overview-item-indicator">&#x25B8;</span>
+          <span class="overview-item-title">PR #4821 awaiting review</span>
+          <span class="overview-item-time">2h ago</span>
         </div>
+        <div class="overview-item-meta">auth-refactor &middot; Sanjeev Krishnan</div>
+        <div class="overview-item-detail"><div class="overview-item-detail-inner">Clean refactor of the token refresh middleware. 14 files changed, all tests passing. Sanjeev removed the fallback retry in TokenRefreshMiddleware.cs since the new MSAL client handles retries internally. Worth confirming during review.</div></div>
+      </div>
 
-        <div class="attention-item" data-status="incident" tabindex="0" role="button" aria-expanded="false">
-          <div class="attention-header">
-            <span class="attention-indicator" aria-hidden="true">&#x25B8;</span>
-            <span class="attention-label">IcM 526834</span>
-            <span class="attention-type">incident</span>
-          </div>
-          <div class="attention-meta">Sev1 · westus2 · Error rate +340%</div>
-          <div class="attention-detail" aria-hidden="true">
-            <div class="attention-detail-inner">
-              <div class="attention-detail-text">
-                Cluster <code>westus2-04</code> started returning 503s at 03:42 UTC. Auto-mitigation engaged at 04:01. Currently stabilized at 3.1% error rate, down from peak 12.8%. <a href="#" onclick="return false">Open in IcM</a>
-              </div>
-            </div>
-          </div>
+      <div class="overview-item" data-expandable>
+        <div class="overview-item-row">
+          <span class="overview-item-indicator">&#x25B8;</span>
+          <span class="overview-item-title">IcM 526834 escalated to Sev1</span>
+          <span class="overview-item-time">03:42 UTC</span>
         </div>
+        <div class="overview-item-meta">westus2 &middot; Error rate +340%</div>
+        <div class="overview-item-detail"><div class="overview-item-detail-inner">Cluster fabric-prod-westus2-04 started returning 503s. Error rate climbed from 0.2% to 12.8% in 18 minutes. Auto-mitigation engaged at 04:01 UTC. Currently stabilizing at 3.1% and trending down.</div></div>
+      </div>
 
-        <div class="attention-item" data-status="meeting" tabindex="0" role="button" aria-expanded="false">
-          <div class="attention-header">
-            <span class="attention-indicator" aria-hidden="true">&#x25B8;</span>
-            <span class="attention-label">Standup @ 10:00</span>
-            <span class="attention-type">meeting</span>
-          </div>
-          <div class="attention-meta">Draft notes ready · 4 participants</div>
-          <div class="attention-detail" aria-hidden="true">
-            <div class="attention-detail-inner">
-              <div class="attention-detail-text">
-                Topics prepared: MSAL migration update, prod incident postmortem, Sprint 47 velocity check. Your notes include yesterday's connection pool fix. <a href="#" onclick="return false">View notes</a>
-              </div>
-            </div>
-          </div>
+      <div class="overview-item" data-expandable>
+        <div class="overview-item-row">
+          <span class="overview-item-indicator">&#x25B8;</span>
+          <span class="overview-item-title">Standup in 45 minutes</span>
+          <span class="overview-item-time">10:00 AM</span>
         </div>
-      </section>
+        <div class="overview-item-meta">Draft update ready</div>
+        <div class="overview-item-detail"><div class="overview-item-detail-inner">Yesterday: Completed SignalR messaging migration and stale cache fix. Today: Review Sanjeev's auth PR, monitor westus2 incident. Blockers: None.</div></div>
+      </div>
 
-      <!-- Right: Tabbed Panel -->
-      <section class="right-column fade-in" style="--delay: 3" aria-label="Work context">
-        <nav class="right-tabs" role="tablist" aria-label="Context views">
-          <button class="right-tab active" role="tab" aria-selected="true" aria-controls="panel-sprint" id="tab-sprint" tabindex="0">Sprint</button>
-          <button class="right-tab" role="tab" aria-selected="false" aria-controls="panel-incidents" id="tab-incidents" tabindex="-1">Incidents</button>
-          <button class="right-tab" role="tab" aria-selected="false" aria-controls="panel-prs" id="tab-prs" tabindex="-1">PRs</button>
-        </nav>
+      <hr class="overview-sep">
 
-        <!-- Sprint Panel -->
-        <div class="tab-panel active" id="panel-sprint" role="tabpanel" aria-labelledby="tab-sprint">
-          <div class="sprint-header">
-            <span class="sprint-name">Sprint 47</span>
-            <span class="sprint-meta">Day 8 · 12 of 19 items</span>
-          </div>
-          <div class="sprint-progress" role="progressbar" aria-valuenow="63" aria-valuemin="0" aria-valuemax="100" aria-label="Sprint progress">
-            <div class="sprint-progress-fill"></div>
-          </div>
-
-          <div class="work-item">
-            <span class="work-item-status active" aria-label="In progress"></span>
-            <span class="work-item-text">Auth token refresh interceptor</span>
-            <span class="work-item-type">pbi</span>
-          </div>
-          <div class="work-item">
-            <span class="work-item-status active" aria-label="In progress"></span>
-            <span class="work-item-text">ADAL to MSAL migration</span>
-            <span class="work-item-type">pbi</span>
-          </div>
-          <div class="work-item">
-            <span class="work-item-status active" aria-label="In progress"></span>
-            <span class="work-item-text">Connection pool leak investigation</span>
-            <span class="work-item-type">bug</span>
-          </div>
-          <div class="work-item">
-            <span class="work-item-status done" aria-label="Done"></span>
-            <span class="work-item-text">Playwright SSO token flow</span>
-            <span class="work-item-type">task</span>
-          </div>
-          <div class="work-item">
-            <span class="work-item-status done" aria-label="Done"></span>
-            <span class="work-item-text">DAG visualization performance</span>
-            <span class="work-item-type">pbi</span>
-          </div>
-
-          <div class="more-link" tabindex="0" role="button">7 more items</div>
-        </div>
-
-        <!-- Incidents Panel -->
-        <div class="tab-panel" id="panel-incidents" role="tabpanel" aria-labelledby="tab-incidents">
-          <div class="incident-item">
-            <div>
-              <span class="incident-id">IcM 526834</span>
-              <span class="incident-sev">sev 1</span>
-            </div>
-            <div class="incident-title">HTTP 503 spike on westus2-04</div>
-            <div class="incident-meta">Mitigated · Error rate 3.1% · 6h 18m</div>
-          </div>
-          <div class="incident-item">
-            <div>
-              <span class="incident-id">IcM 526710</span>
-              <span class="incident-sev">sev 2</span>
-            </div>
-            <div class="incident-title">Elevated latency in DAG execution pipeline</div>
-            <div class="incident-meta">Monitoring · P95 at 4.2s · 18h 45m</div>
-          </div>
-        </div>
-
-        <!-- PRs Panel -->
-        <div class="tab-panel" id="panel-prs" role="tabpanel" aria-labelledby="tab-prs">
-          <div class="pr-item">
-            <div>
-              <span class="pr-number">#4821</span>
-              <span class="pr-branch">auth-refactor</span>
-            </div>
-            <div class="pr-title">Refactor token refresh interceptor to MSAL</div>
-            <div class="pr-meta">Sanjeev Krishnan · 14 files · Awaiting review</div>
-          </div>
-          <div class="pr-item">
-            <div>
-              <span class="pr-number">#4798</span>
-              <span class="pr-branch">dag-viz-perf</span>
-            </div>
-            <div class="pr-title">Canvas rendering optimization for large DAGs</div>
-            <div class="pr-meta">Priya Mehta · 8 files · 2 approvals</div>
-          </div>
-          <div class="pr-item">
-            <div>
-              <span class="pr-number">#4815</span>
-              <span class="pr-branch">pool-fix</span>
-            </div>
-            <div class="pr-title">Fix connection pool exhaustion under load</div>
-            <div class="pr-meta">You · 3 files · CI passing</div>
-          </div>
-        </div>
-      </section>
+      <div class="sprint-summary">
+        <div class="sprint-summary-text">Sprint 47 &middot; Day 8 of 14 &middot; <span>12/19</span> completed</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:63%"></div></div>
+        <div class="progress-label">63%</div>
+      </div>
     </div>
 
-    <!-- Conversation -->
-    <section class="conversation fade-in" style="--delay: 4" aria-label="Conversation with Donna">
-      <div class="conversation-messages" id="conversation-messages" role="log" aria-label="Message history">
-
-        <div class="message message-harvey">
-          <div class="message-sender">
-            Harvey
-            <span class="message-time">9:14 am</span>
+    <!-- Chat -->
+    <div class="tab-panel" id="panel-chat" role="tabpanel">
+      <div class="chat-wrap">
+        <div class="chat-messages">
+          <div class="chat-msg">
+            <div class="chat-msg-header">
+              <span class="chat-msg-name">Harvey</span>
+              <span class="chat-msg-time">9:14 AM</span>
+            </div>
+            <div class="chat-msg-body">check the prod incident</div>
           </div>
-          <div class="message-body">check the prod incident</div>
+          <div class="chat-msg">
+            <div class="chat-msg-header">
+              <span class="chat-msg-name donna">Donna</span>
+              <span class="chat-msg-time">9:14 AM</span>
+            </div>
+            <div class="chat-msg-body">Already on it. Cluster <code>fabric-prod-westus2-04</code> started throwing 503s at <span class="num">03:42 UTC</span>. Error rate climbed from <span class="num">0.2%</span> to <span class="num">12.8%</span> in <span class="num">18</span> minutes. Auto-mitigation engaged. Currently stabilizing at <span class="num">3.1%</span>.</div>
+          </div>
+          <div class="chat-msg">
+            <div class="chat-msg-header">
+              <span class="chat-msg-name">Harvey</span>
+              <span class="chat-msg-time">9:16 AM</span>
+            </div>
+            <div class="chat-msg-body">good. what about the auth PR?</div>
+          </div>
+          <div class="chat-msg">
+            <div class="chat-msg-header">
+              <span class="chat-msg-name donna">Donna</span>
+              <span class="chat-msg-time">9:16 AM</span>
+            </div>
+            <div class="chat-msg-body">Sanjeev's PR <span class="mono">#4821</span> &#8212; clean refactor. <span class="num">14</span> files, all tests passing. One thing: he removed the fallback retry in <code>TokenRefreshMiddleware.cs</code>. The new MSAL client handles retries internally, so it should be fine, but worth a quick confirm.</div>
+          </div>
+          <div class="chat-msg">
+            <div class="chat-msg-header">
+              <span class="chat-msg-name">Harvey</span>
+              <span class="chat-msg-time">9:17 AM</span>
+            </div>
+            <div class="chat-msg-body">schedule a 1:1 with sanjeev tomorrow to discuss</div>
+          </div>
+          <div class="chat-msg">
+            <div class="chat-msg-header">
+              <span class="chat-msg-name donna">Donna</span>
+              <span class="chat-msg-time">9:17 AM</span>
+            </div>
+            <div class="chat-msg-body">Done. Thursday <span class="num">10:30 AM</span>, <span class="num">30</span> min. Sent Sanjeev a calendar invite with the PR link in the description.</div>
+          </div>
         </div>
-
-        <div class="message">
-          <div class="message-sender donna-sender">
-            Donna
-            <span class="message-time">9:14 am</span>
-          </div>
-          <div class="message-body">
-            Already on it. Cluster <code>westus2-04</code> started throwing 503s at 03:42. Error rate went from <span class="data-point">0.2%</span> to <span class="data-point">12.8%</span> in 18 minutes. Auto-mitigation engaged at 04:01 and it's been winding down since. Currently sitting at <span class="data-point">3.1%</span>. I've pinned the timeline and tagged the on-call thread.
-          </div>
+        <div class="chat-input-wrap">
+          <input class="chat-input" id="chatInput" type="text" placeholder="Message Donna..." aria-label="Message input">
+          <span class="chat-send-hint">&#x23CE;</span>
         </div>
+      </div>
+    </div>
 
-        <div class="message message-harvey">
-          <div class="message-sender">
-            Harvey
-            <span class="message-time">9:15 am</span>
-          </div>
-          <div class="message-body">what about Sanjeev's PR</div>
-        </div>
-
-        <div class="message">
-          <div class="message-sender donna-sender">
-            Donna
-            <span class="message-time">9:15 am</span>
-          </div>
-          <div class="message-body">
-            PR <code>#4821</code> is the MSAL migration refactor. 14 files, all focused on the token refresh interceptor. Tests are green across every gate. Sanjeev's been waiting about two hours. I'd prioritize it before standup — he'll need your sign-off to merge today.
-          </div>
+    <!-- Sprint -->
+    <div class="tab-panel" id="panel-sprint" role="tabpanel">
+      <div class="sprint-header">
+        <div class="sprint-title">Sprint 47 &middot; Day 8 of 14</div>
+        <div class="progress-bar" style="margin-bottom:4px"><div class="progress-fill" style="width:63%"></div></div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="font-size:12px;color:var(--text-secondary)">12/19 completed</span>
+          <span style="font-size:11px;color:var(--text-tertiary)">63%</span>
         </div>
       </div>
 
-      <div class="chat-input-wrap">
-        <input
-          type="text"
-          class="chat-input"
-          id="chat-input"
-          placeholder="Talk to Donna..."
-          aria-label="Message Donna"
-          autocomplete="off"
-          spellcheck="false"
-        >
-        <button class="chat-send" aria-label="Send message" id="chat-send">&#x23CE;</button>
+      <div class="sprint-group">
+        <div class="sprint-group-label">Active (3)</div>
+        <hr class="sprint-sep">
+        <div class="sprint-item">
+          <span class="sprint-item-type">PBI</span>
+          <span class="sprint-item-id">5201</span>
+          <span class="sprint-item-title">Auth token refresh redesign</span>
+          <span class="sprint-item-status active"></span>
+        </div>
+        <div class="sprint-item">
+          <span class="sprint-item-type">Task</span>
+          <span class="sprint-item-id">5334</span>
+          <span class="sprint-item-title">Migrate ADAL to MSAL v4</span>
+          <span class="sprint-item-status active"></span>
+        </div>
+        <div class="sprint-item">
+          <span class="sprint-item-type">Bug</span>
+          <span class="sprint-item-id">5401</span>
+          <span class="sprint-item-title">Connection pool leak in westus2</span>
+          <span class="sprint-item-status active"></span>
+        </div>
       </div>
-    </section>
 
-  </main>
-</div>
+      <div class="sprint-group">
+        <div class="sprint-group-label">Done (9)</div>
+        <hr class="sprint-sep">
+        <div class="sprint-item">
+          <span class="sprint-item-type">Task</span>
+          <span class="sprint-item-id">5289</span>
+          <span class="sprint-item-title">Playwright test for SSO flow</span>
+          <span class="sprint-item-status done"></span>
+        </div>
+        <div class="sprint-item">
+          <span class="sprint-item-type">PBI</span>
+          <span class="sprint-item-id">5178</span>
+          <span class="sprint-item-title">DAG visualization enhancements</span>
+          <span class="sprint-item-status done"></span>
+        </div>
+        <div class="sprint-item">
+          <span class="sprint-item-type">Task</span>
+          <span class="sprint-item-id">5312</span>
+          <span class="sprint-item-title">Update SignalR messaging</span>
+          <span class="sprint-item-status done"></span>
+        </div>
+        <div class="sprint-item">
+          <span class="sprint-item-type">Bug</span>
+          <span class="sprint-item-id">5415</span>
+          <span class="sprint-item-title">Stale cache on config reload</span>
+          <span class="sprint-item-status done"></span>
+        </div>
+        <div class="sprint-item" id="sprintHiddenItems" style="display:none">
+          <span class="sprint-item-type">Task</span>
+          <span class="sprint-item-id">5290</span>
+          <span class="sprint-item-title">Refactor DI container registration</span>
+          <span class="sprint-item-status done"></span>
+        </div>
+        <div class="sprint-item" id="sprintHiddenItems2" style="display:none">
+          <span class="sprint-item-type">Task</span>
+          <span class="sprint-item-id">5301</span>
+          <span class="sprint-item-title">Add health check endpoint</span>
+          <span class="sprint-item-status done"></span>
+        </div>
+        <div class="sprint-item" id="sprintHiddenItems3" style="display:none">
+          <span class="sprint-item-type">PBI</span>
+          <span class="sprint-item-id">5192</span>
+          <span class="sprint-item-title">Cluster metrics dashboard</span>
+          <span class="sprint-item-status done"></span>
+        </div>
+        <div class="sprint-item" id="sprintHiddenItems4" style="display:none">
+          <span class="sprint-item-type">Bug</span>
+          <span class="sprint-item-id">5388</span>
+          <span class="sprint-item-title">Fix race condition in queue drain</span>
+          <span class="sprint-item-status done"></span>
+        </div>
+        <div class="sprint-item" id="sprintHiddenItems5" style="display:none">
+          <span class="sprint-item-type">Task</span>
+          <span class="sprint-item-id">5320</span>
+          <span class="sprint-item-title">Update Cosmos DB SDK to v3</span>
+          <span class="sprint-item-status done"></span>
+        </div>
+        <button class="sprint-show-more" id="sprintShowMore">... 5 more</button>
+      </div>
+
+      <div class="sprint-group">
+        <div class="sprint-group-label">Not Started (7)</div>
+        <hr class="sprint-sep">
+        <div class="sprint-item">
+          <span class="sprint-item-type">PBI</span>
+          <span class="sprint-item-id">5210</span>
+          <span class="sprint-item-title">Incremental refresh for LiveTables</span>
+          <span class="sprint-item-status" style="border:1px solid var(--text-tertiary)"></span>
+        </div>
+        <div class="sprint-item">
+          <span class="sprint-item-type">Task</span>
+          <span class="sprint-item-id">5345</span>
+          <span class="sprint-item-title">E2E test coverage for DAG editor</span>
+          <span class="sprint-item-status" style="border:1px solid var(--text-tertiary)"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRs -->
+    <div class="tab-panel" id="panel-prs" role="tabpanel">
+      <div class="pr-group">
+        <div class="pr-group-label">Open (2)</div>
+        <hr class="pr-sep">
+        <div class="pr-item">
+          <div class="pr-item-row">
+            <span class="pr-item-number">#4821</span>
+            <span class="pr-item-branch">auth-refactor</span>
+            <span class="pr-item-author">Sanjeev</span>
+          </div>
+          <div class="pr-item-meta">14 files &middot; All checks passing &middot; 2h ago</div>
+        </div>
+        <div class="pr-item">
+          <div class="pr-item-row">
+            <span class="pr-item-number">#4798</span>
+            <span class="pr-item-branch">dag-viz-perf</span>
+            <span class="pr-item-author">Priya</span>
+          </div>
+          <div class="pr-item-meta">6 files &middot; 2 checks pending &middot; 1d ago</div>
+        </div>
+      </div>
+
+      <div class="pr-group">
+        <div class="pr-group-label">Recently Merged (3)</div>
+        <hr class="pr-sep">
+        <div class="pr-item">
+          <div class="pr-item-row">
+            <span class="pr-item-number">#4795</span>
+            <span class="pr-item-branch">signalr-msgpack-v3</span>
+            <span class="pr-item-author">Hemant</span>
+          </div>
+          <div class="pr-item-meta">Merged 2d ago</div>
+        </div>
+        <div class="pr-item" id="prHidden1" style="display:none">
+          <div class="pr-item-row">
+            <span class="pr-item-number">#4788</span>
+            <span class="pr-item-branch">cosmos-sdk-upgrade</span>
+            <span class="pr-item-author">Hemant</span>
+          </div>
+          <div class="pr-item-meta">Merged 4d ago</div>
+        </div>
+        <div class="pr-item" id="prHidden2" style="display:none">
+          <div class="pr-item-row">
+            <span class="pr-item-number">#4782</span>
+            <span class="pr-item-branch">health-endpoint</span>
+            <span class="pr-item-author">Priya</span>
+          </div>
+          <div class="pr-item-meta">Merged 5d ago</div>
+        </div>
+        <button class="sprint-show-more" id="prShowMore">... 2 more</button>
+      </div>
+    </div>
+
+    <!-- Incidents -->
+    <div class="tab-panel" id="panel-incidents" role="tabpanel">
+      <div class="inc-group">
+        <div class="inc-group-label">Active (1)</div>
+        <hr class="inc-sep">
+        <div class="inc-item">
+          <div class="inc-item-row">
+            <span class="inc-item-id">526834</span>
+            <span class="inc-item-sev sev1">Sev1</span>
+            <span class="inc-item-cluster">fabric-prod-westus2-04</span>
+            <span class="inc-item-time">03:42 UTC</span>
+          </div>
+          <div class="inc-item-detail">Error rate +340% &middot; Auto-mitigating<br>Currently at 3.1%, down from 12.8%</div>
+        </div>
+      </div>
+      <div class="inc-group">
+        <div class="inc-group-label">Recent (2)</div>
+        <hr class="inc-sep">
+        <div class="inc-item">
+          <div class="inc-item-row">
+            <span class="inc-item-id">526701</span>
+            <span class="inc-item-sev sev2">Sev2</span>
+            <span class="inc-item-resolved">Resolved</span>
+            <span class="inc-item-cluster">fabric-prod-eastus-02</span>
+          </div>
+          <div class="inc-item-detail">Apr 21 &middot; Connection timeout</div>
+        </div>
+        <div class="inc-item">
+          <div class="inc-item-row">
+            <span class="inc-item-id">526688</span>
+            <span class="inc-item-sev sev3">Sev3</span>
+            <span class="inc-item-resolved">Resolved</span>
+            <span class="inc-item-cluster">fabric-staging-01</span>
+          </div>
+          <div class="inc-item-detail">Apr 20 &middot; Deployment rollback</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- .content -->
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <button class="toast-dismiss" aria-label="Dismiss">&times;</button>
+    Build #2847 passed &middot; main &middot; 247 tests
+  </div>
+
+</div><!-- .window -->
 
 <script>
-(function() {
+(function(){
   'use strict';
 
-  /* ── Date & Greeting ───────────────────────────── */
-  const now = new Date();
-  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  document.getElementById('titlebar-date').textContent =
-    days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate();
-
-  const hour = now.getHours();
-  let greet = 'Good evening, Harvey.';
-  if (hour < 12) greet = 'Good morning, Harvey.';
-  else if (hour < 17) greet = 'Good afternoon, Harvey.';
-  document.getElementById('greeting-text').textContent = greet;
-
-  /* ── Staggered Load Animation ──────────────────── */
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const fadeEls = document.querySelectorAll('.fade-in');
-  fadeEls.forEach(function(el, i) {
-    if (reducedMotion) {
-      el.classList.add('visible');
-      return;
-    }
-    setTimeout(function() {
-      el.classList.add('visible');
-    }, 100 + i * 120);
-  });
-
-  /* ── Toast ─────────────────────────────────────── */
-  const toast = document.getElementById('toast');
-  const toastClose = document.getElementById('toast-close');
-  let toastTimer;
-
-  function showToast() {
-    toast.classList.add('visible');
-    toastTimer = setTimeout(dismissToast, 8000);
-  }
-
-  function dismissToast() {
-    clearTimeout(toastTimer);
-    toast.classList.remove('visible');
-  }
-
-  toastClose.addEventListener('click', dismissToast);
-  setTimeout(showToast, 3000);
-
-  /* ── Attention Items Expand/Collapse ───────────── */
-  document.querySelectorAll('.attention-item').forEach(function(item) {
-    item.addEventListener('click', function() {
-      const isExpanded = item.classList.contains('expanded');
-      item.classList.toggle('expanded');
-      item.setAttribute('aria-expanded', String(!isExpanded));
-      const detail = item.querySelector('.attention-detail');
-      if (detail) detail.setAttribute('aria-hidden', String(isExpanded));
-    });
-
-    item.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        item.click();
-      }
-    });
-  });
-
-  /* ── Right Column Tabs ─────────────────────────── */
-  const tabs = document.querySelectorAll('.right-tab');
-  const panels = document.querySelectorAll('.tab-panel');
-
-  function activateTab(tab) {
-    tabs.forEach(function(t) {
-      t.classList.remove('active');
-      t.setAttribute('aria-selected', 'false');
-      t.setAttribute('tabindex', '-1');
-    });
-    panels.forEach(function(p) { p.classList.remove('active'); });
-
-    tab.classList.add('active');
-    tab.setAttribute('aria-selected', 'true');
-    tab.setAttribute('tabindex', '0');
-    var panelId = tab.getAttribute('aria-controls');
-    document.getElementById(panelId).classList.add('active');
-    tab.focus();
-  }
-
-  tabs.forEach(function(tab) {
-    tab.addEventListener('click', function() { activateTab(tab); });
-    tab.addEventListener('keydown', function(e) {
-      var tabArr = Array.from(tabs);
-      var idx = tabArr.indexOf(tab);
-      if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        activateTab(tabArr[(idx + 1) % tabArr.length]);
-      } else if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        activateTab(tabArr[(idx - 1 + tabArr.length) % tabArr.length]);
-      }
-    });
-  });
-
-  /* ── Command Palette ───────────────────────────── */
-  var commands = [
-    { icon: '&#x25C6;', label: 'Sprint overview',    desc: 'Current sprint status' },
-    { icon: '&#x25B2;', label: 'Incidents',           desc: 'Active IcM incidents' },
-    { icon: '&#x25B8;', label: 'Pull requests',       desc: 'Open PRs for review' },
-    { icon: '&#x2605;', label: 'Build status',        desc: 'Latest CI/CD runs' },
-    { icon: '&#x276F;', label: 'Deploy to staging',   desc: 'Trigger staging deploy' },
-    { icon: '&#x25CF;', label: 'Coffee break',        desc: 'You deserve it' },
-  ];
-
-  var cmdInput = document.getElementById('command-input');
-  var palette = document.getElementById('command-palette');
-  var activeCmd = -1;
-
-  function renderCommands(filter) {
-    var filtered = commands;
-    if (filter) {
-      var f = filter.toLowerCase();
-      filtered = commands.filter(function(c) {
-        return c.label.toLowerCase().indexOf(f) !== -1 ||
-               c.desc.toLowerCase().indexOf(f) !== -1;
-      });
-    }
-    palette.innerHTML = '';
-    filtered.forEach(function(c, i) {
-      var div = document.createElement('div');
-      div.className = 'command-item' + (i === activeCmd ? ' active' : '');
-      div.setAttribute('role', 'option');
-      div.innerHTML =
-        '<span class="command-item-icon">' + c.icon + '</span>' +
-        '<span class="command-item-label">' + c.label + '</span>' +
-        '<span class="command-item-desc">' + c.desc + '</span>';
-      div.addEventListener('click', function() {
-        cmdInput.value = '';
-        closePalette();
-      });
-      palette.appendChild(div);
-    });
-    return filtered.length;
-  }
-
-  function openPalette() {
-    activeCmd = -1;
-    renderCommands(cmdInput.value);
-    palette.classList.add('open');
-  }
-
-  function closePalette() {
-    palette.classList.remove('open');
-    activeCmd = -1;
-  }
-
-  cmdInput.addEventListener('focus', openPalette);
-  cmdInput.addEventListener('input', function() {
-    activeCmd = -1;
-    var count = renderCommands(cmdInput.value);
-    if (count > 0 && !palette.classList.contains('open')) {
-      palette.classList.add('open');
-    } else if (count === 0) {
-      closePalette();
-    }
-  });
-
-  cmdInput.addEventListener('keydown', function(e) {
-    if (!palette.classList.contains('open')) return;
-    var items = palette.querySelectorAll('.command-item');
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      activeCmd = Math.min(activeCmd + 1, items.length - 1);
-      items.forEach(function(it, i) { it.classList.toggle('active', i === activeCmd); });
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      activeCmd = Math.max(activeCmd - 1, 0);
-      items.forEach(function(it, i) { it.classList.toggle('active', i === activeCmd); });
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      cmdInput.value = '';
-      closePalette();
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      closePalette();
-      cmdInput.blur();
-    }
-  });
-
-  document.addEventListener('click', function(e) {
-    if (!e.target.closest('.command-wrap')) closePalette();
-  });
-
-  // Ctrl+K shortcut
-  document.addEventListener('keydown', function(e) {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-      e.preventDefault();
-      cmdInput.focus();
-    }
-  });
-
-  /* ── Chat ──────────────────────────────────────── */
-  var chatInput = document.getElementById('chat-input');
-  var chatSend = document.getElementById('chat-send');
-  var chatMessages = document.getElementById('conversation-messages');
-
-  var donnaResponses = {
-    incident: "I'm tracking two active incidents. The Sev1 on westus2-04 has stabilized at 3.1% error rate \u2014 auto-mitigation is holding. The Sev2 DAG latency issue is still under observation, P95 hovering around 4.2 seconds. I'll flag you if either moves.",
-    pr: "You have three open PRs. Sanjeev's auth refactor is the priority \u2014 he's been waiting since 7am. Priya's DAG canvas optimization has two approvals already and your pool fix is through CI. I'd knock out Sanjeev's first.",
-    standup: "Your standup notes are ready. I've included the connection pool fix from yesterday, the prod incident status, and a heads-up about the MSAL migration timeline. You'll look prepared, as usual.",
-    deploy: "Last deploy to staging was build #2844, three hours ago. All 247 tests passed. The main branch is clean and the release pipeline is green. Say the word and I'll queue it.",
-    coffee: "I already ordered it. Large, black, two sugars. It should be at your desk in about four minutes. Don't say I never do anything for you.",
+  // ── Tabs ──
+  const tabs = Array.from(document.querySelectorAll('.tab'));
+  const panels = {
+    overview: document.getElementById('panel-overview'),
+    chat: document.getElementById('panel-chat'),
+    sprint: document.getElementById('panel-sprint'),
+    prs: document.getElementById('panel-prs'),
+    incidents: document.getElementById('panel-incidents')
   };
 
-  var defaultResponse = "I'm on it. Give me a moment to pull that together for you.";
-
-  var placeholders = ['Talk to Donna...', "What's on your mind?", 'Need something?'];
-  var phIdx = 0;
-
-  setInterval(function() {
-    phIdx = (phIdx + 1) % placeholders.length;
-    chatInput.setAttribute('placeholder', placeholders[phIdx]);
-  }, 6000);
-
-  function getTimeStr() {
-    var n = new Date();
-    var h = n.getHours();
-    var m = n.getMinutes();
-    var ampm = h >= 12 ? 'pm' : 'am';
-    h = h % 12 || 12;
-    return h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
-  }
-
-  function addMessage(sender, text, isDonna) {
-    var div = document.createElement('div');
-    div.className = 'message' + (isDonna ? '' : ' message-harvey');
-
-    var senderDiv = document.createElement('div');
-    senderDiv.className = 'message-sender' + (isDonna ? ' donna-sender' : '');
-    senderDiv.innerHTML = sender + '<span class="message-time">' + getTimeStr() + '</span>';
-
-    var bodyDiv = document.createElement('div');
-    bodyDiv.className = 'message-body';
-    bodyDiv.textContent = text;
-
-    div.appendChild(senderDiv);
-    div.appendChild(bodyDiv);
-    chatMessages.appendChild(div);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  }
-
-  function handleChat() {
-    var val = chatInput.value.trim();
-    if (!val) return;
-
-    addMessage('Harvey', val, false);
-    chatInput.value = '';
-
-    var lower = val.toLowerCase();
-    var response = defaultResponse;
-    var keys = Object.keys(donnaResponses);
-    for (var i = 0; i < keys.length; i++) {
-      if (lower.indexOf(keys[i]) !== -1) {
-        response = donnaResponses[keys[i]];
-        break;
-      }
+  function switchTab(key) {
+    tabs.forEach(t => {
+      const active = t.dataset.tab === key;
+      t.classList.toggle('active', active);
+      t.setAttribute('aria-selected', active);
+      t.tabIndex = active ? 0 : -1;
+    });
+    Object.entries(panels).forEach(([k, p]) => {
+      const isActive = k === key;
+      p.classList.toggle('active', isActive);
+    });
+    if (key === 'chat') {
+      const msgs = panels.chat.querySelector('.chat-messages');
+      if (msgs) msgs.scrollTop = msgs.scrollHeight;
     }
-
-    setTimeout(function() {
-      addMessage('Donna', response, true);
-    }, 600);
   }
 
-  chatSend.addEventListener('click', handleChat);
-  chatInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleChat();
+  tabs.forEach(t => {
+    t.addEventListener('click', () => switchTab(t.dataset.tab));
+  });
+
+  // Tab bar keyboard: arrow left/right
+  document.querySelector('.tab-bar').addEventListener('keydown', e => {
+    const idx = tabs.indexOf(document.activeElement);
+    if (idx < 0) return;
+    let next = -1;
+    if (e.key === 'ArrowRight') next = (idx + 1) % tabs.length;
+    else if (e.key === 'ArrowLeft') next = (idx - 1 + tabs.length) % tabs.length;
+    if (next >= 0) { e.preventDefault(); tabs[next].focus(); tabs[next].click(); }
+  });
+
+  // ── Number keys 1-5 switch tabs ──
+  const tabKeys = ['overview','chat','sprint','prs','incidents'];
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    const n = parseInt(e.key);
+    if (n >= 1 && n <= 5) { e.preventDefault(); switchTab(tabKeys[n-1]); }
+    if (e.key === 'Escape') {
+      // collapse any expanded items
+      document.querySelectorAll('.overview-item.expanded').forEach(i => i.classList.remove('expanded'));
+      // clear search
+      const si = document.getElementById('searchInput');
+      if (si.value) { si.value = ''; hideDropdown(); }
     }
   });
 
+  // Ctrl+K focus search
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      document.getElementById('searchInput').focus();
+    }
+  });
+
+  // ── Expandable overview items ──
+  document.querySelectorAll('.overview-item[data-expandable]').forEach(item => {
+    item.addEventListener('click', () => item.classList.toggle('expanded'));
+    item.setAttribute('tabindex', '0');
+    item.setAttribute('role', 'button');
+    item.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.classList.toggle('expanded'); }
+    });
+  });
+
+  // ── Sprint show more ──
+  const sprintMore = document.getElementById('sprintShowMore');
+  if (sprintMore) {
+    sprintMore.addEventListener('click', () => {
+      document.querySelectorAll('[id^="sprintHiddenItems"]').forEach(el => el.style.display = '');
+      sprintMore.style.display = 'none';
+    });
+  }
+
+  // ── PR show more ──
+  const prMore = document.getElementById('prShowMore');
+  if (prMore) {
+    prMore.addEventListener('click', () => {
+      document.querySelectorAll('[id^="prHidden"]').forEach(el => el.style.display = '');
+      prMore.style.display = 'none';
+    });
+  }
+
+  // ── Command palette / search ──
+  const commands = [
+    { label: 'Overview', icon: '&#x25CB;', tab: 'overview' },
+    { label: 'Chat', icon: '&#x25CB;', tab: 'chat' },
+    { label: 'Sprint', icon: '&#x25CB;', tab: 'sprint' },
+    { label: 'PRs', icon: '&#x25CB;', tab: 'prs' },
+    { label: 'Incidents', icon: '&#x25CB;', tab: 'incidents' },
+    { label: 'Coffee break', icon: '&#x25CB;', action: 'coffee' },
+    { label: 'Deploy status', icon: '&#x25CB;', action: 'deploy' },
+    { label: 'Build status', icon: '&#x25CB;', action: 'build' }
+  ];
+
+  const searchInput = document.getElementById('searchInput');
+  const dropdown = document.getElementById('cmdDropdown');
+  let activeCmd = -1;
+
+  function renderDropdown(filter) {
+    const q = (filter || '').toLowerCase().trim();
+    const filtered = q ? commands.filter(c => c.label.toLowerCase().includes(q)) : commands;
+    if (!filtered.length || !q) { hideDropdown(); return; }
+    dropdown.innerHTML = filtered.map((c, i) =>
+      '<div class="cmd-item' + (i === activeCmd ? ' active' : '') + '" data-idx="' + i + '" role="option">' +
+      '<span class="cmd-item-icon">' + c.icon + '</span>' + c.label + '</div>'
+    ).join('');
+    dropdown.classList.add('visible');
+    dropdown.querySelectorAll('.cmd-item').forEach((el, i) => {
+      el.addEventListener('click', () => selectCmd(filtered[i]));
+    });
+  }
+
+  function hideDropdown() { dropdown.classList.remove('visible'); dropdown.innerHTML = ''; activeCmd = -1; }
+
+  function selectCmd(cmd) {
+    if (cmd.tab) switchTab(cmd.tab);
+    searchInput.value = '';
+    hideDropdown();
+    searchInput.blur();
+  }
+
+  searchInput.addEventListener('input', () => { activeCmd = -1; renderDropdown(searchInput.value); });
+  searchInput.addEventListener('focus', () => { if (searchInput.value) renderDropdown(searchInput.value); });
+  searchInput.addEventListener('blur', () => { setTimeout(hideDropdown, 150); });
+  searchInput.addEventListener('keydown', e => {
+    const items = dropdown.querySelectorAll('.cmd-item');
+    if (!items.length) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); activeCmd = Math.min(activeCmd + 1, items.length - 1); items.forEach((el,i) => el.classList.toggle('active', i === activeCmd)); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); activeCmd = Math.max(activeCmd - 1, 0); items.forEach((el,i) => el.classList.toggle('active', i === activeCmd)); }
+    if (e.key === 'Enter' && activeCmd >= 0) {
+      e.preventDefault();
+      const q = searchInput.value.toLowerCase().trim();
+      const filtered = commands.filter(c => c.label.toLowerCase().includes(q));
+      if (filtered[activeCmd]) selectCmd(filtered[activeCmd]);
+    }
+    if (e.key === 'Escape') { hideDropdown(); searchInput.blur(); }
+  });
+
+  // ── Chat placeholder rotation ──
+  const placeholders = [
+    'Message Donna...',
+    'Ask about the incident...',
+    'Check build status...',
+    'Draft a standup update...',
+    'Summarize the PR...'
+  ];
+  let phIdx = 0;
+  const chatInput = document.getElementById('chatInput');
+  setInterval(() => {
+    if (document.activeElement === chatInput) return;
+    phIdx = (phIdx + 1) % placeholders.length;
+    chatInput.placeholder = placeholders[phIdx];
+  }, 5000);
+
+  // ── Toast ──
+  const toast = document.getElementById('toast');
+  setTimeout(() => toast.classList.add('visible'), 3000);
+  setTimeout(() => toast.classList.remove('visible'), 9000);
+  toast.querySelector('.toast-dismiss').addEventListener('click', () => toast.classList.remove('visible'));
 })();
 </script>
 </body>
