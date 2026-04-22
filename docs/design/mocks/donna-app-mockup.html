@@ -3,1058 +3,1206 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>donna</title>
+<title>Donna</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --base:#0f0f11;
-  --surface:#18181b;
-  --surface-raised:#27272a;
-  --border:rgba(255,255,255,0.07);
-  --text-primary:#fafafa;
-  --text-secondary:#a1a1aa;
-  --text-tertiary:#52525b;
-  --accent:#6366f1;
-  --accent-glow:rgba(99,102,241,0.15);
-  --amber:rgba(245,158,11,0.7);
-  --green:rgba(34,197,94,0.6);
-  --red:rgba(239,68,68,0.6);
-  --blue:rgba(59,130,246,0.6);
-  --mono:'Cascadia Code','JetBrains Mono','Fira Code',monospace;
-  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',system-ui,sans-serif;
-  --radius:12px;
-  --radius-sm:8px;
-  --transition-fast:100ms ease;
-  --transition-med:150ms ease;
+/* ═══════════════════════════════════════════════════════════
+   THE VOID — Donna v7
+   An art installation that manages your workday.
+   ═══════════════════════════════════════════════════════════ */
+
+/* Animatable custom properties for the living aurora */
+@property --aurora-1 {
+  syntax: '<color>';
+  initial-value: #0a0a1a;
+  inherits: false;
 }
-html,body{
-  height:100%;
-  font-family:var(--sans);
-  background:var(--base);
-  color:var(--text-primary);
-  font-size:13px;
-  line-height:1.5;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
+@property --aurora-2 {
+  syntax: '<color>';
+  initial-value: #0d0a18;
+  inherits: false;
 }
-body{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:#09090b;
+@property --aurora-3 {
+  syntax: '<color>';
+  initial-value: #070d12;
+  inherits: false;
+}
+@property --aurora-angle {
+  syntax: '<angle>';
+  initial-value: 200deg;
+  inherits: false;
+}
+@property --line-accent-width {
+  syntax: '<percentage>';
+  initial-value: 0%;
+  inherits: false;
 }
 
-/* ── Window ── */
-.window{
-  width:720px;
-  height:560px;
-  background:var(--base);
-  border-radius:var(--radius);
-  border:1px solid var(--border);
-  box-shadow:0 20px 60px rgba(0,0,0,0.5);
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  position:relative;
+:root {
+  --void: #050507;
+  --surface: rgba(255,255,255,0.02);
+  --text: #d4d4d8;
+  --text-dim: #71717a;
+  --text-ghost: #3f3f46;
+  --accent: #f43f5e;
+  --accent-glow: rgba(244,63,94,0.1);
+  --accent-faint: rgba(244,63,94,0.04);
+  --font: 'Space Grotesk', system-ui, sans-serif;
+  --mono: 'Space Mono', monospace;
 }
 
-/* ── Titlebar ── */
-.titlebar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:10px 16px;
-  flex-shrink:0;
-  user-select:none;
-  -webkit-app-region:drag;
-}
-.titlebar-brand{
-  font-size:13px;
-  font-weight:400;
-  color:var(--text-secondary);
-  letter-spacing:0.01em;
-}
-.titlebar-hint{
-  font-size:11px;
-  font-weight:400;
-  color:var(--text-tertiary);
-  font-family:var(--mono);
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* ── Search ── */
-.search-bar{
-  padding:0 16px 0;
-  flex-shrink:0;
-}
-.search-input-wrap{
-  position:relative;
-  display:flex;
-  align-items:center;
-}
-.search-input{
-  width:100%;
-  background:var(--surface-raised);
-  border:1px solid var(--border);
-  border-radius:var(--radius-sm);
-  padding:8px 60px 8px 32px;
-  font-family:var(--sans);
-  font-size:13px;
-  font-weight:400;
-  color:var(--text-primary);
-  outline:none;
-  transition:border-color var(--transition-med),box-shadow var(--transition-med);
-}
-.search-input::placeholder{color:var(--text-tertiary)}
-.search-input:focus{
-  border-color:var(--accent);
-  box-shadow:0 0 0 2px var(--accent-glow);
-}
-.search-icon{
-  position:absolute;
-  left:10px;
-  color:var(--text-tertiary);
-  pointer-events:none;
-  font-size:13px;
-  line-height:1;
-}
-.search-shortcut{
-  position:absolute;
-  right:10px;
-  font-family:var(--mono);
-  font-size:10px;
-  color:var(--text-tertiary);
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:4px;
-  padding:1px 5px;
-  pointer-events:none;
+::selection {
+  background: rgba(244,63,94,0.2);
+  color: inherit;
 }
 
-/* ── Command dropdown ── */
-.cmd-dropdown{
-  display:none;
-  position:absolute;
-  top:100%;
-  left:0;right:0;
-  margin-top:4px;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:var(--radius-sm);
-  padding:4px;
-  z-index:100;
-  max-height:220px;
-  overflow-y:auto;
-  box-shadow:0 8px 24px rgba(0,0,0,0.4);
+/* Custom scrollbar — near invisible */
+::-webkit-scrollbar {
+  width: 3px;
 }
-.cmd-dropdown.visible{display:block}
-.cmd-item{
-  padding:6px 10px;
-  border-radius:4px;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  gap:8px;
-  color:var(--text-secondary);
-  font-size:12px;
-  transition:background var(--transition-fast);
+::-webkit-scrollbar-track {
+  background: transparent;
 }
-.cmd-item:hover,.cmd-item.active{background:var(--surface-raised);color:var(--text-primary)}
-.cmd-item-icon{color:var(--text-tertiary);font-size:11px;width:14px;text-align:center}
-
-/* ── Tabs ── */
-.tab-bar{
-  display:flex;
-  gap:0;
-  padding:0 16px;
-  margin-top:10px;
-  border-bottom:1px solid var(--border);
-  flex-shrink:0;
-  user-select:none;
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px;
+  transition: background 0.3s;
 }
-.tab{
-  padding:8px 14px 9px;
-  font-size:12px;
-  font-weight:500;
-  color:var(--text-tertiary);
-  cursor:pointer;
-  position:relative;
-  transition:color var(--transition-med);
-  border:none;
-  background:none;
-  font-family:var(--sans);
-  outline:none;
-}
-.tab:hover{color:var(--text-secondary)}
-.tab.active{color:var(--text-primary)}
-.tab.active::after{
-  content:'';
-  position:absolute;
-  bottom:-1px;
-  left:8px;right:8px;
-  height:2px;
-  background:var(--accent);
-  border-radius:1px;
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.15);
 }
 
-/* ── Content ── */
-.content{
-  flex:1;
-  overflow-y:auto;
-  padding:16px;
-  position:relative;
-}
-.content::-webkit-scrollbar{width:4px}
-.content::-webkit-scrollbar-track{background:transparent}
-.content::-webkit-scrollbar-thumb{background:var(--surface-raised);border-radius:2px}
-
-.tab-panel{
-  display:none;
-  opacity:0;
-  transition:opacity var(--transition-med);
-}
-.tab-panel.active{display:block;opacity:1}
-
-/* ── Overview ── */
-.overview-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:baseline;
-  margin-bottom:4px;
-}
-.overview-date{font-weight:400;color:var(--text-secondary);font-size:12px}
-.overview-time{font-family:var(--mono);font-size:11px;color:var(--text-tertiary)}
-.overview-count{
-  font-size:13px;
-  font-weight:500;
-  color:var(--text-primary);
-  margin:12px 0 8px;
-}
-.overview-sep{
-  border:none;
-  border-top:1px solid var(--border);
-  margin:8px 0;
-}
-.overview-item{
-  padding:8px 0;
-  cursor:pointer;
-  transition:background var(--transition-fast);
-  border-radius:4px;
-  padding:8px 6px;
-}
-.overview-item:hover{background:rgba(255,255,255,0.03)}
-.overview-item-row{
-  display:flex;
-  align-items:baseline;
-  gap:8px;
-}
-.overview-item-indicator{
-  color:var(--text-tertiary);
-  font-size:12px;
-  transition:transform 200ms ease;
-  flex-shrink:0;
-}
-.overview-item.expanded .overview-item-indicator{transform:rotate(90deg)}
-.overview-item-title{
-  font-size:13px;
-  font-weight:400;
-  color:var(--text-primary);
-  flex:1;
-}
-.overview-item-time{
-  font-size:11px;
-  font-family:var(--mono);
-  color:var(--text-tertiary);
-  flex-shrink:0;
-}
-.overview-item-meta{
-  font-size:12px;
-  color:var(--text-tertiary);
-  margin-left:20px;
-  margin-top:2px;
-}
-.overview-item-detail{
-  display:grid;
-  grid-template-rows:0fr;
-  transition:grid-template-rows 250ms ease;
-  margin-left:20px;
-}
-.overview-item.expanded .overview-item-detail{grid-template-rows:1fr}
-.overview-item-detail-inner{
-  overflow:hidden;
-  font-size:12px;
-  color:var(--text-secondary);
-  line-height:1.6;
-  padding-top:0;
-}
-.overview-item.expanded .overview-item-detail-inner{padding-top:6px}
-
-.sprint-summary{
-  margin-top:16px;
-  padding-top:12px;
-  border-top:1px solid var(--border);
-}
-.sprint-summary-text{
-  font-size:12px;
-  color:var(--text-secondary);
-  margin-bottom:8px;
-}
-.sprint-summary-text span{color:var(--text-primary);font-weight:500}
-.progress-bar{
-  height:4px;
-  background:var(--surface-raised);
-  border-radius:2px;
-  overflow:hidden;
-}
-.progress-fill{
-  height:100%;
-  background:var(--accent);
-  border-radius:2px;
-  transition:width 400ms ease;
-}
-.progress-label{
-  font-size:11px;
-  color:var(--text-tertiary);
-  margin-top:4px;
-  text-align:right;
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--void);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Chat ── */
-.chat-wrap{display:flex;flex-direction:column;height:100%}
-.chat-messages{flex:1;overflow-y:auto;padding-bottom:8px}
-.chat-messages::-webkit-scrollbar{width:4px}
-.chat-messages::-webkit-scrollbar-track{background:transparent}
-.chat-messages::-webkit-scrollbar-thumb{background:var(--surface-raised);border-radius:2px}
-.chat-msg{margin-bottom:16px}
-.chat-msg-header{
-  display:flex;
-  align-items:baseline;
-  gap:8px;
-  margin-bottom:3px;
-}
-.chat-msg-name{font-size:12px;font-weight:600;color:var(--text-primary)}
-.chat-msg-name.donna{
-  color:var(--accent);
-  text-decoration:underline;
-  text-underline-offset:2px;
-  text-decoration-color:rgba(99,102,241,0.3);
-}
-.chat-msg-time{font-size:11px;color:var(--text-tertiary)}
-.chat-msg-body{
-  font-size:13px;
-  color:var(--text-secondary);
-  line-height:1.65;
-}
-.chat-msg-body .num{color:var(--text-primary);font-weight:500}
-.chat-msg-body code,.chat-msg-body .mono{
-  font-family:var(--mono);
-  font-size:12px;
-  background:rgba(255,255,255,0.04);
-  padding:1px 4px;
-  border-radius:3px;
-}
-.chat-input-wrap{
-  padding-top:8px;
-  border-top:1px solid var(--border);
-  flex-shrink:0;
-}
-.chat-input{
-  width:100%;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:var(--radius-sm);
-  padding:10px 40px 10px 12px;
-  font-family:var(--sans);
-  font-size:13px;
-  color:var(--text-primary);
-  outline:none;
-  resize:none;
-  transition:border-color var(--transition-med),box-shadow var(--transition-med);
-}
-.chat-input::placeholder{color:var(--text-tertiary)}
-.chat-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-glow)}
-.chat-input-wrap{position:relative}
-.chat-send-hint{
-  position:absolute;
-  right:12px;
-  bottom:18px;
-  font-size:12px;
-  color:var(--text-tertiary);
+/* ─── THE LIVING AURORA ──────────────────────────────── */
+.aurora {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 45%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  animation: aurora-breathe 30s ease-in-out infinite alternate,
+             aurora-appear 1.5s ease-out 0.5s forwards;
+  background: radial-gradient(
+    ellipse 120% 80% at 50% 100%,
+    var(--aurora-1) 0%,
+    var(--aurora-2) 40%,
+    var(--aurora-3) 70%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 100%);
 }
 
-/* ── Sprint ── */
-.sprint-header{margin-bottom:16px}
-.sprint-title{font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:8px}
-.sprint-group{margin-bottom:16px}
-.sprint-group-label{
-  font-size:11px;
-  font-weight:500;
-  color:var(--text-secondary);
-  margin-bottom:6px;
-}
-.sprint-sep{border:none;border-top:1px solid var(--border);margin-bottom:8px}
-.sprint-item{
-  display:flex;
-  align-items:center;
-  padding:5px 6px;
-  border-radius:4px;
-  gap:10px;
-  transition:background var(--transition-fast);
-}
-.sprint-item:hover{background:rgba(255,255,255,0.03)}
-.sprint-item-type{
-  font-family:var(--mono);
-  font-size:11px;
-  color:var(--text-tertiary);
-  width:32px;
-  flex-shrink:0;
-}
-.sprint-item-id{
-  font-family:var(--mono);
-  font-size:11px;
-  color:var(--text-tertiary);
-  width:36px;
-  flex-shrink:0;
-}
-.sprint-item-title{
-  font-size:13px;
-  color:var(--text-primary);
-  flex:1;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.sprint-item-status{
-  width:8px;
-  height:8px;
-  border-radius:50%;
-  flex-shrink:0;
-}
-.sprint-item-status.active{background:var(--amber)}
-.sprint-item-status.done{background:var(--green)}
-.sprint-show-more{
-  font-size:12px;
-  color:var(--text-tertiary);
-  cursor:pointer;
-  padding:4px 6px;
-  margin-top:2px;
-  border:none;
-  background:none;
-  font-family:var(--sans);
-}
-.sprint-show-more:hover{color:var(--text-secondary)}
-
-/* ── PRs ── */
-.pr-group{margin-bottom:16px}
-.pr-group-label{font-size:11px;font-weight:500;color:var(--text-secondary);margin-bottom:6px}
-.pr-sep{border:none;border-top:1px solid var(--border);margin-bottom:8px}
-.pr-item{
-  padding:6px;
-  border-radius:4px;
-  margin-bottom:6px;
-  transition:background var(--transition-fast);
-  cursor:default;
-}
-.pr-item:hover{background:rgba(255,255,255,0.03)}
-.pr-item-row{display:flex;align-items:baseline;gap:8px}
-.pr-item-number{font-family:var(--mono);font-size:12px;color:var(--text-tertiary);flex-shrink:0}
-.pr-item-branch{font-size:13px;color:var(--text-primary);flex:1}
-.pr-item-author{font-size:12px;color:var(--text-secondary);flex-shrink:0}
-.pr-item-meta{font-size:11px;color:var(--text-tertiary);margin-left:44px;margin-top:2px}
-
-/* ── Incidents ── */
-.inc-group{margin-bottom:16px}
-.inc-group-label{font-size:11px;font-weight:500;color:var(--text-secondary);margin-bottom:6px}
-.inc-sep{border:none;border-top:1px solid var(--border);margin-bottom:8px}
-.inc-item{
-  padding:6px;
-  border-radius:4px;
-  margin-bottom:6px;
-  transition:background var(--transition-fast);
-}
-.inc-item:hover{background:rgba(255,255,255,0.03)}
-.inc-item-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-.inc-item-id{font-family:var(--mono);font-size:12px;color:var(--text-tertiary);flex-shrink:0}
-.inc-item-sev{font-size:11px;font-weight:600;flex-shrink:0}
-.inc-item-sev.sev1{color:var(--red)}
-.inc-item-sev.sev2{color:var(--amber)}
-.inc-item-sev.sev3{color:var(--text-tertiary)}
-.inc-item-cluster{font-family:var(--mono);font-size:11px;color:var(--text-secondary);flex:1}
-.inc-item-time{font-family:var(--mono);font-size:11px;color:var(--text-tertiary);flex-shrink:0}
-.inc-item-detail{font-size:12px;color:var(--text-tertiary);margin-left:0;margin-top:3px;line-height:1.5}
-.inc-item-resolved{
-  font-size:11px;
-  color:var(--text-tertiary);
-  margin-left:0;
+@keyframes aurora-appear {
+  to { opacity: 1; }
 }
 
-/* ── Toast ── */
-.toast{
-  position:absolute;
-  bottom:12px;
-  right:12px;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:var(--radius-sm);
-  padding:10px 14px;
-  max-width:300px;
-  font-size:12px;
-  color:var(--text-secondary);
-  border-left:2px solid var(--green);
-  opacity:0;
-  transform:translateY(10px);
-  transition:opacity 200ms ease,transform 200ms ease;
-  pointer-events:none;
-  z-index:200;
-  box-shadow:0 4px 16px rgba(0,0,0,0.3);
-}
-.toast.visible{opacity:1;transform:translateY(0);pointer-events:auto}
-.toast-dismiss{
-  position:absolute;
-  top:4px;right:6px;
-  background:none;border:none;
-  color:var(--text-tertiary);
-  cursor:pointer;
-  font-size:14px;
-  line-height:1;
-  padding:2px;
-}
-.toast-dismiss:hover{color:var(--text-secondary)}
-
-/* ── Reduced motion ── */
-@media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{
-    transition-duration:0ms !important;
-    animation-duration:0ms !important;
+@keyframes aurora-breathe {
+  0% {
+    --aurora-1: #0a0a1a;
+    --aurora-2: #0d0a18;
+    --aurora-3: #070d12;
   }
-  .overview-item-detail{transition:none !important}
+  33% {
+    --aurora-1: #0d0818;
+    --aurora-2: #10081a;
+    --aurora-3: #080a14;
+  }
+  66% {
+    --aurora-1: #070d14;
+    --aurora-2: #0a0c18;
+    --aurora-3: #0d0a16;
+  }
+  100% {
+    --aurora-1: #0a0b1a;
+    --aurora-2: #0e0a15;
+    --aurora-3: #060c13;
+  }
 }
 
-/* ── Focus visible for keyboard ── */
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
-.tab:focus-visible{outline-offset:-2px}
+/* ─── CURSOR TRAIL ───────────────────────────────────── */
+.cursor-trail {
+  position: fixed;
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  background: radial-gradient(circle, rgba(244,63,94,0.03) 0%, transparent 70%);
+  filter: blur(40px);
+  transform: translate(-50%, -50%);
+  transition: left 0.15s ease-out, top 0.15s ease-out;
+  will-change: left, top;
+  opacity: 0;
+  animation: trail-appear 2s ease-out 1s forwards;
+}
+
+@keyframes trail-appear {
+  to { opacity: 1; }
+}
+
+/* ─── APP STRUCTURE ──────────────────────────────────── */
+.app {
+  position: relative;
+  z-index: 1;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ─── CONVERSATION ───────────────────────────────────── */
+.conversation {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 80px 0 40px;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 80px,
+    black calc(100% - 40px),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 80px,
+    black calc(100% - 40px),
+    transparent 100%
+  );
+  transition: opacity 0.4s ease;
+  scrollbar-gutter: stable;
+}
+
+.conversation.dimmed {
+  opacity: 0.92;
+}
+
+/* ─── SPOTLIGHT EFFECT ───────────────────────────────── */
+.conversation-spotlight {
+  position: fixed;
+  pointer-events: none;
+  width: 350px;
+  height: 350px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.018) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.3s, left 0.08s linear, top 0.08s linear;
+  will-change: left, top, opacity;
+}
+
+.conversation:hover .conversation-spotlight {
+  opacity: 1;
+}
+
+/* ─── MESSAGES ───────────────────────────────────────── */
+.message {
+  max-width: 65%;
+  margin-bottom: 28px;
+  position: relative;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.message.visible {
+  animation: msg-appear 0.5s ease-out forwards;
+}
+
+@keyframes msg-appear {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-name {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-dim);
+  margin-bottom: 3px;
+  letter-spacing: 0.02em;
+}
+
+.message.donna .message-name {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.message-text {
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+/* Donna's curtain reveal */
+.message.donna .message-text {
+  clip-path: inset(0 100% 0 0);
+}
+.message.donna.visible .message-text {
+  animation: curtain-reveal 0.6s ease-out 0.15s forwards;
+}
+
+@keyframes curtain-reveal {
+  to {
+    clip-path: inset(0 0% 0 0);
+  }
+}
+
+/* Donna reveal line */
+.message.donna::before {
+  content: '';
+  position: absolute;
+  top: 22px;
+  left: 0;
+  height: 1px;
+  width: 0;
+  background: linear-gradient(90deg, var(--accent-glow), transparent);
+  opacity: 0;
+}
+.message.donna.visible::before {
+  animation: reveal-line 0.2s ease-out 0.05s forwards;
+}
+
+@keyframes reveal-line {
+  to {
+    width: 100%;
+    opacity: 1;
+  }
+}
+
+/* Harvey messages just fade in */
+.message.harvey .message-text {
+  opacity: 0;
+}
+.message.harvey.visible .message-text {
+  animation: fade-in 0.4s ease-out 0.1s forwards;
+}
+
+@keyframes fade-in {
+  to { opacity: 1; }
+}
+
+/* Timestamps — hidden until hover */
+.message-time {
+  position: absolute;
+  right: -70px;
+  top: 0;
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--text-ghost);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+}
+.message:hover .message-time {
+  opacity: 0.4;
+}
+
+/* Data emphasis */
+.data-point {
+  font-family: var(--mono);
+  font-size: 13px;
+  text-shadow: 0 0 20px rgba(244,63,94,0.12);
+}
+
+.sev-indicator {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* ─── RICH INLINE CONTENT ────────────────────────────── */
+.rich-content {
+  max-width: 520px;
+  margin: 8px 0 28px;
+  padding-left: 16px;
+  border-left: 2px solid var(--text-ghost);
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.rich-content.visible {
+  animation: rich-materialize 0.7s ease-out forwards;
+}
+
+.rich-content.incident {
+  border-left-color: var(--accent);
+}
+
+@keyframes rich-materialize {
+  0% {
+    opacity: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  40% {
+    opacity: 0;
+    max-height: 200px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+  100% {
+    opacity: 1;
+    max-height: 200px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+}
+
+/* The hairline that precedes materialization */
+.rich-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.08), transparent);
+}
+.rich-content.visible::before {
+  animation: hairline-sweep 0.25s ease-out forwards;
+}
+
+@keyframes hairline-sweep {
+  to { width: 100%; }
+}
+
+.rich-content:hover {
+  border-left-width: 2px;
+  background: rgba(255,255,255,0.008);
+}
+
+.rich-content:hover .rich-label {
+  opacity: 0.6;
+}
+
+.rich-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-ghost);
+  margin-bottom: 4px;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.rich-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.rich-title .mono {
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.rich-detail {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.rich-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.rich-meta-left {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.rich-meta-right {
+  font-size: 11px;
+  color: var(--text-ghost);
+  font-weight: 300;
+}
+
+/* Sprint progress bar */
+.sprint-bar-container {
+  margin: 8px 0 4px;
+  height: 4px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.sprint-bar-fill {
+  height: 100%;
+  width: 63%;
+  background: linear-gradient(90deg, rgba(244,63,94,0.3), rgba(244,63,94,0.15));
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.sprint-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.15) 50%,
+    transparent 100%
+  );
+  animation: bar-shine 3s ease-in-out infinite;
+}
+
+@keyframes bar-shine {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+.sprint-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.sprint-stats .mono {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text);
+}
+
+.sprint-stats span {
+  color: var(--text-dim);
+}
+
+/* ─── INPUT AREA ─────────────────────────────────────── */
+.input-area {
+  flex-shrink: 0;
+  padding: 24px 0 20px;
+  position: relative;
+  opacity: 0;
+  animation: input-appear 0.6s ease-out 1s forwards;
+}
+
+@keyframes input-appear {
+  to { opacity: 1; }
+}
+
+.input-field {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.7;
+  padding: 0 0 12px;
+  caret-color: var(--accent);
+}
+
+.input-field::placeholder {
+  color: var(--text-ghost);
+  font-weight: 300;
+  letter-spacing: 0.2em;
+}
+
+/* The heartbeat line */
+.input-line-container {
+  position: relative;
+  width: 100%;
+  height: 1px;
+  opacity: 0;
+  animation: line-materialize 0.5s ease-out 1s forwards;
+}
+
+@keyframes line-materialize {
+  0% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+.input-line {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.12) 50%, transparent 95%);
+  animation: heartbeat 4s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* Rose accent bleed on focus */
+.input-accent-line {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  transform: translateX(-50%);
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0.6;
+}
+
+.input-area.focused .input-accent-line {
+  width: 100%;
+}
+
+.input-area.focused .input-line {
+  animation: none;
+  opacity: 0.3;
+}
+
+/* Rotating gradient border on focus */
+.input-glow {
+  position: absolute;
+  bottom: 29px;
+  left: -2px;
+  right: -2px;
+  height: 48px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.input-area.focused .input-glow {
+  opacity: 1;
+  background: conic-gradient(from var(--glow-angle, 0deg),
+    transparent 0%,
+    rgba(244,63,94,0.04) 10%,
+    transparent 20%,
+    rgba(244,63,94,0.02) 40%,
+    transparent 60%,
+    rgba(244,63,94,0.04) 80%,
+    transparent 100%
+  );
+  animation: glow-rotate 4s linear infinite;
+}
+
+@keyframes glow-rotate {
+  to { --glow-angle: 360deg; }
+}
+
+@property --glow-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.input-hint {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--text-ghost);
+  opacity: 0;
+  transition: opacity 0.3s;
+  animation: hint-appear 0.5s ease-out 2.5s forwards;
+}
+
+@keyframes hint-appear {
+  to { opacity: 0.35; }
+}
+
+/* Brand mark */
+.brand-mark {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--text-ghost);
+  letter-spacing: 0.15em;
+  opacity: 0;
+  animation: brand-appear 0.6s ease-out 1.5s forwards;
+}
+
+@keyframes brand-appear {
+  to { opacity: 0.2; }
+}
+
+/* ─── TYPING INDICATOR (seismograph) ─────────────────── */
+.typing-indicator {
+  position: absolute;
+  bottom: 33px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.typing-indicator.active {
+  opacity: 1;
+}
+
+.typing-wave {
+  width: 100%;
+  height: 1px;
+  background: var(--accent);
+  opacity: 0.4;
+  animation: seismograph 1.5s ease-in-out infinite;
+  transform-origin: left center;
+}
+
+@keyframes seismograph {
+  0% { clip-path: inset(0 100% 0 0); }
+  50% { clip-path: inset(0 0% 0 0); }
+  100% { clip-path: inset(0 0% 0 100%); }
+}
+
+/* ─── COMMAND PALETTE ────────────────────────────────── */
+.command-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 50;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  background: rgba(5,5,7,0);
+  pointer-events: none;
+  opacity: 0;
+  transition: backdrop-filter 0.3s, -webkit-backdrop-filter 0.3s, background 0.3s, opacity 0.3s;
+}
+
+.command-overlay.active {
+  pointer-events: auto;
+  opacity: 1;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(5,5,7,0.6);
+}
+
+.command-options {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 51;
+  display: flex;
+  gap: 32px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.command-options.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.command-option {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-dim);
+  cursor: pointer;
+  position: relative;
+  padding-bottom: 4px;
+  transition: color 0.2s;
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.command-options.active .command-option {
+  animation: cmd-stagger 0.3s ease-out forwards;
+}
+
+.command-options.active .command-option:nth-child(1) { animation-delay: 0.05s; }
+.command-options.active .command-option:nth-child(2) { animation-delay: 0.1s; }
+.command-options.active .command-option:nth-child(3) { animation-delay: 0.15s; }
+.command-options.active .command-option:nth-child(4) { animation-delay: 0.2s; }
+.command-options.active .command-option:nth-child(5) { animation-delay: 0.25s; }
+.command-options.active .command-option:nth-child(6) { animation-delay: 0.3s; }
+
+@keyframes cmd-stagger {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.command-option::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--text);
+  transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.command-option:hover {
+  color: #fff;
+}
+.command-option:hover::after {
+  width: 100%;
+}
+
+/* ─── TOAST ──────────────────────────────────────────── */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 24px;
+  z-index: 100;
+}
+
+.toast {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-dim);
+  opacity: 0;
+  transform: translateX(20px);
+  animation: toast-in 0.4s ease-out 4s forwards;
+  white-space: nowrap;
+}
+
+@keyframes toast-in {
+  to {
+    opacity: 0.45;
+    transform: translateX(0);
+  }
+}
+
+.toast.important {
+  color: var(--accent);
+}
+
+.toast.important {
+  animation-name: toast-in-important;
+}
+
+@keyframes toast-in-important {
+  to {
+    opacity: 0.65;
+    transform: translateX(0);
+  }
+}
+
+/* ─── PAGE LOAD CINEMATIC SEQUENCE ───────────────────── */
+.conversation .message:nth-child(1) { animation-delay: 2s; }
+.conversation .message:nth-child(1) .message-text { animation-delay: 2.15s; }
+.conversation .message:nth-child(1)::before { animation-delay: 2.05s; }
+
+.conversation .rich-content:nth-of-type(1) { animation-delay: 2.6s; }
+.conversation .rich-content:nth-of-type(2) { animation-delay: 3s; }
+.conversation .rich-content:nth-of-type(3) { animation-delay: 3.4s; }
+
+.conversation .message:nth-child(5) { animation-delay: 3.8s; }
+.conversation .message:nth-child(5) .message-text { animation-delay: 3.9s; }
+
+.conversation .message:nth-child(6) { animation-delay: 4s; }
+.conversation .message:nth-child(6) .message-text { animation-delay: 4.15s; }
+
+.conversation .message:nth-child(7) { animation-delay: 4.2s; }
+.conversation .message:nth-child(7) .message-text { animation-delay: 4.35s; }
+.conversation .message:nth-child(7)::before { animation-delay: 4.25s; }
+
+.conversation .message:nth-child(8) { animation-delay: 4.6s; }
+.conversation .message:nth-child(8) .message-text { animation-delay: 4.7s; }
+.conversation .message:nth-child(8)::before { animation-delay: 4.65s; }
+
+/* ─── REDUCED MOTION ─────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .message, .rich-content {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    max-height: none !important;
+  }
+  .message .message-text {
+    opacity: 1 !important;
+    clip-path: none !important;
+  }
+  .aurora { opacity: 0.3 !important; }
+  .input-area, .input-line-container, .input-hint { opacity: 1 !important; }
+  .brand-mark { opacity: 0.2 !important; }
+  .cursor-trail { display: none; }
+}
+
+/* ─── SCROLL DEPTH PARALLAX CLASSES ──────────────────── */
+.message.donna,
+.rich-content {
+  will-change: transform;
+}
 </style>
 </head>
 <body>
 
-<div class="window" role="application" aria-label="donna">
-  <!-- Titlebar -->
-  <div class="titlebar">
-    <span class="titlebar-brand">donna</span>
-    <span class="titlebar-hint">Alt+Space</span>
+<!-- The living aurora at the bottom of the void -->
+<div class="aurora"></div>
+
+<!-- Cursor trail — responds to your presence -->
+<div class="cursor-trail" id="cursorTrail"></div>
+
+<!-- Spotlight that follows mouse over conversation -->
+<div class="conversation-spotlight" id="spotlight"></div>
+
+<div class="app">
+
+  <!-- Conversation — the entire interface -->
+  <div class="conversation" id="conversation">
+
+    <!-- Donna's opening message -->
+    <div class="message donna visible">
+      <div class="message-name">Donna</div>
+      <div class="message-text">Morning. Three things.</div>
+      <div class="message-time">8:47 AM</div>
+    </div>
+
+    <!-- Incident: materialization -->
+    <div class="rich-content incident visible">
+      <div class="rich-label">Incident</div>
+      <div class="rich-title"><span class="mono">IcM 526834</span> · <span class="sev-indicator">Sev1</span> · westus2</div>
+      <div class="rich-detail">Error rate spiked <span class="data-point">0.2%</span> → <span class="data-point">12.8%</span> at 03:42 UTC</div>
+      <div class="rich-meta">
+        <span class="rich-meta-left">Auto-mitigation stabilized to <span class="data-point">3.1%</span></span>
+        <span class="rich-meta-right">03:42 UTC</span>
+      </div>
+    </div>
+
+    <!-- PR: materialization -->
+    <div class="rich-content visible">
+      <div class="rich-label">Pull Request</div>
+      <div class="rich-title"><span class="mono">#4821</span> · auth-refactor</div>
+      <div class="rich-detail">14 files changed · All checks passing</div>
+      <div class="rich-meta">
+        <span class="rich-meta-left">Token refresh middleware refactored for MSAL v4</span>
+        <span class="rich-meta-right">Sanjeev K.</span>
+      </div>
+    </div>
+
+    <!-- Sprint: materialization -->
+    <div class="rich-content visible">
+      <div class="rich-label">Sprint 47 · Day 8</div>
+      <div class="sprint-bar-container">
+        <div class="sprint-bar-fill"></div>
+      </div>
+      <div class="sprint-stats">
+        <span><span class="mono">12</span>/19 items</span>
+        <span><span class="mono">63%</span></span>
+      </div>
+    </div>
+
+    <!-- Donna's follow-up -->
+    <div class="message donna visible">
+      <div class="message-name">Donna</div>
+      <div class="message-text">Standup in 45 minutes. Draft update's ready.</div>
+      <div class="message-time">8:47 AM</div>
+    </div>
+
+    <!-- Harvey responds -->
+    <div class="message harvey visible">
+      <div class="message-name">Harvey</div>
+      <div class="message-text">good. what about the connection pool bug?</div>
+      <div class="message-time">8:49 AM</div>
+    </div>
+
+    <!-- Donna responds -->
+    <div class="message donna visible">
+      <div class="message-name">Donna</div>
+      <div class="message-text">Bug <span class="data-point">5401</span> — westus2 connection pool leak. Priya pushed a fix yesterday, tests are passing.</div>
+      <div class="message-time">8:49 AM</div>
+    </div>
+
+    <div class="message donna visible">
+      <div class="message-name">Donna</div>
+      <div class="message-text">Deploying to staging now. Should be in prod by EOD.</div>
+      <div class="message-time">8:49 AM</div>
+    </div>
+
   </div>
 
-  <!-- Search -->
-  <div class="search-bar">
-    <div class="search-input-wrap">
-      <span class="search-icon" aria-hidden="true">&#x2315;</span>
-      <input class="search-input" id="searchInput" type="text" placeholder="Search or ask Donna..." autocomplete="off" spellcheck="false" aria-label="Search or command">
-      <span class="search-shortcut">Ctrl+K</span>
-      <div class="cmd-dropdown" id="cmdDropdown" role="listbox"></div>
+  <!-- Input area — the heartbeat -->
+  <div class="input-area" id="inputArea">
+    <div class="input-glow"></div>
+    <input
+      type="text"
+      class="input-field"
+      id="inputField"
+      placeholder="..."
+      autocomplete="off"
+      spellcheck="false"
+    >
+    <div class="input-line-container">
+      <div class="input-line"></div>
+      <div class="input-accent-line"></div>
     </div>
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="typing-wave"></div>
+    </div>
+    <span class="brand-mark">donna</span>
+    <span class="input-hint">Ctrl+K</span>
   </div>
+</div>
 
-  <!-- Tabs -->
-  <div class="tab-bar" role="tablist">
-    <button class="tab active" role="tab" aria-selected="true" data-tab="overview" tabindex="0">Overview</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="chat" tabindex="-1">Chat</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="sprint" tabindex="-1">Sprint</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="prs" tabindex="-1">PRs</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="incidents" tabindex="-1">Incidents</button>
-  </div>
+<!-- Command palette overlay -->
+<div class="command-overlay" id="commandOverlay"></div>
+<div class="command-options" id="commandOptions">
+  <span class="command-option" data-cmd="overview">overview</span>
+  <span class="command-option" data-cmd="chat">chat</span>
+  <span class="command-option" data-cmd="sprint">sprint</span>
+  <span class="command-option" data-cmd="prs">prs</span>
+  <span class="command-option" data-cmd="incidents">incidents</span>
+  <span class="command-option" data-cmd="coffee">coffee</span>
+</div>
 
-  <!-- Content -->
-  <div class="content">
-
-    <!-- Overview -->
-    <div class="tab-panel active" id="panel-overview" role="tabpanel">
-      <div class="overview-header">
-        <span class="overview-date">Wednesday, April 22</span>
-        <span class="overview-time">9:15 AM</span>
-      </div>
-      <div class="overview-count">3 items need attention</div>
-      <hr class="overview-sep">
-
-      <div class="overview-item" data-expandable>
-        <div class="overview-item-row">
-          <span class="overview-item-indicator">&#x25B8;</span>
-          <span class="overview-item-title">PR #4821 awaiting review</span>
-          <span class="overview-item-time">2h ago</span>
-        </div>
-        <div class="overview-item-meta">auth-refactor &middot; Sanjeev Krishnan</div>
-        <div class="overview-item-detail"><div class="overview-item-detail-inner">Clean refactor of the token refresh middleware. 14 files changed, all tests passing. Sanjeev removed the fallback retry in TokenRefreshMiddleware.cs since the new MSAL client handles retries internally. Worth confirming during review.</div></div>
-      </div>
-
-      <div class="overview-item" data-expandable>
-        <div class="overview-item-row">
-          <span class="overview-item-indicator">&#x25B8;</span>
-          <span class="overview-item-title">IcM 526834 escalated to Sev1</span>
-          <span class="overview-item-time">03:42 UTC</span>
-        </div>
-        <div class="overview-item-meta">westus2 &middot; Error rate +340%</div>
-        <div class="overview-item-detail"><div class="overview-item-detail-inner">Cluster fabric-prod-westus2-04 started returning 503s. Error rate climbed from 0.2% to 12.8% in 18 minutes. Auto-mitigation engaged at 04:01 UTC. Currently stabilizing at 3.1% and trending down.</div></div>
-      </div>
-
-      <div class="overview-item" data-expandable>
-        <div class="overview-item-row">
-          <span class="overview-item-indicator">&#x25B8;</span>
-          <span class="overview-item-title">Standup in 45 minutes</span>
-          <span class="overview-item-time">10:00 AM</span>
-        </div>
-        <div class="overview-item-meta">Draft update ready</div>
-        <div class="overview-item-detail"><div class="overview-item-detail-inner">Yesterday: Completed SignalR messaging migration and stale cache fix. Today: Review Sanjeev's auth PR, monitor westus2 incident. Blockers: None.</div></div>
-      </div>
-
-      <hr class="overview-sep">
-
-      <div class="sprint-summary">
-        <div class="sprint-summary-text">Sprint 47 &middot; Day 8 of 14 &middot; <span>12/19</span> completed</div>
-        <div class="progress-bar"><div class="progress-fill" style="width:63%"></div></div>
-        <div class="progress-label">63%</div>
-      </div>
-    </div>
-
-    <!-- Chat -->
-    <div class="tab-panel" id="panel-chat" role="tabpanel">
-      <div class="chat-wrap">
-        <div class="chat-messages">
-          <div class="chat-msg">
-            <div class="chat-msg-header">
-              <span class="chat-msg-name">Harvey</span>
-              <span class="chat-msg-time">9:14 AM</span>
-            </div>
-            <div class="chat-msg-body">check the prod incident</div>
-          </div>
-          <div class="chat-msg">
-            <div class="chat-msg-header">
-              <span class="chat-msg-name donna">Donna</span>
-              <span class="chat-msg-time">9:14 AM</span>
-            </div>
-            <div class="chat-msg-body">Already on it. Cluster <code>fabric-prod-westus2-04</code> started throwing 503s at <span class="num">03:42 UTC</span>. Error rate climbed from <span class="num">0.2%</span> to <span class="num">12.8%</span> in <span class="num">18</span> minutes. Auto-mitigation engaged. Currently stabilizing at <span class="num">3.1%</span>.</div>
-          </div>
-          <div class="chat-msg">
-            <div class="chat-msg-header">
-              <span class="chat-msg-name">Harvey</span>
-              <span class="chat-msg-time">9:16 AM</span>
-            </div>
-            <div class="chat-msg-body">good. what about the auth PR?</div>
-          </div>
-          <div class="chat-msg">
-            <div class="chat-msg-header">
-              <span class="chat-msg-name donna">Donna</span>
-              <span class="chat-msg-time">9:16 AM</span>
-            </div>
-            <div class="chat-msg-body">Sanjeev's PR <span class="mono">#4821</span> &#8212; clean refactor. <span class="num">14</span> files, all tests passing. One thing: he removed the fallback retry in <code>TokenRefreshMiddleware.cs</code>. The new MSAL client handles retries internally, so it should be fine, but worth a quick confirm.</div>
-          </div>
-          <div class="chat-msg">
-            <div class="chat-msg-header">
-              <span class="chat-msg-name">Harvey</span>
-              <span class="chat-msg-time">9:17 AM</span>
-            </div>
-            <div class="chat-msg-body">schedule a 1:1 with sanjeev tomorrow to discuss</div>
-          </div>
-          <div class="chat-msg">
-            <div class="chat-msg-header">
-              <span class="chat-msg-name donna">Donna</span>
-              <span class="chat-msg-time">9:17 AM</span>
-            </div>
-            <div class="chat-msg-body">Done. Thursday <span class="num">10:30 AM</span>, <span class="num">30</span> min. Sent Sanjeev a calendar invite with the PR link in the description.</div>
-          </div>
-        </div>
-        <div class="chat-input-wrap">
-          <input class="chat-input" id="chatInput" type="text" placeholder="Message Donna..." aria-label="Message input">
-          <span class="chat-send-hint">&#x23CE;</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Sprint -->
-    <div class="tab-panel" id="panel-sprint" role="tabpanel">
-      <div class="sprint-header">
-        <div class="sprint-title">Sprint 47 &middot; Day 8 of 14</div>
-        <div class="progress-bar" style="margin-bottom:4px"><div class="progress-fill" style="width:63%"></div></div>
-        <div style="display:flex;justify-content:space-between">
-          <span style="font-size:12px;color:var(--text-secondary)">12/19 completed</span>
-          <span style="font-size:11px;color:var(--text-tertiary)">63%</span>
-        </div>
-      </div>
-
-      <div class="sprint-group">
-        <div class="sprint-group-label">Active (3)</div>
-        <hr class="sprint-sep">
-        <div class="sprint-item">
-          <span class="sprint-item-type">PBI</span>
-          <span class="sprint-item-id">5201</span>
-          <span class="sprint-item-title">Auth token refresh redesign</span>
-          <span class="sprint-item-status active"></span>
-        </div>
-        <div class="sprint-item">
-          <span class="sprint-item-type">Task</span>
-          <span class="sprint-item-id">5334</span>
-          <span class="sprint-item-title">Migrate ADAL to MSAL v4</span>
-          <span class="sprint-item-status active"></span>
-        </div>
-        <div class="sprint-item">
-          <span class="sprint-item-type">Bug</span>
-          <span class="sprint-item-id">5401</span>
-          <span class="sprint-item-title">Connection pool leak in westus2</span>
-          <span class="sprint-item-status active"></span>
-        </div>
-      </div>
-
-      <div class="sprint-group">
-        <div class="sprint-group-label">Done (9)</div>
-        <hr class="sprint-sep">
-        <div class="sprint-item">
-          <span class="sprint-item-type">Task</span>
-          <span class="sprint-item-id">5289</span>
-          <span class="sprint-item-title">Playwright test for SSO flow</span>
-          <span class="sprint-item-status done"></span>
-        </div>
-        <div class="sprint-item">
-          <span class="sprint-item-type">PBI</span>
-          <span class="sprint-item-id">5178</span>
-          <span class="sprint-item-title">DAG visualization enhancements</span>
-          <span class="sprint-item-status done"></span>
-        </div>
-        <div class="sprint-item">
-          <span class="sprint-item-type">Task</span>
-          <span class="sprint-item-id">5312</span>
-          <span class="sprint-item-title">Update SignalR messaging</span>
-          <span class="sprint-item-status done"></span>
-        </div>
-        <div class="sprint-item">
-          <span class="sprint-item-type">Bug</span>
-          <span class="sprint-item-id">5415</span>
-          <span class="sprint-item-title">Stale cache on config reload</span>
-          <span class="sprint-item-status done"></span>
-        </div>
-        <div class="sprint-item" id="sprintHiddenItems" style="display:none">
-          <span class="sprint-item-type">Task</span>
-          <span class="sprint-item-id">5290</span>
-          <span class="sprint-item-title">Refactor DI container registration</span>
-          <span class="sprint-item-status done"></span>
-        </div>
-        <div class="sprint-item" id="sprintHiddenItems2" style="display:none">
-          <span class="sprint-item-type">Task</span>
-          <span class="sprint-item-id">5301</span>
-          <span class="sprint-item-title">Add health check endpoint</span>
-          <span class="sprint-item-status done"></span>
-        </div>
-        <div class="sprint-item" id="sprintHiddenItems3" style="display:none">
-          <span class="sprint-item-type">PBI</span>
-          <span class="sprint-item-id">5192</span>
-          <span class="sprint-item-title">Cluster metrics dashboard</span>
-          <span class="sprint-item-status done"></span>
-        </div>
-        <div class="sprint-item" id="sprintHiddenItems4" style="display:none">
-          <span class="sprint-item-type">Bug</span>
-          <span class="sprint-item-id">5388</span>
-          <span class="sprint-item-title">Fix race condition in queue drain</span>
-          <span class="sprint-item-status done"></span>
-        </div>
-        <div class="sprint-item" id="sprintHiddenItems5" style="display:none">
-          <span class="sprint-item-type">Task</span>
-          <span class="sprint-item-id">5320</span>
-          <span class="sprint-item-title">Update Cosmos DB SDK to v3</span>
-          <span class="sprint-item-status done"></span>
-        </div>
-        <button class="sprint-show-more" id="sprintShowMore">... 5 more</button>
-      </div>
-
-      <div class="sprint-group">
-        <div class="sprint-group-label">Not Started (7)</div>
-        <hr class="sprint-sep">
-        <div class="sprint-item">
-          <span class="sprint-item-type">PBI</span>
-          <span class="sprint-item-id">5210</span>
-          <span class="sprint-item-title">Incremental refresh for LiveTables</span>
-          <span class="sprint-item-status" style="border:1px solid var(--text-tertiary)"></span>
-        </div>
-        <div class="sprint-item">
-          <span class="sprint-item-type">Task</span>
-          <span class="sprint-item-id">5345</span>
-          <span class="sprint-item-title">E2E test coverage for DAG editor</span>
-          <span class="sprint-item-status" style="border:1px solid var(--text-tertiary)"></span>
-        </div>
-      </div>
-    </div>
-
-    <!-- PRs -->
-    <div class="tab-panel" id="panel-prs" role="tabpanel">
-      <div class="pr-group">
-        <div class="pr-group-label">Open (2)</div>
-        <hr class="pr-sep">
-        <div class="pr-item">
-          <div class="pr-item-row">
-            <span class="pr-item-number">#4821</span>
-            <span class="pr-item-branch">auth-refactor</span>
-            <span class="pr-item-author">Sanjeev</span>
-          </div>
-          <div class="pr-item-meta">14 files &middot; All checks passing &middot; 2h ago</div>
-        </div>
-        <div class="pr-item">
-          <div class="pr-item-row">
-            <span class="pr-item-number">#4798</span>
-            <span class="pr-item-branch">dag-viz-perf</span>
-            <span class="pr-item-author">Priya</span>
-          </div>
-          <div class="pr-item-meta">6 files &middot; 2 checks pending &middot; 1d ago</div>
-        </div>
-      </div>
-
-      <div class="pr-group">
-        <div class="pr-group-label">Recently Merged (3)</div>
-        <hr class="pr-sep">
-        <div class="pr-item">
-          <div class="pr-item-row">
-            <span class="pr-item-number">#4795</span>
-            <span class="pr-item-branch">signalr-msgpack-v3</span>
-            <span class="pr-item-author">Hemant</span>
-          </div>
-          <div class="pr-item-meta">Merged 2d ago</div>
-        </div>
-        <div class="pr-item" id="prHidden1" style="display:none">
-          <div class="pr-item-row">
-            <span class="pr-item-number">#4788</span>
-            <span class="pr-item-branch">cosmos-sdk-upgrade</span>
-            <span class="pr-item-author">Hemant</span>
-          </div>
-          <div class="pr-item-meta">Merged 4d ago</div>
-        </div>
-        <div class="pr-item" id="prHidden2" style="display:none">
-          <div class="pr-item-row">
-            <span class="pr-item-number">#4782</span>
-            <span class="pr-item-branch">health-endpoint</span>
-            <span class="pr-item-author">Priya</span>
-          </div>
-          <div class="pr-item-meta">Merged 5d ago</div>
-        </div>
-        <button class="sprint-show-more" id="prShowMore">... 2 more</button>
-      </div>
-    </div>
-
-    <!-- Incidents -->
-    <div class="tab-panel" id="panel-incidents" role="tabpanel">
-      <div class="inc-group">
-        <div class="inc-group-label">Active (1)</div>
-        <hr class="inc-sep">
-        <div class="inc-item">
-          <div class="inc-item-row">
-            <span class="inc-item-id">526834</span>
-            <span class="inc-item-sev sev1">Sev1</span>
-            <span class="inc-item-cluster">fabric-prod-westus2-04</span>
-            <span class="inc-item-time">03:42 UTC</span>
-          </div>
-          <div class="inc-item-detail">Error rate +340% &middot; Auto-mitigating<br>Currently at 3.1%, down from 12.8%</div>
-        </div>
-      </div>
-      <div class="inc-group">
-        <div class="inc-group-label">Recent (2)</div>
-        <hr class="inc-sep">
-        <div class="inc-item">
-          <div class="inc-item-row">
-            <span class="inc-item-id">526701</span>
-            <span class="inc-item-sev sev2">Sev2</span>
-            <span class="inc-item-resolved">Resolved</span>
-            <span class="inc-item-cluster">fabric-prod-eastus-02</span>
-          </div>
-          <div class="inc-item-detail">Apr 21 &middot; Connection timeout</div>
-        </div>
-        <div class="inc-item">
-          <div class="inc-item-row">
-            <span class="inc-item-id">526688</span>
-            <span class="inc-item-sev sev3">Sev3</span>
-            <span class="inc-item-resolved">Resolved</span>
-            <span class="inc-item-cluster">fabric-staging-01</span>
-          </div>
-          <div class="inc-item-detail">Apr 20 &middot; Deployment rollback</div>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- .content -->
-
-  <!-- Toast -->
-  <div class="toast" id="toast" role="status" aria-live="polite">
-    <button class="toast-dismiss" aria-label="Dismiss">&times;</button>
-    Build #2847 passed &middot; main &middot; 247 tests
-  </div>
-
-</div><!-- .window -->
+<!-- Toast whisper -->
+<div class="toast-container">
+  <div class="toast">Build #2847 passed · 247 tests</div>
+</div>
 
 <script>
-(function(){
+(function() {
   'use strict';
 
-  // ── Tabs ──
-  const tabs = Array.from(document.querySelectorAll('.tab'));
-  const panels = {
-    overview: document.getElementById('panel-overview'),
-    chat: document.getElementById('panel-chat'),
-    sprint: document.getElementById('panel-sprint'),
-    prs: document.getElementById('panel-prs'),
-    incidents: document.getElementById('panel-incidents')
-  };
+  const $ = s => document.querySelector(s);
+  const $$ = s => document.querySelectorAll(s);
 
-  function switchTab(key) {
-    tabs.forEach(t => {
-      const active = t.dataset.tab === key;
-      t.classList.toggle('active', active);
-      t.setAttribute('aria-selected', active);
-      t.tabIndex = active ? 0 : -1;
-    });
-    Object.entries(panels).forEach(([k, p]) => {
-      const isActive = k === key;
-      p.classList.toggle('active', isActive);
-    });
-    if (key === 'chat') {
-      const msgs = panels.chat.querySelector('.chat-messages');
-      if (msgs) msgs.scrollTop = msgs.scrollHeight;
-    }
+  const conversation = $('#conversation');
+  const inputField = $('#inputField');
+  const inputArea = $('#inputArea');
+  const cursorTrail = $('#cursorTrail');
+  const spotlight = $('#spotlight');
+  const commandOverlay = $('#commandOverlay');
+  const commandOptions = $('#commandOptions');
+  const typingIndicator = $('#typingIndicator');
+
+  /* ─── Cursor trail ─────────────────────────────────── */
+  let trailX = 0, trailY = 0;
+  document.addEventListener('mousemove', e => {
+    trailX = e.clientX;
+    trailY = e.clientY;
+    cursorTrail.style.left = trailX + 'px';
+    cursorTrail.style.top = trailY + 'px';
+  });
+
+  /* ─── Conversation spotlight ───────────────────────── */
+  conversation.addEventListener('mousemove', e => {
+    spotlight.style.left = e.clientX + 'px';
+    spotlight.style.top = e.clientY + 'px';
+    spotlight.style.opacity = '1';
+  });
+  conversation.addEventListener('mouseleave', () => {
+    spotlight.style.opacity = '0';
+  });
+
+  /* ─── Input focus effects ──────────────────────────── */
+  inputField.addEventListener('focus', () => {
+    inputArea.classList.add('focused');
+    conversation.classList.add('dimmed');
+    inputField.placeholder = '';
+  });
+  inputField.addEventListener('blur', () => {
+    inputArea.classList.remove('focused');
+    conversation.classList.remove('dimmed');
+    if (!inputField.value) inputField.placeholder = '...';
+  });
+
+  /* ─── Command palette (Ctrl+K) ─────────────────────── */
+  let paletteOpen = false;
+
+  function openPalette() {
+    paletteOpen = true;
+    commandOverlay.classList.add('active');
+    commandOptions.classList.add('active');
+    inputField.placeholder = 'command...';
+    inputField.value = '';
+    inputField.focus();
   }
 
-  tabs.forEach(t => {
-    t.addEventListener('click', () => switchTab(t.dataset.tab));
-  });
+  function closePalette() {
+    paletteOpen = false;
+    commandOverlay.classList.remove('active');
+    commandOptions.classList.remove('active');
+    inputField.placeholder = '...';
+    inputField.value = '';
+    // Reset stagger animations
+    $$('.command-option').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(6px)';
+    });
+  }
 
-  // Tab bar keyboard: arrow left/right
-  document.querySelector('.tab-bar').addEventListener('keydown', e => {
-    const idx = tabs.indexOf(document.activeElement);
-    if (idx < 0) return;
-    let next = -1;
-    if (e.key === 'ArrowRight') next = (idx + 1) % tabs.length;
-    else if (e.key === 'ArrowLeft') next = (idx - 1 + tabs.length) % tabs.length;
-    if (next >= 0) { e.preventDefault(); tabs[next].focus(); tabs[next].click(); }
-  });
-
-  // ── Number keys 1-5 switch tabs ──
-  const tabKeys = ['overview','chat','sprint','prs','incidents'];
-  document.addEventListener('keydown', e => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    const n = parseInt(e.key);
-    if (n >= 1 && n <= 5) { e.preventDefault(); switchTab(tabKeys[n-1]); }
-    if (e.key === 'Escape') {
-      // collapse any expanded items
-      document.querySelectorAll('.overview-item.expanded').forEach(i => i.classList.remove('expanded'));
-      // clear search
-      const si = document.getElementById('searchInput');
-      if (si.value) { si.value = ''; hideDropdown(); }
-    }
-  });
-
-  // Ctrl+K focus search
   document.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
       e.preventDefault();
-      document.getElementById('searchInput').focus();
+      if (paletteOpen) closePalette();
+      else openPalette();
     }
-  });
-
-  // ── Expandable overview items ──
-  document.querySelectorAll('.overview-item[data-expandable]').forEach(item => {
-    item.addEventListener('click', () => item.classList.toggle('expanded'));
-    item.setAttribute('tabindex', '0');
-    item.setAttribute('role', 'button');
-    item.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.classList.toggle('expanded'); }
-    });
-  });
-
-  // ── Sprint show more ──
-  const sprintMore = document.getElementById('sprintShowMore');
-  if (sprintMore) {
-    sprintMore.addEventListener('click', () => {
-      document.querySelectorAll('[id^="sprintHiddenItems"]').forEach(el => el.style.display = '');
-      sprintMore.style.display = 'none';
-    });
-  }
-
-  // ── PR show more ──
-  const prMore = document.getElementById('prShowMore');
-  if (prMore) {
-    prMore.addEventListener('click', () => {
-      document.querySelectorAll('[id^="prHidden"]').forEach(el => el.style.display = '');
-      prMore.style.display = 'none';
-    });
-  }
-
-  // ── Command palette / search ──
-  const commands = [
-    { label: 'Overview', icon: '&#x25CB;', tab: 'overview' },
-    { label: 'Chat', icon: '&#x25CB;', tab: 'chat' },
-    { label: 'Sprint', icon: '&#x25CB;', tab: 'sprint' },
-    { label: 'PRs', icon: '&#x25CB;', tab: 'prs' },
-    { label: 'Incidents', icon: '&#x25CB;', tab: 'incidents' },
-    { label: 'Coffee break', icon: '&#x25CB;', action: 'coffee' },
-    { label: 'Deploy status', icon: '&#x25CB;', action: 'deploy' },
-    { label: 'Build status', icon: '&#x25CB;', action: 'build' }
-  ];
-
-  const searchInput = document.getElementById('searchInput');
-  const dropdown = document.getElementById('cmdDropdown');
-  let activeCmd = -1;
-
-  function renderDropdown(filter) {
-    const q = (filter || '').toLowerCase().trim();
-    const filtered = q ? commands.filter(c => c.label.toLowerCase().includes(q)) : commands;
-    if (!filtered.length || !q) { hideDropdown(); return; }
-    dropdown.innerHTML = filtered.map((c, i) =>
-      '<div class="cmd-item' + (i === activeCmd ? ' active' : '') + '" data-idx="' + i + '" role="option">' +
-      '<span class="cmd-item-icon">' + c.icon + '</span>' + c.label + '</div>'
-    ).join('');
-    dropdown.classList.add('visible');
-    dropdown.querySelectorAll('.cmd-item').forEach((el, i) => {
-      el.addEventListener('click', () => selectCmd(filtered[i]));
-    });
-  }
-
-  function hideDropdown() { dropdown.classList.remove('visible'); dropdown.innerHTML = ''; activeCmd = -1; }
-
-  function selectCmd(cmd) {
-    if (cmd.tab) switchTab(cmd.tab);
-    searchInput.value = '';
-    hideDropdown();
-    searchInput.blur();
-  }
-
-  searchInput.addEventListener('input', () => { activeCmd = -1; renderDropdown(searchInput.value); });
-  searchInput.addEventListener('focus', () => { if (searchInput.value) renderDropdown(searchInput.value); });
-  searchInput.addEventListener('blur', () => { setTimeout(hideDropdown, 150); });
-  searchInput.addEventListener('keydown', e => {
-    const items = dropdown.querySelectorAll('.cmd-item');
-    if (!items.length) return;
-    if (e.key === 'ArrowDown') { e.preventDefault(); activeCmd = Math.min(activeCmd + 1, items.length - 1); items.forEach((el,i) => el.classList.toggle('active', i === activeCmd)); }
-    if (e.key === 'ArrowUp') { e.preventDefault(); activeCmd = Math.max(activeCmd - 1, 0); items.forEach((el,i) => el.classList.toggle('active', i === activeCmd)); }
-    if (e.key === 'Enter' && activeCmd >= 0) {
+    if (e.key === 'Escape' && paletteOpen) {
       e.preventDefault();
-      const q = searchInput.value.toLowerCase().trim();
-      const filtered = commands.filter(c => c.label.toLowerCase().includes(q));
-      if (filtered[activeCmd]) selectCmd(filtered[activeCmd]);
+      closePalette();
     }
-    if (e.key === 'Escape') { hideDropdown(); searchInput.blur(); }
   });
 
-  // ── Chat placeholder rotation ──
-  const placeholders = [
-    'Message Donna...',
-    'Ask about the incident...',
-    'Check build status...',
-    'Draft a standup update...',
-    'Summarize the PR...'
-  ];
-  let phIdx = 0;
-  const chatInput = document.getElementById('chatInput');
-  setInterval(() => {
-    if (document.activeElement === chatInput) return;
-    phIdx = (phIdx + 1) % placeholders.length;
-    chatInput.placeholder = placeholders[phIdx];
+  commandOverlay.addEventListener('click', () => {
+    if (paletteOpen) closePalette();
+  });
+
+  /* Filter commands as you type */
+  inputField.addEventListener('input', () => {
+    if (!paletteOpen) return;
+    const q = inputField.value.toLowerCase();
+    $$('.command-option').forEach(el => {
+      const match = !q || el.dataset.cmd.includes(q);
+      el.style.display = match ? '' : 'none';
+    });
+  });
+
+  /* Command selection */
+  $$('.command-option').forEach(el => {
+    el.addEventListener('click', () => {
+      closePalette();
+    });
+  });
+
+  /* ─── Send message (Enter key) ─────────────────────── */
+  inputField.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !paletteOpen && inputField.value.trim()) {
+      e.preventDefault();
+      const text = inputField.value.trim();
+      inputField.value = '';
+
+      // Add Harvey's message
+      const msg = document.createElement('div');
+      msg.className = 'message harvey';
+      msg.innerHTML = `
+        <div class="message-name">Harvey</div>
+        <div class="message-text">${escapeHtml(text)}</div>
+        <div class="message-time">${formatTime()}</div>
+      `;
+      conversation.appendChild(msg);
+      requestAnimationFrame(() => {
+        msg.classList.add('visible');
+        conversation.scrollTop = conversation.scrollHeight;
+      });
+
+      // Simulate Donna typing then responding
+      typingIndicator.classList.add('active');
+      setTimeout(() => {
+        typingIndicator.classList.remove('active');
+
+        const reply = document.createElement('div');
+        reply.className = 'message donna';
+        reply.innerHTML = `
+          <div class="message-name">Donna</div>
+          <div class="message-text">I'll look into that. Give me a minute.</div>
+          <div class="message-time">${formatTime()}</div>
+        `;
+        conversation.appendChild(reply);
+        requestAnimationFrame(() => {
+          reply.classList.add('visible');
+          conversation.scrollTop = conversation.scrollHeight;
+        });
+      }, 1800);
+    }
+  });
+
+  /* ─── Parallax depth on scroll ─────────────────────── */
+  let ticking = false;
+  conversation.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        const scrollY = conversation.scrollTop;
+        conversation.querySelectorAll('.message.donna, .rich-content').forEach(el => {
+          const offset = scrollY * 0.02;
+          el.style.transform = `translateY(${-offset}px)`;
+        });
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+
+  /* ─── Toast auto-dismiss ───────────────────────────── */
+  setTimeout(() => {
+    const toast = $('.toast');
+    if (toast) {
+      toast.style.transition = 'opacity 0.3s, transform 0.3s';
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(-10px)';
+    }
+  }, 9000);
+
+  /* ─── Scroll to bottom on load ─────────────────────── */
+  setTimeout(() => {
+    conversation.scrollTop = conversation.scrollHeight;
   }, 5000);
 
-  // ── Toast ──
-  const toast = document.getElementById('toast');
-  setTimeout(() => toast.classList.add('visible'), 3000);
-  setTimeout(() => toast.classList.remove('visible'), 9000);
-  toast.querySelector('.toast-dismiss').addEventListener('click', () => toast.classList.remove('visible'));
+  /* ─── Utilities ────────────────────────────────────── */
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  function formatTime() {
+    const d = new Date();
+    let h = d.getHours(), m = d.getMinutes();
+    const ap = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    m = m < 10 ? '0' + m : m;
+    return h + ':' + m + ' ' + ap;
+  }
+
 })();
 </script>
 </body>
