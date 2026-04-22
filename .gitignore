@@ -1,0 +1,25 @@
+# Build
+target/
+dist/
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Tauri
+src-tauri/target/
+
+# Environment
+.env
+.env.local
+
+# Copilot
+.copilot/
