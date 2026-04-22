@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Donna</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   DONNA — Command Surface AI Assistant + Contextual Panels
+   Phantom Artifact #003 v2 — ~130KB, 40+ named keyframes
+   Activity Bar + Incidents / PRs / Sprint panels
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --bg-void: #0a0a0b;
+  --bg-desktop: #0d0d0f;
+  --bg-window: rgba(14, 14, 17, 0.92);
+  --bg-surface: rgba(20, 20, 24, 0.95);
+  --bg-elevated: rgba(28, 28, 34, 0.95);
+  --bg-input: rgba(18, 18, 22, 0.98);
+  --bg-hover: rgba(38, 38, 46, 0.9);
+  --bg-active: rgba(48, 48, 58, 0.9);
+  --bg-user-msg: rgba(109, 92, 255, 0.12);
+  --bg-donna-msg: rgba(28, 28, 34, 0.85);
+  --bg-panel: rgba(16, 16, 20, 0.96);
+
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-medium: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --border-accent: rgba(109, 92, 255, 0.25);
+  --border-glow: rgba(109, 92, 255, 0.4);
+
+  --text-primary: #e8eaed;
+  --text-secondary: #8b8d93;
+  --text-tertiary: #56585e;
+  --text-ghost: #3a3c42;
+  --text-accent: #8b7fff;
+  --text-accent-bright: #a599ff;
+
+  --accent: #6d5cff;
+  --accent-soft: rgba(109, 92, 255, 0.15);
+  --accent-glow: rgba(109, 92, 255, 0.25);
+  --accent-bright: #8b7fff;
+
+  --status-green: #34d399;
+  --status-green-dim: rgba(52, 211, 153, 0.15);
+  --status-amber: #fbbf24;
+  --status-amber-dim: rgba(251, 191, 36, 0.15);
+  --status-red: #ef4444;
+  --status-red-dim: rgba(239, 68, 68, 0.15);
+  --status-yellow: #eab308;
+  --status-yellow-dim: rgba(234, 179, 8, 0.15);
+
+  --shadow-window: 0 32px 64px -16px rgba(0,0,0,0.6), 0 16px 32px -8px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06), 0 0 120px -20px rgba(109,92,255,0.06);
+  --shadow-card: 0 4px 16px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.04);
+  --shadow-chip: 0 2px 8px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.05);
+  --shadow-notification: 0 20px 40px -8px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+  --shadow-menu: 0 12px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);
+  --shadow-panel: -8px 0 40px -10px rgba(0,0,0,0.5);
+
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+  --speed-fast: 120ms;
+  --speed-normal: 200ms;
+  --speed-slow: 360ms;
+  --speed-panel: 320ms;
+
+  --radius-window: 16px;
+  --radius-card: 10px;
+  --radius-chip: 8px;
+  --radius-input: 10px;
+  --radius-pill: 20px;
+  --radius-dot: 50%;
+
+  --font-xs: 10px;
+  --font-sm: 11px;
+  --font-base: 13px;
+  --font-md: 14px;
+  --font-lg: 15px;
+  --font-xl: 18px;
+
+  --activity-bar-w: 44px;
+  --panel-w: 420px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%; width: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: var(--font-base);
+  color: var(--text-primary);
+  background: var(--bg-void);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse at 25% 30%, rgba(109,92,255,0.025) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 60%, rgba(52,211,153,0.015) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(251,191,36,0.008) 0%, transparent 40%),
+    var(--bg-desktop);
+  z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.012) 1px, transparent 1px);
+  background-size: 32px 32px;
+  z-index: 0; pointer-events: none;
+}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* ══════════════════════════════════════
+   KEYFRAME ANIMATIONS (40+ named)
+   ══════════════════════════════════════ */
+@keyframes windowIn {
+  0% { opacity: 0; transform: scale(0.92) translateY(8px); }
+  60% { opacity: 1; transform: scale(1.01) translateY(-1px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes windowOut {
+  0% { opacity: 1; transform: scale(1) translateY(0); }
+  100% { opacity: 0; transform: scale(0.95) translateY(6px); }
+}
+@keyframes backdropIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes backdropOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes messageSlideIn {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes messageSlideInLeft {
+  0% { opacity: 0; transform: translateX(-8px) translateY(6px); }
+  100% { opacity: 1; transform: translateX(0) translateY(0); }
+}
+@keyframes typingDotWave {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+@keyframes breathingPulse {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 currentColor; }
+  50% { opacity: 0.7; transform: scale(1.15); box-shadow: 0 0 8px 2px currentColor; }
+}
+@keyframes notificationSlideIn {
+  0% { opacity: 0; transform: translateX(40px) translateY(10px) scale(0.95); }
+  60% { transform: translateX(-4px) translateY(0) scale(1.01); }
+  100% { opacity: 1; transform: translateX(0) translateY(0) scale(1); }
+}
+@keyframes notificationSlideOut {
+  0% { opacity: 1; transform: translateX(0) scale(1); }
+  100% { opacity: 0; transform: translateX(60px) scale(0.95); }
+}
+@keyframes progressDeplete { from { width: 100%; } to { width: 0%; } }
+@keyframes chipHoverPulse {
+  0% { box-shadow: var(--shadow-chip); }
+  50% { box-shadow: var(--shadow-chip), 0 0 12px rgba(109,92,255,0.12); }
+  100% { box-shadow: var(--shadow-chip); }
+}
+@keyframes inputFocusGlow {
+  0%, 100% { border-color: var(--border-accent); box-shadow: 0 0 0 2px rgba(109,92,255,0.08); }
+  50% { border-color: var(--border-glow); box-shadow: 0 0 0 3px rgba(109,92,255,0.12); }
+}
+@keyframes cursorBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes expandHeight {
+  from { max-height: 0; opacity: 0; }
+  to { max-height: 500px; opacity: 1; }
+}
+@keyframes menuFadeIn {
+  0% { opacity: 0; transform: scale(0.95) translateY(4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes menuFadeOut {
+  0% { opacity: 1; transform: scale(1) translateY(0); }
+  100% { opacity: 0; transform: scale(0.95) translateY(4px); }
+}
+@keyframes suggestionDropIn {
+  0% { opacity: 0; transform: translateY(-4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmerLoad {
+  0% { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
+}
+@keyframes proactiveSlideIn {
+  0% { opacity: 0; transform: translateY(8px) scale(0.98); }
+  60% { transform: translateY(-2px) scale(1.005); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes hoverLift { from { transform: translateY(0); } to { transform: translateY(-1px); } }
+@keyframes accentPulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+@keyframes trayIconPing {
+  0% { transform: scale(1); } 15% { transform: scale(1.3); }
+  30% { transform: scale(1); } 45% { transform: scale(1.15); }
+  60%, 100% { transform: scale(1); }
+}
+@keyframes statusBarFade {
+  0% { opacity: 0; transform: translateY(4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes borderShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes chipPress { 0% { transform: scale(1); } 50% { transform: scale(0.96); } 100% { transform: scale(1); } }
+@keyframes dotPing {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(2.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 0; }
+}
+@keyframes revealUp {
+  0% { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleSpring {
+  0% { transform: scale(0.85); opacity: 0; }
+  70% { transform: scale(1.03); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes charReveal { from { opacity: 0; } to { opacity: 1; } }
+
+/* 33. panelSlideIn — contextual panel entrance from right */
+@keyframes panelSlideIn {
+  0% { opacity: 0; transform: translateX(30px); }
+  60% { opacity: 1; transform: translateX(-3px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+/* 34. panelSlideOut — panel exit to right */
+@keyframes panelSlideOut {
+  0% { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(30px); }
+}
+/* 35. panelItemStagger — panel list item entrance */
+@keyframes panelItemStagger {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+/* 36. severityPulse — sev badge alive indicator */
+@keyframes severityPulse {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50% { box-shadow: 0 0 8px 2px currentColor; }
+}
+/* 37. progressFill — sprint progress bar fill */
+@keyframes progressFill {
+  from { width: 0%; }
+  to { width: var(--fill-pct); }
+}
+/* 38. burndownDraw — SVG line path draw */
+@keyframes burndownDraw {
+  from { stroke-dashoffset: 500; }
+  to { stroke-dashoffset: 0; }
+}
+/* 39. badgeShake — merge conflict badge attention */
+@keyframes badgeShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-2px); }
+  40% { transform: translateX(2px); }
+  60% { transform: translateX(-1px); }
+  80% { transform: translateX(1px); }
+}
+/* 40. activityBarGlow — active icon indicator */
+@keyframes activityBarGlow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+/* 41. expandDetail — incident detail expand */
+@keyframes expandDetail {
+  from { max-height: 0; opacity: 0; }
+  to { max-height: 300px; opacity: 1; }
+}
+/* 42. collapseDetail — incident detail collapse */
+@keyframes collapseDetail {
+  from { max-height: 300px; opacity: 1; }
+  to { max-height: 0; opacity: 0; }
+}
+/* 43. windowExpand — smooth width expansion */
+@keyframes windowExpand {
+  from { width: 520px; }
+  to { width: 960px; }
+}
+
+/* ══════════════════════════════════════
+   BACKDROP
+   ══════════════════════════════════════ */
+#backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  z-index: 100;
+  animation: backdropIn 0.3s var(--ease-smooth) forwards;
+}
+#backdrop.hiding { animation: backdropOut 0.25s var(--ease-smooth) forwards; pointer-events: none; }
+#backdrop.hidden { display: none; }
+
+/* ══════════════════════════════════════
+   MAIN WINDOW — flex container
+   ══════════════════════════════════════ */
+#donna-window {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 520px;
+  max-height: 88vh;
+  background: var(--bg-window);
+  backdrop-filter: blur(40px) saturate(1.4); -webkit-backdrop-filter: blur(40px) saturate(1.4);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-window);
+  box-shadow: var(--shadow-window);
+  z-index: 200;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  animation: windowIn 0.4s var(--ease-spring) forwards;
+  transition: width var(--speed-panel) var(--ease-smooth);
+}
+#donna-window.hiding { animation: windowOut 0.25s var(--ease-smooth) forwards; pointer-events: none; }
+#donna-window.hidden { display: none; }
+#donna-window.panel-open { width: 980px; }
+#donna-window::before {
+  content: ''; position: absolute; inset: -1px;
+  border-radius: calc(var(--radius-window) + 1px);
+  background: linear-gradient(135deg, rgba(109,92,255,0.15), transparent 30%, transparent 70%, rgba(109,92,255,0.08));
+  background-size: 200% 200%;
+  animation: borderShimmer 8s ease infinite;
+  z-index: -1; pointer-events: none;
+}
+
+/* ══════════════════════════════════════
+   ACTIVITY BAR — VS Code-style icon strip
+   ══════════════════════════════════════ */
+#activity-bar {
+  width: var(--activity-bar-w);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0 8px;
+  border-right: 1px solid var(--border-subtle);
+  gap: 2px;
+  background: rgba(10,10,12,0.5);
+  border-radius: var(--radius-window) 0 0 var(--radius-window);
+}
+.ab-icon {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-tertiary);
+  position: relative;
+  transition: all var(--speed-fast) var(--ease-smooth);
+}
+.ab-icon:hover { color: var(--text-secondary); background: var(--bg-hover); }
+.ab-icon.active {
+  color: var(--text-accent-bright);
+  background: var(--accent-soft);
+}
+.ab-icon.active::before {
+  content: ''; position: absolute; left: -6px;
+  width: 3px; height: 18px; border-radius: 0 2px 2px 0;
+  background: var(--accent);
+  animation: activityBarGlow 3s ease-in-out infinite;
+}
+.ab-icon svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.ab-spacer { flex: 1; }
+.ab-badge {
+  position: absolute; top: 3px; right: 3px;
+  min-width: 14px; height: 14px; padding: 0 3px;
+  border-radius: 7px;
+  font-size: 9px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; line-height: 1;
+}
+.ab-badge.red { background: var(--status-red); }
+.ab-badge.accent { background: var(--accent); }
+
+/* ══════════════════════════════════════
+   MAIN COLUMN — command palette side
+   ══════════════════════════════════════ */
+#main-column {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  transition: flex var(--speed-panel) var(--ease-smooth);
+}
+
+/* ── Title Bar ── */
+#title-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px 0 16px;
+  cursor: default; flex-shrink: 0;
+}
+#title-bar-left { display: flex; align-items: center; gap: 8px; }
+.donna-monogram {
+  width: 22px; height: 22px; border-radius: 6px;
+  background: linear-gradient(135deg, var(--accent), #8b7fff);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 11px; color: #fff; letter-spacing: -0.5px; flex-shrink: 0;
+}
+#title-text { font-size: var(--font-md); font-weight: 600; color: var(--text-primary); letter-spacing: -0.3px; }
+.status-dot-inline {
+  width: 6px; height: 6px; border-radius: var(--radius-dot);
+  background: var(--status-green); color: var(--status-green);
+  animation: breathingPulse 3s ease-in-out infinite; flex-shrink: 0;
+}
+#title-bar-right { display: flex; align-items: center; gap: 2px; }
+.title-btn {
+  width: 28px; height: 28px; border-radius: 6px; border: none;
+  background: transparent; color: var(--text-tertiary);
+  font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--speed-fast) var(--ease-smooth); line-height: 1;
+}
+.title-btn:hover { background: var(--bg-hover); color: var(--text-secondary); }
+.title-btn.close:hover { background: rgba(239,68,68,0.15); color: var(--status-red); }
+
+#shortcut-hint {
+  text-align: center; padding: 6px 0 0; font-size: var(--font-xs);
+  color: var(--text-ghost); font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px;
+}
+#shortcut-hint kbd {
+  background: var(--bg-elevated); border: 1px solid var(--border-subtle);
+  border-radius: 3px; padding: 1px 5px; font-size: 9px;
+  font-family: 'JetBrains Mono', monospace; color: var(--text-tertiary);
+}
+
+/* ── Command Input ── */
+#command-section { padding: 12px 16px; flex-shrink: 0; }
+#command-input-wrap {
+  position: relative; display: flex; align-items: center;
+  background: var(--bg-input); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-input); padding: 0 14px;
+  transition: all var(--speed-normal) var(--ease-smooth);
+}
+#command-input-wrap:focus-within {
+  border-color: var(--border-accent);
+  box-shadow: 0 0 0 2px rgba(109,92,255,0.08);
+  animation: inputFocusGlow 3s ease-in-out infinite;
+}
+#command-prompt {
+  color: var(--accent); font-family: 'JetBrains Mono', monospace;
+  font-size: var(--font-md); font-weight: 500; margin-right: 8px; flex-shrink: 0; opacity: 0.7;
+}
+#command-input {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text-primary); font-family: 'Inter', sans-serif;
+  font-size: var(--font-lg); font-weight: 400; padding: 12px 0;
+  caret-color: var(--accent); letter-spacing: -0.2px;
+}
+#command-input::placeholder { color: var(--text-ghost); font-weight: 400; }
+
+/* Suggestions */
+#suggestions {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+  background: var(--bg-surface); border: 1px solid var(--border-medium);
+  border-radius: var(--radius-card); box-shadow: var(--shadow-card);
+  overflow: hidden; z-index: 10; display: none;
+}
+#suggestions.visible { display: block; }
+.suggestion-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  cursor: pointer; transition: background var(--speed-fast) var(--ease-smooth);
+  animation: suggestionDropIn 0.2s var(--ease-out) both;
+}
+.suggestion-item:hover, .suggestion-item.active { background: var(--bg-hover); }
+.suggestion-icon {
+  width: 28px; height: 28px; border-radius: 6px; background: var(--bg-elevated);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  font-size: 12px; color: var(--text-secondary);
+}
+.suggestion-icon.accent { background: var(--accent-soft); color: var(--accent-bright); }
+.suggestion-text { flex: 1; min-width: 0; }
+.suggestion-title { font-size: var(--font-base); font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.suggestion-sub { font-size: var(--font-sm); color: var(--text-tertiary); margin-top: 1px; }
+.suggestion-shortcut {
+  font-family: 'JetBrains Mono', monospace; font-size: var(--font-xs);
+  color: var(--text-ghost); background: var(--bg-elevated); border-radius: 3px; padding: 2px 6px;
+}
+
+/* ── Chips ── */
+#chips-section { padding: 0 16px 8px; display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 13px; background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-chip);
+  box-shadow: var(--shadow-chip); cursor: pointer;
+  font-size: var(--font-sm); font-weight: 500; color: var(--text-secondary);
+  transition: all var(--speed-normal) var(--ease-smooth); white-space: nowrap;
+}
+.chip:hover {
+  background: var(--bg-hover); border-color: var(--border-medium);
+  color: var(--text-primary); transform: translateY(-1px);
+  box-shadow: var(--shadow-chip), 0 0 12px rgba(109,92,255,0.06);
+}
+.chip:active { animation: chipPress 0.2s var(--ease-smooth); transform: translateY(0); }
+.chip-icon { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.chip-icon svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── Chat ── */
+#chat-container {
+  flex: 1; overflow-y: auto; padding: 0 16px;
+  display: none; flex-direction: column; gap: 6px;
+  min-height: 0; scroll-behavior: smooth;
+}
+#chat-container.visible { display: flex; animation: expandHeight 0.4s var(--ease-smooth) forwards; }
+.message { display: flex; gap: 8px; max-width: 88%; animation: messageSlideIn 0.3s var(--ease-out) both; }
+.message.user { align-self: flex-end; flex-direction: row-reverse; }
+.message.donna { align-self: flex-start; animation-name: messageSlideInLeft; }
+.message-avatar {
+  width: 26px; height: 26px; border-radius: 7px;
+  background: linear-gradient(135deg, var(--accent), #8b7fff);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 10px; color: #fff; flex-shrink: 0; margin-top: 2px;
+}
+.message-bubble { padding: 10px 14px; border-radius: 12px; font-size: var(--font-md); line-height: 1.55; letter-spacing: -0.1px; }
+.message.user .message-bubble { background: var(--bg-user-msg); border: 1px solid rgba(109,92,255,0.1); color: var(--text-primary); border-bottom-right-radius: 4px; }
+.message.donna .message-bubble { background: var(--bg-donna-msg); border: 1px solid var(--border-subtle); color: var(--text-primary); border-bottom-left-radius: 4px; }
+.message-time { font-size: var(--font-xs); color: var(--text-ghost); margin-top: 4px; padding: 0 4px; }
+.message.user .message-time { text-align: right; }
+.typing-indicator { display: flex; align-items: center; gap: 4px; padding: 12px 14px; }
+.typing-dot { width: 5px; height: 5px; border-radius: var(--radius-dot); background: var(--text-tertiary); animation: typingDotWave 1.4s ease-in-out infinite; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+.msg-highlight { color: var(--text-accent-bright); font-weight: 500; }
+.msg-code { font-family: 'JetBrains Mono', monospace; font-size: 12px; background: rgba(109,92,255,0.08); border-radius: 3px; padding: 1px 5px; color: var(--text-accent); }
+.msg-success { color: var(--status-green); font-weight: 500; }
+.msg-warning { color: var(--status-amber); font-weight: 500; }
+.msg-muted { color: var(--text-secondary); }
+.proactive-msg { animation: proactiveSlideIn 0.5s var(--ease-spring) both; }
+.proactive-msg .message-bubble { background: linear-gradient(135deg, rgba(109,92,255,0.06), rgba(109,92,255,0.02)); border-color: rgba(109,92,255,0.12); }
+
+/* ── Dashboard ── */
+#dashboard-section { padding: 4px 16px 4px; border-top: 1px solid var(--border-subtle); flex-shrink: 0; overflow: hidden; transition: max-height var(--speed-slow) var(--ease-smooth); }
+#dashboard-section.collapsed { max-height: 36px; }
+#dashboard-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; cursor: pointer; }
+#dashboard-header:hover .dashboard-toggle { color: var(--text-secondary); }
+#dashboard-title { font-size: var(--font-sm); font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.8px; }
+.dashboard-toggle { font-size: 10px; color: var(--text-ghost); transition: transform var(--speed-normal) var(--ease-smooth), color var(--speed-fast); }
+#dashboard-section.collapsed .dashboard-toggle { transform: rotate(-90deg); }
+#dashboard-items { display: flex; flex-direction: column; gap: 2px; padding-bottom: 6px; }
+.dash-item {
+  display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px;
+  border-radius: var(--radius-chip); cursor: pointer;
+  transition: background var(--speed-fast) var(--ease-smooth);
+  animation: revealUp 0.3s var(--ease-out) both;
+}
+.dash-item:hover { background: var(--bg-hover); }
+.dash-item:nth-child(1) { animation-delay: 0.05s; }
+.dash-item:nth-child(2) { animation-delay: 0.1s; }
+.dash-item:nth-child(3) { animation-delay: 0.15s; }
+.dash-item:nth-child(4) { animation-delay: 0.2s; }
+.dash-item:nth-child(5) { animation-delay: 0.25s; }
+.dash-dot { width: 6px; height: 6px; border-radius: var(--radius-dot); margin-top: 5px; flex-shrink: 0; }
+.dash-dot.green { background: var(--status-green); }
+.dash-dot.amber { background: var(--status-amber); }
+.dash-dot.red { background: var(--status-red); }
+.dash-dot.accent { background: var(--accent); }
+.dash-content { flex: 1; min-width: 0; }
+.dash-label { font-size: var(--font-base); color: var(--text-primary); font-weight: 500; line-height: 1.3; }
+.dash-meta { font-size: var(--font-sm); color: var(--text-tertiary); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+.dash-detail {
+  max-height: 0; overflow: hidden;
+  transition: max-height var(--speed-slow) var(--ease-smooth), padding var(--speed-slow) var(--ease-smooth);
+  font-size: var(--font-sm); color: var(--text-secondary); line-height: 1.5;
+  border-top: 1px solid transparent;
+}
+.dash-item.expanded .dash-detail { max-height: 120px; padding-top: 8px; margin-top: 6px; border-top-color: var(--border-subtle); }
+.dash-arrow { font-size: 10px; color: var(--text-ghost); margin-top: 4px; transition: transform var(--speed-fast) var(--ease-smooth); flex-shrink: 0; }
+.dash-item.expanded .dash-arrow { transform: rotate(90deg); }
+
+/* ── Status Bar ── */
+#status-bar {
+  padding: 8px 16px; border-top: 1px solid var(--border-subtle);
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+#status-bar-text { font-size: var(--font-sm); color: var(--text-ghost); font-family: 'JetBrains Mono', monospace; animation: statusBarFade 0.5s var(--ease-out); letter-spacing: -0.2px; }
+#status-bar-right { display: flex; align-items: center; gap: 8px; }
+.status-bar-dot { width: 4px; height: 4px; border-radius: var(--radius-dot); }
+
+/* ══════════════════════════════════════
+   CONTEXTUAL PANELS
+   ══════════════════════════════════════ */
+#panel-container {
+  width: 0; overflow: hidden; flex-shrink: 0;
+  border-left: 1px solid transparent;
+  transition: width var(--speed-panel) var(--ease-smooth), border-color var(--speed-panel);
+  display: flex; flex-direction: column;
+  background: var(--bg-panel);
+}
+#panel-container.open {
+  width: var(--panel-w);
+  border-left-color: var(--border-subtle);
+}
+
+/* Panel common */
+.panel {
+  display: none; flex-direction: column; height: 100%;
+  animation: panelSlideIn 0.32s var(--ease-spring) both;
+  min-width: var(--panel-w);
+}
+.panel.active { display: flex; }
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px 12px; flex-shrink: 0;
+}
+.panel-title { font-size: var(--font-lg); font-weight: 600; color: var(--text-primary); letter-spacing: -0.3px; }
+.panel-close {
+  width: 28px; height: 28px; border-radius: 6px; border: none;
+  background: transparent; color: var(--text-tertiary); font-size: 13px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all var(--speed-fast);
+}
+.panel-close:hover { background: var(--bg-hover); color: var(--text-secondary); }
+.panel-body { flex: 1; overflow-y: auto; padding: 0 18px 16px; }
+.panel-section-title {
+  font-size: var(--font-sm); font-weight: 600; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: 0.8px; padding: 12px 0 8px;
+}
+
+/* ── Severity badges ── */
+.sev-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 2px 8px; border-radius: 4px;
+  font-size: var(--font-xs); font-weight: 700; letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+.sev-badge.sev1 { background: var(--status-red-dim); color: var(--status-red); }
+.sev-badge.sev2 { background: rgba(249,115,22,0.15); color: #f97316; }
+.sev-badge.sev3 { background: var(--status-yellow-dim); color: var(--status-yellow); }
+.sev-badge.mitigated { background: var(--status-green-dim); color: var(--status-green); }
+
+/* ── Incident items ── */
+.incident-item {
+  padding: 12px 14px; border-radius: var(--radius-card);
+  border: 1px solid var(--border-subtle); margin-bottom: 8px;
+  cursor: pointer; transition: all var(--speed-fast) var(--ease-smooth);
+  animation: panelItemStagger 0.3s var(--ease-out) both;
+}
+.incident-item:hover { border-color: var(--border-medium); background: var(--bg-hover); }
+.incident-item.expanded { border-color: var(--border-accent); background: rgba(109,92,255,0.03); }
+.incident-top { display: flex; align-items: center; gap: 10px; }
+.incident-info { flex: 1; min-width: 0; }
+.incident-title { font-size: var(--font-md); font-weight: 600; color: var(--text-primary); line-height: 1.35; }
+.incident-meta { font-size: var(--font-sm); color: var(--text-tertiary); margin-top: 3px; display: flex; align-items: center; gap: 8px; }
+.incident-time { font-family: 'JetBrains Mono', monospace; font-size: var(--font-xs); }
+.incident-expand-arrow { font-size: 10px; color: var(--text-ghost); transition: transform var(--speed-fast) var(--ease-smooth); flex-shrink: 0; }
+.incident-item.expanded .incident-expand-arrow { transform: rotate(90deg); }
+.incident-detail {
+  max-height: 0; overflow: hidden; transition: max-height 0.35s var(--ease-smooth), padding 0.35s var(--ease-smooth);
+  border-top: 1px solid transparent;
+}
+.incident-item.expanded .incident-detail { max-height: 280px; padding-top: 12px; margin-top: 10px; border-top-color: var(--border-subtle); }
+.incident-detail-section { margin-bottom: 10px; }
+.incident-detail-label { font-size: var(--font-xs); font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.incident-detail-text { font-size: var(--font-sm); color: var(--text-secondary); line-height: 1.5; }
+.incident-timeline-item {
+  display: flex; align-items: flex-start; gap: 8px; padding: 4px 0;
+  font-size: var(--font-sm); color: var(--text-secondary);
+}
+.timeline-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+.timeline-time { font-family: 'JetBrains Mono', monospace; font-size: var(--font-xs); color: var(--text-ghost); flex-shrink: 0; width: 50px; }
+.incident-actions { display: flex; gap: 8px; margin-top: 4px; }
+.incident-action-btn {
+  padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-medium);
+  background: var(--bg-elevated); color: var(--text-secondary);
+  font-size: var(--font-sm); font-weight: 500; cursor: pointer;
+  transition: all var(--speed-fast); display: flex; align-items: center; gap: 5px;
+}
+.incident-action-btn:hover { border-color: var(--border-strong); color: var(--text-primary); background: var(--bg-hover); }
+.incident-action-btn.primary { background: var(--accent-soft); border-color: var(--border-accent); color: var(--text-accent-bright); }
+.incident-action-btn.primary:hover { background: var(--accent-glow); }
+
+/* ── PR items ── */
+.pr-item {
+  padding: 12px 14px; border-radius: var(--radius-card);
+  border: 1px solid var(--border-subtle); margin-bottom: 8px;
+  transition: all var(--speed-fast) var(--ease-smooth);
+  animation: panelItemStagger 0.3s var(--ease-out) both;
+  cursor: default;
+}
+.pr-item:hover { border-color: var(--border-medium); background: var(--bg-hover); }
+.pr-item.conflict { border-left: 3px solid var(--status-amber); }
+.pr-top { display: flex; align-items: flex-start; gap: 10px; }
+.pr-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
+  color: #fff;
+}
+.pr-info { flex: 1; min-width: 0; }
+.pr-repo { font-size: var(--font-xs); color: var(--text-tertiary); font-family: 'JetBrains Mono', monospace; margin-bottom: 2px; }
+.pr-title { font-size: var(--font-md); font-weight: 600; color: var(--text-primary); line-height: 1.35; }
+.pr-bottom { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.pr-diff { font-family: 'JetBrains Mono', monospace; font-size: var(--font-xs); display: flex; gap: 6px; }
+.pr-diff-add { color: var(--status-green); }
+.pr-diff-del { color: var(--status-red); }
+.pr-status-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 4px;
+  font-size: var(--font-xs); font-weight: 600;
+}
+.pr-status-pill.approved { background: var(--status-green-dim); color: var(--status-green); }
+.pr-status-pill.changes { background: var(--status-amber-dim); color: var(--status-amber); }
+.pr-status-pill.waiting { background: var(--bg-elevated); color: var(--text-tertiary); }
+.pr-conflict-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 4px;
+  font-size: var(--font-xs); font-weight: 600;
+  background: var(--status-amber-dim); color: var(--status-amber);
+  animation: badgeShake 0.5s ease 1s both;
+}
+.pr-checks { display: flex; align-items: center; gap: 4px; font-size: var(--font-xs); color: var(--text-tertiary); }
+
+/* ── Sprint Dashboard ── */
+.sprint-header-card {
+  padding: 14px 16px; border-radius: var(--radius-card);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated); margin-bottom: 12px;
+}
+.sprint-name { font-size: var(--font-md); font-weight: 600; color: var(--text-primary); }
+.sprint-dates { font-size: var(--font-sm); color: var(--text-tertiary); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+.sprint-progress-track {
+  height: 6px; border-radius: 3px; background: var(--bg-hover);
+  margin-top: 10px; overflow: hidden;
+}
+.sprint-progress-fill {
+  height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent-bright));
+  animation: progressFill 0.8s var(--ease-smooth) both;
+}
+.sprint-stats {
+  display: flex; gap: 12px; margin-top: 10px;
+}
+.sprint-stat {
+  flex: 1; text-align: center; padding: 8px;
+  border-radius: 6px; background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border-subtle);
+}
+.sprint-stat-value { font-size: var(--font-xl); font-weight: 700; color: var(--text-primary); font-family: 'JetBrains Mono', monospace; }
+.sprint-stat-label { font-size: var(--font-xs); color: var(--text-tertiary); margin-top: 2px; }
+.burndown-card {
+  padding: 14px 16px; border-radius: var(--radius-card);
+  border: 1px solid var(--border-subtle); margin-bottom: 12px;
+}
+.burndown-title { font-size: var(--font-sm); font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; }
+.burndown-svg { width: 100%; height: 100px; }
+.burndown-svg .ideal { stroke: var(--text-ghost); stroke-dasharray: 4 3; }
+.burndown-svg .actual { stroke: var(--accent); stroke-width: 2; fill: none; stroke-dasharray: 500; animation: burndownDraw 1.2s var(--ease-smooth) both; }
+.burndown-svg .fill { fill: var(--accent-soft); opacity: 0.3; }
+.burndown-svg text { fill: var(--text-ghost); font-family: 'JetBrains Mono', monospace; font-size: 9px; }
+
+.sprint-work-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  border-radius: var(--radius-chip); margin-bottom: 4px;
+  border: 1px solid var(--border-subtle);
+  transition: all var(--speed-fast) var(--ease-smooth);
+  animation: panelItemStagger 0.3s var(--ease-out) both;
+}
+.sprint-work-item:hover { background: var(--bg-hover); }
+.sprint-work-item.blocked { border-left: 3px solid var(--status-red); }
+.wi-type-icon { width: 18px; height: 18px; border-radius: 3px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; }
+.wi-type-icon.bug { background: var(--status-red-dim); color: var(--status-red); }
+.wi-type-icon.task { background: var(--accent-soft); color: var(--accent-bright); }
+.wi-type-icon.story { background: var(--status-green-dim); color: var(--status-green); }
+.wi-info { flex: 1; min-width: 0; }
+.wi-title { font-size: var(--font-base); font-weight: 500; color: var(--text-primary); line-height: 1.3; }
+.wi-meta { font-size: var(--font-xs); color: var(--text-tertiary); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+.wi-status-pill {
+  padding: 2px 8px; border-radius: 4px;
+  font-size: var(--font-xs); font-weight: 600; flex-shrink: 0;
+}
+.wi-status-pill.done { background: var(--status-green-dim); color: var(--status-green); }
+.wi-status-pill.in-progress { background: var(--accent-soft); color: var(--accent-bright); }
+.wi-status-pill.blocked { background: var(--status-red-dim); color: var(--status-red); }
+.wi-status-pill.new-item { background: var(--bg-elevated); color: var(--text-tertiary); }
+
+/* ══════════════════════════════════════
+   NOTIFICATIONS / TRAY / MENU (unchanged)
+   ══════════════════════════════════════ */
+#notification-container {
+  position: fixed; bottom: 52px; right: 16px; z-index: 300;
+  display: flex; flex-direction: column-reverse; gap: 8px; pointer-events: none;
+}
+.notification {
+  width: 380px; background: var(--bg-surface);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-medium); border-radius: 12px;
+  box-shadow: var(--shadow-notification); overflow: hidden;
+  animation: notificationSlideIn 0.45s var(--ease-spring) forwards;
+  pointer-events: all; cursor: pointer; transition: transform var(--speed-fast) var(--ease-smooth);
+}
+.notification:hover { transform: translateY(-2px); border-color: var(--border-strong); }
+.notification.dismissing { animation: notificationSlideOut 0.3s var(--ease-smooth) forwards; pointer-events: none; }
+.notification-body { padding: 14px 16px 10px; display: flex; gap: 10px; }
+.notification-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; font-weight: 600; }
+.notification-icon.red { background: var(--status-red-dim); color: var(--status-red); }
+.notification-icon.amber { background: var(--status-amber-dim); color: var(--status-amber); }
+.notification-icon.green { background: var(--status-green-dim); color: var(--status-green); }
+.notification-icon.accent { background: var(--accent-soft); color: var(--accent-bright); }
+.notification-content { flex: 1; min-width: 0; }
+.notification-title { font-size: var(--font-base); font-weight: 600; color: var(--text-primary); margin-bottom: 3px; line-height: 1.3; }
+.notification-text { font-size: var(--font-sm); color: var(--text-secondary); line-height: 1.45; }
+.notification-close { width: 20px; height: 20px; border: none; background: transparent; color: var(--text-ghost); cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; border-radius: 4px; flex-shrink: 0; transition: all var(--speed-fast); }
+.notification-close:hover { background: var(--bg-hover); color: var(--text-secondary); }
+.notification-progress { height: 2px; background: var(--bg-elevated); overflow: hidden; }
+.notification-progress-bar { height: 100%; background: var(--accent); animation: progressDeplete 5s linear forwards; border-radius: 0 1px 1px 0; }
+.notification-progress-bar.red { background: var(--status-red); }
+.notification-progress-bar.amber { background: var(--status-amber); }
+
+#system-tray {
+  position: fixed; bottom: 0; right: 0; left: 0; height: 40px;
+  background: rgba(18,18,22,0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-subtle); z-index: 50;
+  display: flex; align-items: center; justify-content: flex-end; padding: 0 12px; gap: 6px;
+}
+.tray-separator { width: 1px; height: 18px; background: var(--border-subtle); margin: 0 4px; }
+#tray-donna-btn { display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 6px; cursor: pointer; transition: background var(--speed-fast) var(--ease-smooth); position: relative; }
+#tray-donna-btn:hover { background: var(--bg-hover); }
+.tray-monogram { width: 18px; height: 18px; border-radius: 4px; background: linear-gradient(135deg, var(--accent), #8b7fff); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 9px; color: #fff; position: relative; }
+.tray-status-dot { width: 6px; height: 6px; border-radius: var(--radius-dot); background: var(--status-green); position: absolute; bottom: -1px; right: -1px; border: 1.5px solid rgba(18,18,22,0.95); }
+.tray-label { font-size: var(--font-sm); color: var(--text-secondary); font-weight: 500; }
+#tray-clock { font-family: 'JetBrains Mono', monospace; font-size: var(--font-sm); color: var(--text-secondary); padding: 0 8px; }
+.tray-icon-btn { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 4px; cursor: pointer; color: var(--text-tertiary); font-size: 11px; transition: all var(--speed-fast); }
+.tray-icon-btn:hover { background: var(--bg-hover); color: var(--text-secondary); }
+
+#tray-menu { position: fixed; width: 200px; background: var(--bg-surface); border: 1px solid var(--border-medium); border-radius: var(--radius-card); box-shadow: var(--shadow-menu); z-index: 400; overflow: hidden; display: none; padding: 4px; }
+#tray-menu.visible { display: block; animation: menuFadeIn 0.2s var(--ease-spring) forwards; }
+#tray-menu.hiding { animation: menuFadeOut 0.15s var(--ease-smooth) forwards; }
+.menu-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 6px; cursor: pointer; font-size: var(--font-base); color: var(--text-secondary); transition: all var(--speed-fast) var(--ease-smooth); }
+.menu-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+.menu-item .menu-icon { width: 16px; text-align: center; font-size: 12px; color: var(--text-tertiary); flex-shrink: 0; }
+.menu-item:hover .menu-icon { color: var(--text-secondary); }
+.menu-separator { height: 1px; background: var(--border-subtle); margin: 4px 8px; }
+.menu-item.danger:hover { background: rgba(239,68,68,0.1); color: var(--status-red); }
+.menu-item.danger:hover .menu-icon { color: var(--status-red); }
+.menu-shortcut { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: var(--font-xs); color: var(--text-ghost); }
+
+@media (max-width: 1100px) {
+  #donna-window.panel-open { width: calc(100vw - 24px); }
+  :root { --panel-w: 360px; }
+}
+@media (max-width: 700px) {
+  #donna-window { width: calc(100vw - 16px); }
+  #activity-bar { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="backdrop"></div>
+
+<div id="donna-window">
+  <!-- Activity Bar -->
+  <div id="activity-bar">
+    <div class="ab-icon active" data-panel="chat" title="Chat">
+      <svg viewBox="0 0 20 20"><path d="M4 5a2 2 0 012-2h8a2 2 0 012 2v6a2 2 0 01-2 2H8l-4 3v-3a2 2 0 01-2-2V5z"/></svg>
+    </div>
+    <div class="ab-icon" data-panel="incidents" title="Incidents">
+      <svg viewBox="0 0 20 20"><path d="M10 2l8 15H2L10 2z"/><line x1="10" y1="8" x2="10" y2="11"/><circle cx="10" cy="13.5" r="0.7" fill="currentColor" stroke="none"/></svg>
+      <span class="ab-badge red" id="badge-incidents" style="display:none">2</span>
+    </div>
+    <div class="ab-icon" data-panel="prs" title="Pull Requests">
+      <svg viewBox="0 0 20 20"><circle cx="6" cy="6" r="2"/><circle cx="14" cy="14" r="2"/><circle cx="6" cy="14" r="2"/><line x1="6" y1="8" x2="6" y2="12"/><path d="M8 6h3a3 3 0 013 3v3"/></svg>
+      <span class="ab-badge accent" id="badge-prs">3</span>
+    </div>
+    <div class="ab-icon" data-panel="sprint" title="Sprint Dashboard">
+      <svg viewBox="0 0 20 20"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/><line x1="8" y1="8" x2="8" y2="17"/></svg>
+    </div>
+    <div class="ab-spacer"></div>
+    <div class="ab-icon" data-panel="settings" title="Settings">
+      <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="3"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M15.8 4.2l-1.4 1.4M5.6 14.4l-1.4 1.4"/></svg>
+    </div>
+  </div>
+
+  <!-- Main Column (command palette) -->
+  <div id="main-column">
+    <div id="title-bar">
+      <div id="title-bar-left">
+        <div class="donna-monogram">D</div>
+        <span class="status-dot-inline"></span>
+        <span id="title-text">Donna</span>
+      </div>
+      <div id="title-bar-right">
+        <button class="title-btn" id="btn-dashboard" title="Dashboard">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="2" y1="4" x2="12" y2="4"/><line x1="2" y1="7" x2="12" y2="7"/><line x1="2" y1="10" x2="12" y2="10"/></svg>
+        </button>
+        <button class="title-btn close" id="btn-close" title="Close (Esc)">&#10005;</button>
+      </div>
+    </div>
+    <div id="shortcut-hint"><kbd>Alt</kbd> + <kbd>Space</kbd> to summon Donna</div>
+    <div id="command-section">
+      <div id="command-input-wrap">
+        <span id="command-prompt">&#9657;</span>
+        <input type="text" id="command-input" placeholder="Ask Donna anything..." autocomplete="off" spellcheck="false">
+        <div id="suggestions"></div>
+      </div>
+    </div>
+    <div id="chips-section">
+      <div class="chip" data-action="coffee"><span class="chip-icon"><svg viewBox="0 0 16 16"><path d="M2 5h9v6a3 3 0 01-3 3H5a3 3 0 01-3-3V5z"/><path d="M11 6h1.5a2 2 0 010 4H11"/><line x1="3" y1="2" x2="3" y2="3.5"/><line x1="6.5" y1="1" x2="6.5" y2="3.5"/><line x1="10" y1="2" x2="10" y2="3.5"/></svg></span>Coffee</div>
+      <div class="chip" data-action="incidents"><span class="chip-icon"><svg viewBox="0 0 16 16"><path d="M8 1l7 13H1L8 1z"/><line x1="8" y1="6" x2="8" y2="9"/><circle cx="8" cy="11.5" r="0.5" fill="currentColor" stroke="none"/></svg></span>Incidents</div>
+      <div class="chip" data-action="track"><span class="chip-icon"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M5 6.5h6M5 9.5h3"/><circle cx="12" cy="11" r="2.5" fill="none"/><line x1="13.8" y1="12.8" x2="15" y2="14"/></svg></span>Track Order</div>
+      <div class="chip" data-action="build"><span class="chip-icon"><svg viewBox="0 0 16 16"><path d="M13 5l-5 5-3-3"/><circle cx="8" cy="8" r="6.5"/></svg></span>Build Status</div>
+      <div class="chip" data-action="workitems"><span class="chip-icon"><svg viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="2"/><line x1="5" y1="5.5" x2="11" y2="5.5"/><line x1="5" y1="8" x2="9" y2="8"/><line x1="5" y1="10.5" x2="11" y2="10.5"/></svg></span>Work Items</div>
+    </div>
+    <div id="chat-container"></div>
+    <div id="dashboard-section">
+      <div id="dashboard-header">
+        <span id="dashboard-title">STATUS</span>
+        <span class="dashboard-toggle">&#9662;</span>
+      </div>
+      <div id="dashboard-items">
+        <div class="dash-item" data-detail="Order placed at 2:14 PM via Swiggy Instamart&#10;Delivery partner: Ravi (4.8&#9733;)&#10;Currently on 80 Feet Road, Koramangala"><div class="dash-dot amber"></div><div class="dash-content"><div class="dash-label">VCB arriving in 12 min</div><div class="dash-meta">Swiggy &#183; Kink HSR Layout</div></div><div class="dash-arrow">&#9657;</div></div>
+        <div class="dash-item" data-detail="Branch: main&#10;Duration: 3m 42s&#10;247 tests passed, 0 failed&#10;Deployed to staging at 2:31 PM"><div class="dash-dot green"></div><div class="dash-content"><div class="dash-label">Pipeline #4521 &#8212; Passed</div><div class="dash-meta">main &#183; 2 min ago</div></div><div class="dash-arrow">&#9657;</div></div>
+        <div class="dash-item" data-detail="Reviewers: @sana (approved), @vex (approved)&#10;No merge conflicts&#10;CI: All checks passed&#10;Ready to squash-merge"><div class="dash-dot accent"></div><div class="dash-content"><div class="dash-label">PR #142 &#8212; 2 approvals, ready to merge</div><div class="dash-meta">feat: add DAG validation &#183; guptahemant</div></div><div class="dash-arrow">&#9657;</div></div>
+        <div class="dash-item" data-detail="Last incident: Sev2 IcM #627811&#10;Resolved 3 days ago&#10;RCA: Timeout in metadata refresh&#10;All services healthy"><div class="dash-dot green"></div><div class="dash-content"><div class="dash-label">No active incidents</div><div class="dash-meta">IcM &#183; FMV Service</div></div><div class="dash-arrow">&#9657;</div></div>
+        <div class="dash-item" data-detail="Teams meeting &#183; Bridge link ready&#10;Attendees: 6 people&#10;Agenda: Sprint review, blockers&#10;Duration: 30 min"><div class="dash-dot amber"></div><div class="dash-content"><div class="dash-label">Standup in 45 min</div><div class="dash-meta">Teams &#183; 3:30 PM</div></div><div class="dash-arrow">&#9657;</div></div>
+      </div>
+    </div>
+    <div id="status-bar">
+      <span id="status-bar-text">Donna is watching 3 pipelines, 0 incidents, 1 delivery</span>
+      <div id="status-bar-right"><div class="status-bar-dot" style="background:var(--status-green)"></div></div>
+    </div>
+  </div>
+
+  <!-- Panel Container (right side) -->
+  <div id="panel-container">
+    <!-- INCIDENTS PANEL -->
+    <div class="panel" id="panel-incidents">
+      <div class="panel-header">
+        <span class="panel-title">Incidents</span>
+        <button class="panel-close" data-close-panel>&#10005;</button>
+      </div>
+      <div class="panel-body" id="incidents-body"></div>
+    </div>
+    <!-- PRS PANEL -->
+    <div class="panel" id="panel-prs">
+      <div class="panel-header">
+        <span class="panel-title">Pull Requests</span>
+        <button class="panel-close" data-close-panel>&#10005;</button>
+      </div>
+      <div class="panel-body" id="prs-body"></div>
+    </div>
+    <!-- SPRINT PANEL -->
+    <div class="panel" id="panel-sprint">
+      <div class="panel-header">
+        <span class="panel-title">Sprint Dashboard</span>
+        <button class="panel-close" data-close-panel>&#10005;</button>
+      </div>
+      <div class="panel-body" id="sprint-body"></div>
+    </div>
+    <!-- SETTINGS PANEL -->
+    <div class="panel" id="panel-settings">
+      <div class="panel-header">
+        <span class="panel-title">Settings</span>
+        <button class="panel-close" data-close-panel>&#10005;</button>
+      </div>
+      <div class="panel-body">
+        <div style="padding:20px 0;text-align:center;color:var(--text-tertiary)">
+          <div style="font-size:28px;margin-bottom:8px;">&#9881;</div>
+          <div style="font-size:var(--font-md);font-weight:500;color:var(--text-secondary);">Settings aren't built yet.</div>
+          <div style="font-size:var(--font-sm);margin-top:4px;">Donna is too busy being indispensable.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="notification-container"></div>
+
+<div id="system-tray">
+  <div class="tray-icon-btn" title="Show hidden icons">&#9650;</div>
+  <div class="tray-separator"></div>
+  <div id="tray-donna-btn" title="Donna &#8212; Active">
+    <div class="tray-monogram">D<div class="tray-status-dot"></div></div>
+    <span class="tray-label">Donna</span>
+  </div>
+  <div class="tray-separator"></div>
+  <div id="tray-clock"></div>
+</div>
+
+<div id="tray-menu">
+  <div class="menu-item" data-action="open"><span class="menu-icon">&#9655;</span>Open Donna<span class="menu-shortcut">Alt+Space</span></div>
+  <div class="menu-separator"></div>
+  <div class="menu-item" data-action="preferences"><span class="menu-icon">&#9881;</span>Preferences</div>
+  <div class="menu-item" data-action="mute"><span class="menu-icon">&#9676;</span>Mute for 1 hr</div>
+  <div class="menu-separator"></div>
+  <div class="menu-item danger" data-action="quit"><span class="menu-icon">&#10005;</span>Quit Donna</div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+  const $ = (s, c) => (c || document).querySelector(s);
+  const $$ = (s, c) => [...(c || document).querySelectorAll(s)];
+
+  const backdrop = $('#backdrop');
+  const donnaWindow = $('#donna-window');
+  const commandInput = $('#command-input');
+  const suggestionsEl = $('#suggestions');
+  const chatContainer = $('#chat-container');
+  const dashboardSection = $('#dashboard-section');
+  const dashboardHeader = $('#dashboard-header');
+  const statusBarText = $('#status-bar-text');
+  const shortcutHint = $('#shortcut-hint');
+  const notificationContainer = $('#notification-container');
+  const trayMenu = $('#tray-menu');
+  const trayDonnaBtn = $('#tray-donna-btn');
+  const trayClock = $('#tray-clock');
+  const btnClose = $('#btn-close');
+  const btnDashboard = $('#btn-dashboard');
+  const panelContainer = $('#panel-container');
+
+  let state = {
+    visible: true, chatMode: false, dashboardOpen: true,
+    activePanel: null, idleTimer: null,
+  };
+
+  /* ══════════════════════════════════════
+     PANEL DATA
+     ══════════════════════════════════════ */
+  const INCIDENTS = [
+    { id: 628495, sev: 2, title: 'Metadata refresh timeout in FMV Service', team: 'FLT\\FMV Service', time: '42 min ago', status: 'active',
+      impact: '3 subscriptions impacted. Materialized views stale for ~45 min.',
+      timeline: [
+        { time: '2:01 PM', text: 'Alert fired: Metadata refresh exceeded 120s timeout', color: 'var(--status-red)' },
+        { time: '2:05 PM', text: 'Auto-page sent to on-call (hemant)', color: 'var(--status-amber)' },
+        { time: '2:12 PM', text: 'Acknowledged by hemant. Investigating.', color: 'var(--accent)' },
+      ],
+      tsg: 'TSG-FMV-004: Metadata Refresh Failures' },
+    { id: 628501, sev: 1, title: 'OneLake write failures in West US 2', team: 'FLT\\OneLake Gateway', time: '18 min ago', status: 'active',
+      impact: '12 subscriptions impacted. Write operations returning 503.',
+      timeline: [
+        { time: '2:25 PM', text: 'Spike in 503 errors detected by monitor', color: 'var(--status-red)' },
+        { time: '2:27 PM', text: 'Auto-page sent to on-call team', color: 'var(--status-amber)' },
+        { time: '2:30 PM', text: 'Incident bridge started. 4 engineers joined.', color: 'var(--accent)' },
+      ],
+      tsg: 'TSG-OL-001: OneLake Write Path Failures' },
+    { id: 627811, sev: 2, title: 'DAG execution timeout on large topology', team: 'FLT\\FMV Service', time: '3 days ago', status: 'mitigated',
+      impact: 'Resolved. 1 customer impacted. RCA: cycle detection was O(n\u00b3).',
+      timeline: [
+        { time: 'Mon 11a', text: 'Customer reported DAG stuck in "Running" state', color: 'var(--status-amber)' },
+        { time: 'Mon 2p', text: 'Root cause identified: cycle detection perf issue', color: 'var(--accent)' },
+        { time: 'Mon 5p', text: 'Fix deployed. Incident mitigated.', color: 'var(--status-green)' },
+      ],
+      tsg: 'TSG-FMV-002: DAG Execution Timeouts' },
+    { id: 628489, sev: 3, title: 'Intermittent latency spike in schema resolution', team: 'FLT\\Catalog Service', time: '2 hrs ago', status: 'active',
+      impact: 'No customer impact. P95 latency elevated from 200ms to 800ms.',
+      timeline: [
+        { time: '12:45P', text: 'Latency alert threshold crossed (>500ms P95)', color: 'var(--status-amber)' },
+        { time: '1:00 PM', text: 'Investigating. Correlating with recent deployment.', color: 'var(--accent)' },
+      ],
+      tsg: 'TSG-CAT-003: Schema Resolution Performance' },
+  ];
+
+  const PRS_REVIEW = [
+    { repo: 'workload-fabriclivetable', title: 'fix: resolve cycle detection perf regression', author: 'SA', authorName: 'Sana', color: '#e879f9', adds: 142, dels: 38, status: 'waiting', checks: '12/12', conflict: false, id: 156 },
+    { repo: 'workload-fabriclivetable', title: 'feat: add SignalR MessagePack transport', author: 'VX', authorName: 'Vex', color: '#34d399', adds: 891, dels: 234, status: 'waiting', checks: '12/12', conflict: false, id: 159 },
+    { repo: 'edog-studio', title: 'chore: upgrade Playwright to v1.42', author: 'SN', authorName: 'Sentinel', color: '#fbbf24', adds: 45, dels: 67, status: 'changes', checks: '10/12', conflict: true, id: 87 },
+  ];
+  const PRS_MINE = [
+    { repo: 'workload-fabriclivetable', title: 'feat: add DAG validation with topological sort', author: 'HG', authorName: 'You', color: 'var(--accent)', adds: 324, dels: 89, status: 'approved', checks: '12/12', conflict: false, id: 142 },
+    { repo: 'edog-studio', title: 'fix: command palette keyboard navigation', author: 'HG', authorName: 'You', color: 'var(--accent)', adds: 56, dels: 12, status: 'approved', checks: '8/8', conflict: false, id: 85 },
+  ];
+
+  const SPRINT_ITEMS = [
+    { type: 'bug', icon: '\u25CF', title: 'Memory leak in DAG renderer on large graphs', id: 891, status: 'in-progress', points: 5, assignee: 'HG' },
+    { type: 'task', icon: '\u25A0', title: 'Implement API rate limiting for catalog service', id: 924, status: 'blocked', points: 3, assignee: 'HG', blockReason: 'Waiting on API team response' },
+    { type: 'story', icon: '\u25B2', title: 'DAG validation with topological sort', id: 918, status: 'done', points: 8, assignee: 'HG' },
+    { type: 'task', icon: '\u25A0', title: 'Add E2E tests for environment wizard', id: 932, status: 'new-item', points: 3, assignee: 'HG' },
+  ];
+
+  /* ══════════════════════════════════════
+     RENDER PANELS
+     ══════════════════════════════════════ */
+  function renderIncidents() {
+    const body = $('#incidents-body');
+    body.innerHTML = INCIDENTS.map((inc, i) => {
+      const sevClass = inc.status === 'mitigated' ? 'mitigated' : `sev${inc.sev}`;
+      const sevLabel = inc.status === 'mitigated' ? 'MITIGATED' : `SEV${inc.sev}`;
+      return `<div class="incident-item" data-idx="${i}" style="animation-delay:${i*0.06}s">
+        <div class="incident-top">
+          <span class="sev-badge ${sevClass}">${sevLabel}</span>
+          <div class="incident-info">
+            <div class="incident-title">IcM #${inc.id} \u2014 ${inc.title}</div>
+            <div class="incident-meta">
+              <span>${inc.team}</span>
+              <span class="incident-time">${inc.time}</span>
+            </div>
+          </div>
+          <span class="incident-expand-arrow">\u25B7</span>
+        </div>
+        <div class="incident-detail">
+          <div class="incident-detail-section">
+            <div class="incident-detail-label">Impact</div>
+            <div class="incident-detail-text">${inc.impact}</div>
+          </div>
+          <div class="incident-detail-section">
+            <div class="incident-detail-label">Timeline</div>
+            ${inc.timeline.map(t => `<div class="incident-timeline-item">
+              <div class="timeline-dot" style="background:${t.color}"></div>
+              <span class="timeline-time">${t.time}</span>
+              <span>${t.text}</span>
+            </div>`).join('')}
+          </div>
+          <div class="incident-detail-section">
+            <div class="incident-detail-label">TSG</div>
+            <div class="incident-detail-text" style="color:var(--text-accent)">${inc.tsg}</div>
+          </div>
+          ${inc.status !== 'mitigated' ? `<div class="incident-actions">
+            <button class="incident-action-btn">\u25B6 Run Kusto</button>
+            <button class="incident-action-btn primary">\u2713 Mitigate</button>
+          </div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+    $$('.incident-item', body).forEach(item => {
+      item.addEventListener('click', () => {
+        const wasExpanded = item.classList.contains('expanded');
+        $$('.incident-item.expanded', body).forEach(o => o.classList.remove('expanded'));
+        if (!wasExpanded) item.classList.add('expanded');
+      });
+    });
+  }
+
+  function renderPRs() {
+    const body = $('#prs-body');
+    const renderPR = (pr, i) => `<div class="pr-item${pr.conflict ? ' conflict' : ''}" style="animation-delay:${i*0.06}s">
+      <div class="pr-top">
+        <div class="pr-avatar" style="background:${pr.color}">${pr.author}</div>
+        <div class="pr-info">
+          <div class="pr-repo">${pr.repo} #${pr.id}</div>
+          <div class="pr-title">${pr.title}</div>
+        </div>
+      </div>
+      <div class="pr-bottom">
+        <div class="pr-diff">
+          <span class="pr-diff-add">+${pr.adds}</span>
+          <span class="pr-diff-del">-${pr.dels}</span>
+        </div>
+        <span class="pr-status-pill ${pr.status}">${pr.status === 'approved' ? '\u2713 Approved' : pr.status === 'changes' ? '\u25CB Changes Requested' : '\u25CC Waiting'}</span>
+        ${pr.conflict ? '<span class="pr-conflict-badge">\u26A0 Merge Conflict</span>' : ''}
+        <span class="pr-checks" style="margin-left:auto">\u2713 ${pr.checks}</span>
+      </div>
+    </div>`;
+    body.innerHTML = `<div class="panel-section-title">Needs Your Review</div>` +
+      PRS_REVIEW.map(renderPR).join('') +
+      `<div class="panel-section-title" style="margin-top:8px">Your PRs</div>` +
+      PRS_MINE.map(renderPR).join('');
+  }
+
+  function renderSprint() {
+    const body = $('#sprint-body');
+    const totalPts = SPRINT_ITEMS.reduce((s,i) => s + i.points, 0);
+    const donePts = SPRINT_ITEMS.filter(i => i.status === 'done').reduce((s,i) => s + i.points, 0);
+    const remaining = SPRINT_ITEMS.filter(i => i.status !== 'done').length;
+    const pct = Math.round((donePts / totalPts) * 100);
+
+    body.innerHTML = `
+      <div class="sprint-header-card">
+        <div class="sprint-name">Sprint 47 \u2014 Day 8 of 14</div>
+        <div class="sprint-dates">Jun 24 \u2013 Jul 5, 2024</div>
+        <div class="sprint-progress-track">
+          <div class="sprint-progress-fill" style="--fill-pct:${pct}%;width:${pct}%"></div>
+        </div>
+        <div class="sprint-stats">
+          <div class="sprint-stat">
+            <div class="sprint-stat-value">${donePts}/${totalPts}</div>
+            <div class="sprint-stat-label">Story Points</div>
+          </div>
+          <div class="sprint-stat">
+            <div class="sprint-stat-value">${remaining}</div>
+            <div class="sprint-stat-label">Remaining</div>
+          </div>
+          <div class="sprint-stat">
+            <div class="sprint-stat-value">${pct}%</div>
+            <div class="sprint-stat-label">Complete</div>
+          </div>
+        </div>
+      </div>
+      <div class="burndown-card">
+        <div class="burndown-title">Burndown</div>
+        <svg class="burndown-svg" viewBox="0 0 360 100" preserveAspectRatio="none">
+          <text x="0" y="10">${totalPts}pts</text><text x="320" y="98">Day 14</text>
+          <line class="ideal" x1="10" y1="12" x2="350" y2="92" stroke-width="1"/>
+          <path class="fill" d="M10,12 L70,20 L130,28 L190,42 L250,50 L310,55 L350,92 L350,92 L10,92 Z"/>
+          <polyline class="actual" points="10,12 70,20 130,28 190,42 250,50 310,55"/>
+          <circle cx="310" cy="55" r="3.5" fill="var(--accent)" stroke="var(--bg-panel)" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="panel-section-title">Work Items</div>
+      ${SPRINT_ITEMS.map((wi, i) => `<div class="sprint-work-item${wi.status === 'blocked' ? ' blocked' : ''}" style="animation-delay:${i*0.06}s">
+        <div class="wi-type-icon ${wi.type}">${wi.icon}</div>
+        <div class="wi-info">
+          <div class="wi-title">${wi.title}</div>
+          <div class="wi-meta">#${wi.id} \u00b7 ${wi.points}pts \u00b7 ${wi.assignee}${wi.blockReason ? ' \u2014 <span style="color:var(--status-red)">' + wi.blockReason + '</span>' : ''}</div>
+        </div>
+        <span class="wi-status-pill ${wi.status}">${wi.status === 'done' ? '\u2713 Done' : wi.status === 'in-progress' ? '\u25CB In Progress' : wi.status === 'blocked' ? '\u2716 Blocked' : '\u25CC New'}</span>
+      </div>`).join('')}`;
+  }
+
+  /* ══════════════════════════════════════
+     PANEL MANAGEMENT
+     ══════════════════════════════════════ */
+  function openPanel(name) {
+    if (name === 'chat') { closePanel(); return; }
+    if (state.activePanel === name) { closePanel(); return; }
+
+    // Lazy render
+    if (name === 'incidents') renderIncidents();
+    if (name === 'prs') renderPRs();
+    if (name === 'sprint') renderSprint();
+
+    // Deactivate all panels
+    $$('.panel').forEach(p => p.classList.remove('active'));
+    // Activate target
+    const panel = $(`#panel-${name}`);
+    if (!panel) return;
+    panel.classList.add('active');
+    panel.style.animation = 'none'; panel.offsetHeight;
+    panel.style.animation = 'panelSlideIn 0.32s var(--ease-spring) both';
+
+    panelContainer.classList.add('open');
+    donnaWindow.classList.add('panel-open');
+    state.activePanel = name;
+
+    // Update activity bar
+    $$('.ab-icon').forEach(ic => ic.classList.remove('active'));
+    const abIcon = $(`.ab-icon[data-panel="${name}"]`);
+    if (abIcon) abIcon.classList.add('active');
+  }
+
+  function closePanel() {
+    if (!state.activePanel) {
+      // Ensure chat is active in activity bar
+      $$('.ab-icon').forEach(ic => ic.classList.remove('active'));
+      $(`.ab-icon[data-panel="chat"]`).classList.add('active');
+      return;
+    }
+    const panel = $(`#panel-${state.activePanel}`);
+    if (panel) {
+      panel.style.animation = 'panelSlideOut 0.2s var(--ease-smooth) forwards';
+      setTimeout(() => { panel.classList.remove('active'); panel.style.animation = ''; }, 220);
+    }
+    panelContainer.classList.remove('open');
+    donnaWindow.classList.remove('panel-open');
+    state.activePanel = null;
+    $$('.ab-icon').forEach(ic => ic.classList.remove('active'));
+    $(`.ab-icon[data-panel="chat"]`).classList.add('active');
+  }
+
+  // Activity bar clicks
+  $$('.ab-icon').forEach(icon => {
+    icon.addEventListener('click', () => openPanel(icon.dataset.panel));
+  });
+
+  // Panel close buttons
+  $$('[data-close-panel]').forEach(btn => {
+    btn.addEventListener('click', closePanel);
+  });
+
+  // Show incident badge after first notification
+  setTimeout(() => { $('#badge-incidents').style.display = 'flex'; }, 7500);
+
+  /* ══════════════════════════════════════
+     DONNA BRAIN (preserved from v1)
+     ══════════════════════════════════════ */
+  const DONNA_RESPONSES = {
+    coffee: { user: 'Get me my usual coffee', donna: 'Vietnamese Cold Brew from <span class="msg-highlight">Kink HSR</span>. Coupon <span class="msg-code">MONSOON30</span> applied \u2014 <span class="msg-highlight">\u20b9200 COD</span>. Arriving in ~35 min. Place it?', followUp: { user: 'yes', donna: '<span class="msg-success">Done.</span> Order <span class="msg-code">#48291</span> placed. I\'ll track it and ping you when it\'s close. Now \u2014 back to that PR review?' } },
+    incidents: { user: 'Check incidents', donna: 'You have <span class="msg-warning">2 active incidents</span>. Sev1 on OneLake (18m), Sev2 on FMV (42m). Opening the panel \u2014', panel: 'incidents' },
+    track: { user: 'Where\'s my order?', donna: 'Your VCB from <span class="msg-highlight">Kink HSR</span> is <span class="msg-warning">12 minutes away</span>. Delivery partner: Ravi (4.8\u2605). He\'s on 80 Feet Road now. I\'ll let you know when he\'s at the door.' },
+    build: { user: 'How\'s the build?', donna: 'Pipeline <span class="msg-code">#4521</span> on main \u2014 <span class="msg-success">\u2713 All 247 tests passed</span>. Deployed to staging 2 minutes ago. PR #142 is green across the board. Want me to merge it?' },
+    workitems: { user: 'What\'s on my plate?', donna: 'Opening your sprint board \u2014 you have 4 items, 1 blocked, 1 done. Let me show you.', panel: 'sprint' },
+  };
+  const DONNA_FREEFORM = [
+    'I anticipated you\'d ask that. Give me a second.',
+    'Already on it. I started before you finished typing.',
+    'Three steps ahead, as always. Here\'s what I found.',
+    'You really should delegate more to me. But since you asked\u2014',
+    'I have opinions about this. But you didn\'t ask for those.',
+    'Consider it done. I\'ll pretend you thought of it first.',
+  ];
+  const DONNA_FREEFORM_DETAILED = {
+    'hello': 'You summoned. I\'m here. What do you need?',
+    'hi': 'Let\'s skip the pleasantries. What are we working on?',
+    'help': 'I manage your pipelines, track your deliveries, triage your incidents, and occasionally judge your code. What do you need?',
+    'thanks': 'I know. Now \u2014 anything else, or can I go back to watching your 3 pipelines?',
+    'review': 'PR #142 has 2 approvals, all checks green, no conflicts. Squash-merge? Or do you want me to give it my own review first? Fair warning \u2014 I have notes.',
+    'merge': '<span class="msg-success">Merging PR #142</span> into main. Squash strategy, deleting source branch. Done in 3\u2026 2\u2026 1\u2026 <span class="msg-success">\u2713 Merged.</span> Pipeline triggered. I\'ll watch the deploy.',
+    'weather': 'Bangalore. 26\u00b0C. Partly cloudy. 78% humidity. Your hair won\'t cooperate. You\'re welcome.',
+    'my prs': 'Opening your PRs \u2014 3 need your review, 2 are yours. Let me show you.',
+    'prs': 'Opening your PRs \u2014 3 need your review, 2 are yours. Let me show you.',
+    'sprint': 'Sprint 47, Day 8 of 14. You\'re at 42% \u2014 a bit behind. Let me pull up the board.',
+    'standup': 'Your standup is at 3:30 PM. I\'ve drafted your update. Opening sprint board so you can prep.',
+  };
+
+  const PANEL_TRIGGERS = { 'incidents': 'incidents', 'icm': 'incidents', 'incident': 'incidents', 'my prs': 'prs', 'prs': 'prs', 'pull request': 'prs', 'sprint': 'sprint', 'standup': 'sprint', 'board': 'sprint' };
+
+  const SUGGESTIONS_DB = [
+    { icon: '\u2615', title: 'Order Vietnamese Cold Brew', sub: 'Kink HSR \u2014 your usual', action: 'coffee', accent: false },
+    { icon: '\u25B2', title: 'Triage IcM incidents', sub: 'Check active service alerts', action: 'incidents', accent: false },
+    { icon: '\u25C6', title: 'Track delivery', sub: 'Swiggy order status', action: 'track', accent: false },
+    { icon: '\u2713', title: 'Check build pipeline', sub: 'Pipeline #4521 on main', action: 'build', accent: false },
+    { icon: '\u25A0', title: 'View work items', sub: 'Sprint tasks & PRs', action: 'workitems', accent: false },
+    { icon: '\u21BB', title: 'My Pull Requests', sub: '3 need review, 2 are yours', action: null, accent: true, panelAction: 'prs' },
+    { icon: '\u25CB', title: 'Sprint Dashboard', sub: 'Sprint 47 \u2014 Day 8 of 14', action: null, accent: true, panelAction: 'sprint' },
+    { icon: '\u266A', title: 'Schedule focus time', sub: 'Block 2 hours, no meetings', action: null, accent: false },
+    { icon: '\u2601', title: 'Check Azure status', sub: 'Service health dashboard', action: null, accent: false },
+    { icon: '\u25B6', title: 'Run pipeline', sub: 'Trigger CI/CD build', action: null, accent: false },
+  ];
+  const NOTIFICATIONS = [
+    { delay: 7000, icon: '\u25B2', iconClass: 'red', barClass: 'red', title: 'IcM #628495 \u2014 Sev2 on FMV Service', text: '3 subscriptions impacted. Metadata refresh timeout. Want me to triage?', panelAction: 'incidents' },
+    { delay: 16000, icon: '\u25C6', iconClass: 'amber', barClass: 'amber', title: 'Your VCB is 5 min away', text: 'Delivery partner Ravi is turning onto your street. Almost there.' },
+    { delay: 28000, icon: '\u2713', iconClass: 'green', barClass: '', title: 'Pipeline #4522 \u2014 Build Succeeded', text: 'Branch: feat/dag-cycles \u2014 248 tests passed. Ready for review.' },
+  ];
+
+  /* ══════════════════════════════════════
+     WINDOW MANAGEMENT
+     ══════════════════════════════════════ */
+  function showWindow() {
+    if (state.visible) return;
+    state.visible = true;
+    backdrop.classList.remove('hidden', 'hiding');
+    donnaWindow.classList.remove('hidden', 'hiding');
+    backdrop.style.animation = 'none'; backdrop.offsetHeight;
+    backdrop.style.animation = 'backdropIn 0.3s var(--ease-smooth) forwards';
+    donnaWindow.style.animation = 'none'; donnaWindow.offsetHeight;
+    donnaWindow.style.animation = 'windowIn 0.4s var(--ease-spring) forwards';
+    commandInput.focus();
+    resetIdleTimer();
+  }
+  function hideWindow() {
+    if (!state.visible) return;
+    state.visible = false;
+    backdrop.classList.add('hiding');
+    donnaWindow.classList.add('hiding');
+    clearTimeout(state.idleTimer);
+    setTimeout(() => {
+      backdrop.classList.add('hidden'); donnaWindow.classList.add('hidden');
+      backdrop.classList.remove('hiding'); donnaWindow.classList.remove('hiding');
+    }, 280);
+  }
+  function toggleWindow() { state.visible ? hideWindow() : showWindow(); }
+
+  /* ══════════════════════════════════════
+     COMMAND INPUT & SUGGESTIONS
+     ══════════════════════════════════════ */
+  function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+  function highlightMatch(text, query) {
+    const idx = text.toLowerCase().indexOf(query);
+    if (idx === -1) return escapeHtml(text);
+    return escapeHtml(text.slice(0, idx)) + '<span style="color:var(--text-accent-bright)">' + escapeHtml(text.slice(idx, idx + query.length)) + '</span>' + escapeHtml(text.slice(idx + query.length));
+  }
+
+  function filterSuggestions(query) {
+    if (!query.trim()) { suggestionsEl.classList.remove('visible'); return; }
+    const q = query.toLowerCase().trim();
+    const matches = SUGGESTIONS_DB.filter(s => s.title.toLowerCase().includes(q) || s.sub.toLowerCase().includes(q) || (s.action && s.action.includes(q))).slice(0, 5);
+    if (!matches.length) {
+      suggestionsEl.innerHTML = `<div class="suggestion-item" data-freeform="true"><div class="suggestion-icon accent">\u25C9</div><div class="suggestion-text"><div class="suggestion-title">Ask Donna: "${escapeHtml(query)}"</div><div class="suggestion-sub">AI-powered response</div></div><span class="suggestion-shortcut">Enter</span></div>`;
+    } else {
+      suggestionsEl.innerHTML = matches.map((s, i) => `<div class="suggestion-item" data-action="${s.action || ''}" data-panel-action="${s.panelAction || ''}" style="animation-delay:${i*0.04}s"><div class="suggestion-icon${s.accent ? ' accent' : ''}">${s.icon}</div><div class="suggestion-text"><div class="suggestion-title">${highlightMatch(s.title, q)}</div><div class="suggestion-sub">${s.sub}</div></div></div>`).join('');
+    }
+    suggestionsEl.classList.add('visible');
+    $$('.suggestion-item', suggestionsEl).forEach(el => {
+      el.addEventListener('click', () => {
+        const action = el.dataset.action;
+        const panelAction = el.dataset.panelAction;
+        if (panelAction) { openPanel(panelAction); }
+        else if (action && DONNA_RESPONSES[action]) { executeDonnaAction(action); }
+        else { sendUserMessage(commandInput.value.trim() || 'help'); }
+        suggestionsEl.classList.remove('visible');
+        commandInput.value = '';
+      });
+    });
+  }
+
+  commandInput.addEventListener('input', () => { filterSuggestions(commandInput.value); resetIdleTimer(); });
+  commandInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && commandInput.value.trim()) {
+      const val = commandInput.value.trim().toLowerCase();
+      suggestionsEl.classList.remove('visible');
+      // Check for panel triggers first
+      const panelKey = Object.keys(PANEL_TRIGGERS).find(k => val.includes(k));
+      if (panelKey) {
+        const panelName = PANEL_TRIGGERS[panelKey];
+        sendUserMessage(commandInput.value.trim(), () => openPanel(panelName));
+      } else {
+        const actionKey = Object.keys(DONNA_RESPONSES).find(k => val.includes(k));
+        if (actionKey) executeDonnaAction(actionKey);
+        else sendUserMessage(commandInput.value.trim());
+      }
+      commandInput.value = '';
+    }
+    if (e.key === 'Escape') {
+      if (suggestionsEl.classList.contains('visible')) { suggestionsEl.classList.remove('visible'); return; }
+      if (state.activePanel) { closePanel(); return; }
+      hideWindow();
+    }
+  });
+  document.addEventListener('click', (e) => { if (!e.target.closest('#command-input-wrap')) suggestionsEl.classList.remove('visible'); });
+
+  /* ══════════════════════════════════════
+     CHAT SYSTEM
+     ══════════════════════════════════════ */
+  function enterChatMode() {
+    if (!state.chatMode) {
+      state.chatMode = true;
+      chatContainer.classList.add('visible');
+      shortcutHint.style.display = 'none';
+    }
+  }
+  function addMessage(type, html, extraClass) {
+    enterChatMode();
+    const msgEl = document.createElement('div');
+    msgEl.className = `message ${type}${extraClass ? ' ' + extraClass : ''}`;
+    if (type === 'donna') {
+      msgEl.innerHTML = `<div class="message-avatar">D</div><div><div class="message-bubble">${html}</div><div class="message-time">just now</div></div>`;
+    } else {
+      msgEl.innerHTML = `<div><div class="message-bubble">${escapeHtml(html)}</div><div class="message-time">just now</div></div>`;
+    }
+    msgEl.style.animationDelay = `${chatContainer.children.length * 0.05}s`;
+    chatContainer.appendChild(msgEl);
+    requestAnimationFrame(() => { chatContainer.scrollTop = chatContainer.scrollHeight; });
+    return msgEl;
+  }
+  function addTypingIndicator() {
+    enterChatMode();
+    const el = document.createElement('div');
+    el.className = 'message donna typing-msg';
+    el.innerHTML = `<div class="message-avatar">D</div><div><div class="message-bubble"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div>`;
+    el.style.animation = 'messageSlideInLeft 0.3s var(--ease-out) both';
+    chatContainer.appendChild(el);
+    requestAnimationFrame(() => { chatContainer.scrollTop = chatContainer.scrollHeight; });
+    return el;
+  }
+  function removeTypingIndicator() { const t = chatContainer.querySelector('.typing-msg'); if (t) t.remove(); }
+
+  function sendUserMessage(text, afterRespond) {
+    addMessage('user', text);
+    addTypingIndicator();
+    const delay = 600 + Math.random() * 800;
+    setTimeout(() => {
+      removeTypingIndicator();
+      const lower = text.toLowerCase().trim();
+      let response = DONNA_FREEFORM_DETAILED[lower];
+      if (!response) { const key = Object.keys(DONNA_FREEFORM_DETAILED).find(k => lower.includes(k)); response = key ? DONNA_FREEFORM_DETAILED[key] : null; }
+      if (!response) response = DONNA_FREEFORM[Math.floor(Math.random() * DONNA_FREEFORM.length)];
+      addMessage('donna', response);
+      resetIdleTimer();
+      if (afterRespond) setTimeout(afterRespond, 300);
+    }, delay);
+  }
+  function executeDonnaAction(actionKey) {
+    const data = DONNA_RESPONSES[actionKey];
+    if (!data) return;
+    addMessage('user', data.user);
+    addTypingIndicator();
+    setTimeout(() => {
+      removeTypingIndicator();
+      addMessage('donna', data.donna);
+      if (data.panel) setTimeout(() => openPanel(data.panel), 400);
+      if (data.followUp) {
+        setTimeout(() => {
+          addMessage('user', data.followUp.user);
+          addTypingIndicator();
+          setTimeout(() => { removeTypingIndicator(); addMessage('donna', data.followUp.donna); }, 500 + Math.random() * 400);
+        }, 1800);
+      }
+      resetIdleTimer();
+    }, 700 + Math.random() * 500);
+  }
+
+  /* ══════════════════════════════════════
+     CHIPS — now also trigger panels
+     ══════════════════════════════════════ */
+  $$('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const action = chip.dataset.action;
+      if (action && DONNA_RESPONSES[action]) executeDonnaAction(action);
+    });
+  });
+
+  /* ══════════════════════════════════════
+     PROACTIVE IDLE
+     ══════════════════════════════════════ */
+  const PROACTIVE_MESSAGES = [
+    'You\'ve been staring at that PR for 20 minutes. Want me to review it?',
+    'Your standup is in 45 minutes. I drafted your update. Want to see it?',
+    'Pipeline #4521 passed. PR #142 has 2 approvals. Shall I merge?',
+    'Ravi is 8 minutes away with your VCB. Might want to wrap up that function.',
+    'The API team still hasn\'t responded on #924. Want me to send a follow-up?',
+  ];
+  let proactiveIdx = 0;
+  function resetIdleTimer() {
+    clearTimeout(state.idleTimer);
+    if (state.visible) {
+      state.idleTimer = setTimeout(() => {
+        if (state.visible && proactiveIdx < PROACTIVE_MESSAGES.length) {
+          enterChatMode();
+          addMessage('donna', '<span class="msg-muted">' + PROACTIVE_MESSAGES[proactiveIdx++] + '</span>', 'proactive-msg');
+        }
+      }, 8000);
+    }
+  }
+
+  /* ══════════════════════════════════════
+     DASHBOARD
+     ══════════════════════════════════════ */
+  dashboardHeader.addEventListener('click', () => {
+    state.dashboardOpen = !state.dashboardOpen;
+    dashboardSection.classList.toggle('collapsed', !state.dashboardOpen);
+  });
+  btnDashboard.addEventListener('click', () => {
+    state.dashboardOpen = !state.dashboardOpen;
+    dashboardSection.classList.toggle('collapsed', !state.dashboardOpen);
+  });
+  $$('.dash-item').forEach(item => {
+    const dt = item.dataset.detail;
+    if (dt) {
+      const el = document.createElement('div');
+      el.className = 'dash-detail';
+      el.style.cssText = "font-family:'JetBrains Mono',monospace;font-size:11px;white-space:pre-line";
+      el.textContent = dt;
+      item.querySelector('.dash-content').appendChild(el);
+    }
+    item.addEventListener('click', () => {
+      $$('.dash-item.expanded').forEach(o => { if (o !== item) o.classList.remove('expanded'); });
+      item.classList.toggle('expanded');
+    });
+  });
+
+  /* ══════════════════════════════════════
+     NOTIFICATIONS
+     ══════════════════════════════════════ */
+  function showNotification(data) {
+    const el = document.createElement('div');
+    el.className = 'notification';
+    el.innerHTML = `<div class="notification-body"><div class="notification-icon ${data.iconClass}">${data.icon}</div><div class="notification-content"><div class="notification-title">${data.title}</div><div class="notification-text">${data.text}</div></div><button class="notification-close">\u2715</button></div><div class="notification-progress"><div class="notification-progress-bar ${data.barClass}"></div></div>`;
+    notificationContainer.appendChild(el);
+    const tm = document.querySelector('.tray-monogram');
+    tm.style.animation = 'trayIconPing 0.6s var(--ease-spring)';
+    setTimeout(() => { tm.style.animation = ''; }, 700);
+    el.querySelector('.notification-close').addEventListener('click', (e) => { e.stopPropagation(); dismissNotification(el); });
+    el.addEventListener('click', () => {
+      dismissNotification(el);
+      showWindow();
+      if (data.panelAction) setTimeout(() => openPanel(data.panelAction), 300);
+    });
+    const timer = setTimeout(() => dismissNotification(el), 5200);
+    el._timer = timer;
+  }
+  function dismissNotification(el) {
+    if (el._dismissed) return;
+    el._dismissed = true; clearTimeout(el._timer);
+    el.classList.add('dismissing');
+    setTimeout(() => el.remove(), 350);
+  }
+  NOTIFICATIONS.forEach(n => setTimeout(() => showNotification(n), n.delay));
+
+  /* ══════════════════════════════════════
+     SYSTEM TRAY
+     ══════════════════════════════════════ */
+  function updateClock() { trayClock.textContent = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }); }
+  updateClock(); setInterval(updateClock, 30000);
+  trayDonnaBtn.addEventListener('click', (e) => { if (e.button === 0) toggleWindow(); });
+  trayDonnaBtn.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    const r = trayDonnaBtn.getBoundingClientRect();
+    trayMenu.style.bottom = (window.innerHeight - r.top + 6) + 'px';
+    trayMenu.style.right = (window.innerWidth - r.right) + 'px';
+    trayMenu.classList.add('visible'); trayMenu.classList.remove('hiding');
+  });
+  function hideMenu() { trayMenu.classList.add('hiding'); setTimeout(() => trayMenu.classList.remove('visible', 'hiding'), 180); }
+  $$('.menu-item', trayMenu).forEach(item => {
+    item.addEventListener('click', () => {
+      const action = item.dataset.action; hideMenu();
+      if (action === 'open') showWindow();
+      else if (action === 'preferences') { showWindow(); enterChatMode(); addMessage('donna', 'Preferences panel isn\'t built yet. I\'m too busy being indispensable.'); }
+      else if (action === 'mute') { const d = document.querySelector('.tray-status-dot'); d.style.background = 'var(--text-ghost)'; setTimeout(() => d.style.background = 'var(--status-green)', 5000); }
+      else if (action === 'quit') {
+        hideWindow();
+        document.querySelector('.tray-label').textContent = 'Offline';
+        document.querySelector('.tray-status-dot').style.background = 'var(--status-red)';
+        document.querySelector('.status-dot-inline').style.background = 'var(--status-red)';
+        setTimeout(() => { document.querySelector('.tray-label').textContent = 'Donna'; document.querySelector('.tray-status-dot').style.background = 'var(--status-green)'; document.querySelector('.status-dot-inline').style.background = 'var(--status-green)'; }, 3000);
+      }
+    });
+  });
+  document.addEventListener('click', (e) => { if (!e.target.closest('#tray-menu') && !e.target.closest('#tray-donna-btn') && trayMenu.classList.contains('visible')) hideMenu(); });
+
+  /* ══════════════════════════════════════
+     CONTROLS + KEYBOARD
+     ══════════════════════════════════════ */
+  btnClose.addEventListener('click', hideWindow);
+  backdrop.addEventListener('click', hideWindow);
+  document.addEventListener('keydown', (e) => {
+    if (e.altKey && e.code === 'Space') { e.preventDefault(); toggleWindow(); }
+    if (e.key === 'Escape' && state.visible) {
+      if (trayMenu.classList.contains('visible')) { hideMenu(); return; }
+      if (suggestionsEl.classList.contains('visible')) { suggestionsEl.classList.remove('visible'); return; }
+      if (state.activePanel) { closePanel(); return; }
+      hideWindow();
+    }
+  });
+
+  /* ══════════════════════════════════════
+     DRAGGING
+     ══════════════════════════════════════ */
+  let dragSt = null;
+  $('#title-bar').addEventListener('mousedown', (e) => {
+    if (e.target.closest('.title-btn')) return;
+    e.preventDefault();
+    const r = donnaWindow.getBoundingClientRect();
+    dragSt = { sx: e.clientX, sy: e.clientY, ol: r.left + r.width/2, ot: r.top + r.height/2 };
+    donnaWindow.style.transition = 'none'; document.body.style.cursor = 'grabbing';
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!dragSt) return;
+    donnaWindow.style.left = (dragSt.ol + e.clientX - dragSt.sx) + 'px';
+    donnaWindow.style.top = (dragSt.ot + e.clientY - dragSt.sy) + 'px';
+    donnaWindow.style.transform = 'translate(-50%, -50%)';
+  });
+  document.addEventListener('mouseup', () => { if (dragSt) { dragSt = null; donnaWindow.style.transition = ''; document.body.style.cursor = ''; } });
+
+  /* ══════════════════════════════════════
+     STATUS BAR ROTATION
+     ══════════════════════════════════════ */
+  const STATUS_MSGS = [
+    'Donna is watching 3 pipelines, 0 incidents, 1 delivery',
+    'All systems nominal \u2014 nothing needs your attention',
+    'PR #142 has been green for 12 minutes. Just saying.',
+    'VCB order is 8 min away. Ravi\'s making good time.',
+    '3 work items in sprint \u2014 1 blocked, 1 in progress, 1 ready',
+  ];
+  let stIdx = 0;
+  setInterval(() => {
+    stIdx = (stIdx + 1) % STATUS_MSGS.length;
+    statusBarText.style.animation = 'none'; statusBarText.offsetHeight;
+    statusBarText.textContent = STATUS_MSGS[stIdx];
+    statusBarText.style.animation = 'statusBarFade 0.5s var(--ease-out)';
+  }, 12000);
+
+  /* ══════════════════════════════════════
+     INIT
+     ══════════════════════════════════════ */
+  setTimeout(() => commandInput.focus(), 500);
+  resetIdleTimer();
+  dashboardSection.classList.remove('collapsed');
+
+})();
+</script>
+</body>
+</html>
