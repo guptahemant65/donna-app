@@ -5,12 +5,12 @@ from __future__ import annotations
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 
-def briefing_keyboard() -> InlineKeyboardMarkup:
-    """Briefing card actions."""
+def briefing_keyboard(email_count: int = 0, meeting_count: int = 0) -> InlineKeyboardMarkup:
+    """Briefing card actions with counts."""
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("📬 Emails", callback_data="brief:emails"),
-            InlineKeyboardButton("📅 Calendar", callback_data="brief:cal"),
+            InlineKeyboardButton(f"📬 Emails ({email_count})", callback_data="brief:emails"),
+            InlineKeyboardButton(f"📅 Calendar ({meeting_count})", callback_data="brief:cal"),
         ],
         [
             InlineKeyboardButton("👥 People", callback_data="brief:people"),

@@ -49,6 +49,14 @@ async def send_progress(
     return msg.message_id
 
 
+def progress_message(step: str, percent: int, width: int = 15) -> str:
+    """Generate a progress bar message for live-editing.
+
+    Usage: Send once, then edit_message_text with updated step/percent.
+    """
+    return _render_progress(percent, step, width)
+
+
 def _render_progress(pct: int, status: str, width: int) -> str:
     """Render a progress bar message."""
     filled = int(width * pct / 100)
