@@ -1056,6 +1056,134 @@ Sometimes Donna doesn't just support Harvey — she handles things independently
 
 ---
 
+## XIV. Runtime Architecture — The Always-Alive Paradigm
+
+> *"You think I sleep? I don't sleep. That's why I'm so good."*
+
+### 14.1 The Core Insight
+
+Donna is not a desktop app. She's a **living entity** with a cloud brain, a local body, and a phone line. When Harvey shuts his laptop, Donna doesn't die — she keeps watching, keeps thinking, and reaches out through Telegram when something needs Harvey's attention at 2am.
+
+### 14.2 Three-Layer Runtime
+
+```
+┌─────────────────────────────────────────────────────┐
+│  LAYER 1: LOCAL BODY (Tauri App)                    │
+│  ─ Full Donna UI (command palette, panels, chat)    │
+│  ─ Windows Local APIs (clipboard, active window)    │
+│  ─ Direct LLM conversation                          │
+│  ─ Syncs with Cloud Brain via SQLite replication     │
+│  ─ Status: ALIVE when laptop is open                 │
+├─────────────────────────────────────────────────────┤
+│  LAYER 2: CLOUD BRAIN (Azure Container Instance)    │
+│  ─ Always alive. 24/7/365. ~$5-10/month.           │
+│  ─ Polls Graph, IcM, ADO, GitHub every 2-10 min    │
+│  ─ Decision engine: "Is this worth waking Harvey?"  │
+│  ─ PostgreSQL + pgvector for shared memory          │
+│  ─ Runs scheduled Heartbeat tasks                   │
+│  ─ Status: ALWAYS ALIVE                             │
+├─────────────────────────────────────────────────────┤
+│  LAYER 3: PHONE LINE (Telegram Bot)                 │
+│  ─ Donna's way to reach Harvey anywhere             │
+│  ─ Morning briefings, incident alerts, reminders    │
+│  ─ Harvey can reply: "merge it", "ignore", "handle" │
+│  ─ Lightweight: text + formatted messages only       │
+│  ─ Status: ALWAYS ALIVE (via Cloud Brain)           │
+└─────────────────────────────────────────────────────┘
+```
+
+### 14.3 State Synchronization
+
+| Event | What happens |
+|---|---|
+| Harvey opens laptop | Local Body connects to Cloud Brain, pulls delta since `last_seen_at`. Briefing ready before Harvey opens a browser. |
+| Harvey closes laptop | Cloud Brain continues polling. Events accumulate in PostgreSQL. No data loss. |
+| Harvey shuts down laptop | Same as closing. Cloud Brain doesn't notice or care. |
+| Sev2 fires at 2am | Cloud Brain detects via IcM poll → Decision engine evaluates severity → Telegram: "Sev2 on LiveTable. Error rate 3x baseline. Auto-mitigation running. Want me to join the bridge?" |
+| Harvey replies on Telegram | Cloud Brain processes the reply, takes action (joins bridge, sends update, merges PR), confirms back on Telegram. |
+| Harvey back at laptop | Local Body syncs everything that happened overnight, including Telegram conversation history. Seamless continuity. |
+
+### 14.4 The Decision Engine
+
+Not everything warrants waking Harvey. The Cloud Brain runs a priority classifier:
+
+| Signal | Threshold | Action |
+|---|---|---|
+| IcM Sev1/Sev2 on owned services | Always | Telegram immediately |
+| PR approved + all checks green | Business hours only | Queue for next briefing |
+| Build broken on main | If Harvey's commit | Telegram within 5 min |
+| Calendar conflict detected | > 2 hours before | Telegram suggestion |
+| Someone @mentions Harvey | If from skip-level+ or direct reports | Telegram if after hours |
+| Sprint at risk | 48h before deadline | Telegram once |
+| Email from skip-level | Always | Telegram summary |
+| Routine PR activity | Never | Queue for briefing |
+
+### 14.5 Privacy Architecture
+
+Every bit of this runs on Harvey's infrastructure:
+
+- **Cloud Brain**: Harvey's Azure subscription, Harvey's resource group, Harvey's encryption keys
+- **Memory**: PostgreSQL in Harvey's Azure, encrypted at rest with Harvey's Key Vault
+- **Telegram**: Harvey's bot token, direct messages only, no groups
+- **Windows signals**: Clipboard, active window, keystrokes — **LOCAL ONLY, never uploaded**
+- **No third-party SaaS**: No Zapier, no IFTTT, no "connect your accounts." Donna IS the platform.
+
+### 14.6 Competitive Landscape — Where Donna Stands
+
+We studied every major player building personal AI agents in 2025-2026:
+
+| Player | Approach | Strength | Weakness (for us) |
+|---|---|---|---|
+| **OpenClaw** (180K★) | Local-first, open-source, model-agnostic, messaging-native | Massive ecosystem (5K+ skills), Telegram/WhatsApp built-in, Heartbeat scheduler | TypeScript runtime, Markdown memory (toy-grade), no MS enterprise integration, generic |
+| **Google Astra** | Cloud-first + Edge TPU, multimodal, continuous observation | Multimodal perception, Google ecosystem depth | Privacy nightmare, no enterprise work context |
+| **Apple Intelligence** | Device-first, privacy-first, Siri reimagined | Best privacy story, deep OS integration | Walled garden, no Windows, no work tools |
+| **Microsoft Copilot** | Cloud (Azure), enterprise-grade, + Recall (device snapshots) | Enterprise SSO, M365 integration, IT compliance | Generic (serves millions), no personality, no ownership |
+| **OpenAI Agent SDK** | Cloud persistent agents, function calling, stateful | Best model quality, Responses API, built-in tools | No device presence, cloud-only, vendor lock-in |
+| **Limitless** | Wearable pendant, always recording, cloud transcription | True always-on capture, meeting intelligence | $99/mo, privacy concerns, no action capability |
+| **Lindy AI** | Pure cloud 24/7, email/calendar automation | True always-alive, multi-step workflows | SaaS (not self-hosted), limited to email/cal/CRM |
+| **Letta (MemGPT)** | Memory-focused agent runtime, tiered memory | Best memory architecture, core/recall/archival | Limited action capabilities, no messaging, no UI |
+
+### 14.7 Donna's Unfair Advantages
+
+None of the above have ALL of these:
+
+1. **Work context depth** — IcM + ADO + Kusto + GitHub + Graph. Donna knows Harvey's actual work, not just his calendar.
+2. **Owned infrastructure** — Harvey's Azure, Harvey's keys. Not SaaS. Not someone else's cloud.
+3. **Desktop + Cloud hybrid** — Rich local UI when at the laptop, cloud brain when away, Telegram when mobile.
+4. **Memory architecture** — 4-tier cognitive system (Working → Episodic → Semantic → Procedural) vs everyone else's flat context or basic RAG.
+5. **Personality as architecture** — The Five Laws and Depth Protocol aren't a system prompt. They're decision-making frameworks baked into every interaction.
+6. **Single-user loyalty** — Donna serves one person. She's not a platform trying to please millions.
+
+### 14.8 The OpenClaw Relationship — Learn, Don't Adopt
+
+**Decision: Build our own. Reference OpenClaw when stuck.**
+
+OpenClaw is the most impressive open-source agent framework in existence (180K+ GitHub stars, 5,000+ skills, MIT license). We studied it deeply and made a deliberate choice:
+
+**Why not adopt OpenClaw:**
+
+| Concern | Detail |
+|---|---|
+| **Language mismatch** | OpenClaw is 450K lines of TypeScript/Node.js. Donna is Rust (Tauri) + Python. Running Node inside Rust adds two runtimes, two memory models, two ecosystems. |
+| **Memory is a toy** | OpenClaw stores memory as Markdown files. Our 4-tier cognitive architecture with temporal knowledge graphs, bi-temporal facts, and vector search is categorically more capable. |
+| **Skills don't overlap** | OpenClaw's 5,000 skills are consumer-oriented (weather, smart home, web search). Our skills are enterprise: WAM broker auth → Graph API → IcM → Kusto → ADO. None exist in ClawHub. |
+| **Personality isn't a layer** | You can't bolt Donna's decision-making framework onto a generic agent as a system prompt. The Five Laws, Depth Protocol, and anticipatory intelligence are architectural, not cosmetic. |
+| **Dependency risk** | Creator Peter Steinberger joined OpenAI (Feb 2026). The project is under an "independent foundation" now, but the governance trajectory is uncertain. |
+
+**What we take from OpenClaw:**
+
+| Pattern | Their Implementation | Our Version |
+|---|---|---|
+| **Gateway** | Multi-channel message router (Telegram, WhatsApp, Discord, Slack, iMessage) | Lightweight Rust/Python gateway. Telegram first, expandable. |
+| **Heartbeat** | Background scheduler for proactive tasks, cron-like but context-aware | Cloud Brain daemon with APScheduler. Same concept, our infra. |
+| **Skills as plugins** | Modular, hot-swappable capability modules via ClawHub | MCP servers are our skills. Already have 11 integrations. |
+| **Messaging-first UX** | Interact with your agent like texting a coworker | Telegram bot for mobile. Natural, async, non-intrusive. |
+| **Local-first memory** | All data stays on user's machine, Markdown-based | SQLite + ChromaDB/LanceDB + custom graph schema. Same philosophy, better architecture. |
+
+**Reference protocol**: When building a new capability, check if OpenClaw has a relevant skill or pattern at [github.com/open-claw/openclaw](https://github.com/open-claw/openclaw). Learn from their approach, implement in our stack.
+
+---
+
 ## XV. What Donna Is NOT
 
 To keep the vision sharp, these are explicit non-goals:
