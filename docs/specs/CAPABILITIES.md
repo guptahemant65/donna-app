@@ -779,113 +779,156 @@ These are the interactions that make someone say "I can't work without her."
 
 ## XII. Integration Roadmap — Donna's Full Arsenal
 
-### What We Have (Verified ✓)
+### Architecture Decision: MCP-First with Direct API Fallback (ADR-005)
 
-| # | Integration | Protocol | Access | Powers |
-|---|---|---|---|---|
-| 1 | **Microsoft Graph** | WAM Broker + REST | **32/44 endpoints** | Calendar R/W, Email R/W+Send, Teams R/W, Tasks R/W, Files R/W, People, OneNote, Org, Search, Insights, SharePoint, Profile |
-| 2 | **IcM** | MCP Server | Full | Incidents, on-call, severity, mitigation, customer impact |
-| 3 | **Azure DevOps** | MCP Server | Full | Work items, PRs, boards, repos, builds, sprints, wikis |
-| 4 | **GitHub** | MCP Server | Full | Repos, PRs, issues, code search, commits, actions |
-| 5 | **Kusto / ADX** | MCP Server | Full | Log analysis, error patterns, metrics, telemetry |
-| 6 | **Swiggy Food** | MCP Server | Full | Restaurant search, menu, cart, orders, tracking |
-| 7 | **Swiggy Instamart** | MCP Server | Full | Grocery search, cart, orders, tracking |
-| 8 | **Swiggy Dineout** | MCP Server | Full | Restaurant discovery, reservations, booking |
-| 9 | **Playwright** | MCP Server | Full | Browser automation fallback for anything without an API |
-| 10 | **Stack Overflow Teams** | MCP Server | Full | Internal knowledge search, Q&A, articles |
-| 11 | **LLM (Copilot CLI)** | Direct | Full | Reasoning, summarization, decision-making — the brain |
+Donna uses **MCP (Model Context Protocol) servers** as her primary integration layer. MCP gives us standard tool discovery, session state, schema validation — and lets the LLM brain dynamically discover what's available. Direct API calls are the fallback for endpoints MCP doesn't cover and performance-critical paths.
 
-### Microsoft Graph — Detailed Access Map (POC Verified 2026-04-23)
+**Why MCP-first:** 6 MCP servers cover more surface area than 29 custom API integrations would. Hours to wire up vs weeks of custom code. The ~15ms overhead per call (vs ~5ms direct) is imperceptible for a personal assistant.
 
-**Auth method:** WAM Broker (`pymsalruntime`) → silent token acquisition via Microsoft Office first-party app (`d3590ed6`). Only method that satisfies corp conditional access + token protection policy. See `poc/graph_probe.py`.
+### The MCP Power Grid (Verified ✓)
 
-**Accessible (32 endpoints):**
+**Tier 0 — Azure Platform (55 tools)**
 
-| Domain | Endpoints | Access Level | Donna Capabilities Unlocked |
+| # | Server | Tools | What Donna Gets |
+|---|--------|-------|-----------------|
+| 1 | **Azure MCP Server** (`aka.ms/azmcp`) | 55 | Kusto NL→KQL, Monitor, AppInsights, KeyVault, Cosmos, PostgreSQL, Redis, Storage, SignalR, compute, pricing, advisor, policy, resource health. Ships built into VS 2026. |
+
+**Tier 1 — Microsoft Internal (Engineering superpowers)**
+
+| # | Server | Tools | What Donna Gets |
+|---|--------|-------|-----------------|
+| 2 | **M365 MCP** (Softeria, open source) | 171 | Mail (13 endpoints), Calendar (19), Teams (28), Files (20), OneNote (7), Planner (6), To-Do (5), SharePoint (12), Contacts, People, Presence, Search, Groups (11), Places/Rooms (5), Online Meetings (11), findMeetingTimes, sendMail |
+| 3 | **Azure DevOps MCP** (Remote) | ~40 | Work items, PRs, pipelines, boards, repos, branches, wikis. Remote at `mcp.dev.azure.com/{org}`. Entra ID auth. |
+| 4 | **IcM MCP Server** | 23 | Incidents, on-call, customer impact, summaries, mitigation hints. Azure CLI auth. |
+| 5 | **Fabric MCP Server** | TBD | LiveTable, Lakehouse, real-time analytics. Harvey's own product. Official `microsoft/mcp` catalog. |
+| 6 | **GitHub MCP** (Official) | ~30 | Repos, PRs, issues, code search, commits, actions, workflows |
+
+**Tier 2 — Ecosystem**
+
+| # | Server | Tools | What Donna Gets |
+|---|--------|-------|-----------------|
+| 7 | **Playwright MCP** | ~15 | Browser automation — anything without an API |
+| 8 | **Stack Overflow Teams MCP** | ~10 | Internal knowledge search, Q&A, articles |
+| 9 | **Slack MCP** (Official from Slack) | ~20 | Messages, channels, DMs, reactions. OAuth. |
+| 10 | **Gmail MCP** (Google official) | ~15 | Personal email management |
+| 11 | **Google Calendar MCP** (Google official) | ~10 | Personal calendar management |
+
+**Tier 3 — Life (via MCP or direct)**
+
+| # | Server | Tools | What Donna Gets |
+|---|--------|-------|-----------------|
+| 12 | **Swiggy Food MCP** | Full | Restaurant search, menu, cart, orders, tracking |
+| 13 | **Swiggy Instamart MCP** | Full | Grocery search, cart, orders, tracking |
+| 14 | **Swiggy Dineout MCP** | Full | Restaurant discovery, reservations, booking |
+
+**MCP Summary:**
+```
+TIER 0 (Azure):      1 server  ×  55 tools  =  Full cloud infrastructure
+TIER 1 (Microsoft):  5 servers × ~300 tools =  Graph + ADO + IcM + Fabric + GitHub
+TIER 2 (Ecosystem):  5 servers ×  ~70 tools =  Browser, Knowledge, Slack, Gmail, GCal
+TIER 3 (Life):       3 servers ×  ~40 tools =  Food, groceries, dining
+                     ──
+TOTAL:              14 MCP servers, ~465 tools, standard protocol
+```
+
+### Direct API Layer (Fallback — No MCP Available)
+
+| # | Integration | Protocol | Why Direct |
 |---|---|---|---|
-| Calendar | calendarView, calendars, events, calendarGroups | **Read/Write** | Temporal Intelligence, Meeting Prep, Schedule Awareness, Morning Briefing |
-| Email | messages, mailFolders, send | **Read/Write/Send** | Communications Intelligence, Priority Triage, The Gatekeeper, The Closer |
-| People | people (relevance), contacts, manager, directReports | **Read** | Social Intelligence, People Graph, The Network, Political Intelligence |
-| Teams & Chat | joinedTeams, chats, channelMessages | **Read/Write/Send** | Communications, Handle-It, The Closer, The Network |
-| Tasks | todo/lists, planner/tasks | **Read/Write** | Productivity Intelligence, Follow-up Tracking, The Handle-It |
-| Files & OneDrive | drive, recent files | **Read/Write** | Document Brain, Context Awareness, Knowledge Base |
-| OneNote | notebooks | **Read/Create** | Knowledge Base, Meeting Notes, Institutional Insurance |
-| Search | /search/query (POST) | **Full** | Cross-M365 search (email + files + Teams + people in one query) |
-| Insights | used docs, shared docs | **Read** | "Here are docs relevant to your 2pm meeting" |
-| Profile (beta) | skills, interests, projects | **Read** | Career Intelligence, People Graph |
-| Organization | org info, memberOf, transitiveMemberOf | **Read** | Political Intelligence, Career Intelligence, Org Brain |
-| SharePoint | sites/root | **Read** | Team wikis, shared docs, project sites |
-| Outlook | masterCategories | **Read** | Email categorization awareness |
-| Settings | user settings | **Read** | Personalization |
-| Notifications | notification feed | **Read** | Cross-M365 activity awareness |
+| 15 | **Windows Local APIs** | Tauri/Win32/COM | Desktop signals — no MCP possible. Active window, mic/camera, clipboard, idle time, Focus Assist, processes, battery, hotkeys, system tray. Donna's **unfair advantage**. |
+| 16 | **Graph Fallback Endpoints** | WAM Broker + REST | ~10 endpoints M365 MCP doesn't cover: insights/used, insights/shared, organization, transitiveMemberOf, outlook/masterCategories, settings, notifications, beta/profile |
+| 17 | **LinkedIn API** | OAuth2 REST | Professional network, job changes, skill endorsements. No MCP server exists yet. |
+| 18 | **Weather API** | REST | Trivial integration, MCP overhead not worth it. |
+| 19 | **Travel APIs** | REST | Flight status, hotel bookings. No standard MCP server. |
+| 20 | **Spotify API** | OAuth2 REST | Focus playlists, music control. Community MCP exists but fragile. |
+| 21 | **Azure Cost Management** | REST or Azure MCP | Cost trends, budget alerts, anomaly detection. |
+| 22 | **OCR / Vision** | Azure AI / Local | Screenshots, whiteboard photos, architecture diagrams. |
+| 23 | **LLM Brain** | Direct | Reasoning, summarization, decision-making — the brain itself. |
 
-**Blocked (admin policy — cannot work around):**
+### Microsoft Graph — Dual Access Strategy
+
+**Primary:** M365 MCP Server (Softeria) — 171 Graph endpoints via standard MCP protocol.
+**Fallback:** WAM Broker (`pymsalruntime`) + direct REST — for endpoints MCP doesn't cover.
+
+**Auth (both layers):** WAM Broker → silent token acquisition via Microsoft Office first-party app (`d3590ed6`). Only method that satisfies corp conditional access + token protection policy. See `poc/graph_probe.py`.
+
+**M365 MCP Coverage vs Our Proven Endpoints:**
+
+| Domain | Our Proven Endpoints | MCP Has? | MCP Bonus Endpoints |
+|---|---|---|---|
+| Calendar | calendarView, calendars, events, calendarGroups | ✅ 19 paths | accept/decline/cancel invites, getSchedule, delta sync |
+| Email | messages, mailFolders, send | ✅ 19 paths | forward, reply, replyAll, attachments CRUD, createUploadSession, messageRules, mailboxSettings (OOO, signatures) |
+| People | people, contacts, manager, directReports | ✅ all | CRUD contacts |
+| Teams & Chat | joinedTeams, chats | ✅ 28 paths | channels, members, message replies, channel files |
+| Tasks | todo/lists, planner/tasks | ✅ 11 paths | linked resources, plan details |
+| Files & OneDrive | drive, recent files | ✅ 20 paths | upload, download, delta, createUploadSession, permissions |
+| OneNote | notebooks | ✅ 7 paths | sections, pages, page content CRUD |
+| Search | /search/query | ✅ | — |
+| SharePoint | sites/root | ✅ 12 paths | drives, lists, list items, columns, permissions |
+| Presence | BLOCKED by admin | ✅ available | batch presence via /communications/presences |
+| Groups | — | ✅ 11 paths | NEW — group management, members, conversations |
+| Places | — | ✅ 5 paths | NEW — rooms, room lists, desk booking |
+| Online Meetings | BLOCKED (consent) | ✅ 11 paths | NEW — attendance reports, transcripts, recordings |
+| findMeetingTimes | — | ✅ | NEW — suggest optimal meeting slots |
+| Users | — | ✅ 11 paths | NEW — cross-user calendar, mail, reports |
+
+**Fallback only (MCP doesn't cover):**
+
+| Endpoint | Why Direct | Donna Capability |
+|---|---|---|
+| `/me/insights/used` | Not in MCP | "Docs you touched today" |
+| `/me/insights/shared` | Not in MCP | "Docs shared with you" |
+| `/organization` | Not in MCP | Org metadata |
+| `/me/transitiveMemberOf` | Not in MCP | Full group membership |
+| `/me/outlook/masterCategories` | Not in MCP | Email categorization |
+| `/me/settings` | Not in MCP | User preferences |
+| `/me/notifications` | Not in MCP | Activity feed |
+| `/beta/me/profile` | Beta, not in MCP | Full profile (skills, interests) |
+
+**Still blocked (admin policy — neither MCP nor direct can work around):**
 
 | Endpoint | Why | Workaround |
 |---|---|---|
-| Presence (`/me/presence`) | Token protection + admin policy | Windows Local APIs: active window, mic/camera state, idle time — actually **richer** than Presence enum |
 | Work Analytics (`/beta/me/analytics`) | MyAnalytics admin lockdown | Build our own from Calendar + Email + Teams patterns over time |
 | Sensitivity Labels | Security admin policy | Not critical for Donna |
 
-**Blocked (need additional consent — potentially fixable):**
+### Next Priority: Direct API Integrations
 
-| Endpoint | Missing Scope | Impact if Unblocked |
-|---|---|---|
-| Online Meetings | `OnlineMeetings.Read` | Meeting transcripts, recording access |
-| Inbox Rules | `MailboxSettings.Read` | Donna could read/create auto-rules |
-| Trending Insights | Broader `Sites.Read.All` | "Docs trending in your org right now" |
-| Followed SharePoint Sites | Broader consent | Project site awareness |
-
-### Tier 1 — Massive Unlocks (Next to Integrate)
-
-| # | Integration | Protocol | What It Gives Donna | Capabilities |
+| # | Integration | Protocol | Why No MCP | Capabilities |
 |---|---|---|---|---|
-| 12 | **Windows Local APIs** | Tauri native (Rust/JS) | Active window title, mic/camera state, clipboard history, idle time, Focus Assist/DND, running processes, battery/power, network state, file system watcher, global hotkeys, system tray | **Replaces blocked Presence API**, Emotional Intelligence, Burnout Detection, Context Awareness, "Harvey is presenting right now — hold all notifications" |
-| 13 | **LinkedIn API** | OAuth2 REST | Professional network, job changes, skill endorsements, company updates, industry news | People Intelligence, Career Intelligence, The Network, "Your skip-level just updated to Open-to-Work", "3 people in your org endorsed Azure Kubernetes this week" |
-| 14 | **Local SQLite** | Direct (embedded) | Structured memory — every interaction, preference, decision, pattern, conversation | Historical Intelligence, Anticipatory Intelligence, Eidetic Brain, "You asked about this same error 3 months ago — here's what fixed it" |
-| 15 | **Vector DB** | Local (embedded, e.g. ChromaDB) | Semantic search across all past conversations, documents, meeting notes | Knowledge retrieval, "Find that architecture discussion from February", fuzzy recall |
+| 24 | **Windows Local APIs** | Tauri/Win32/COM | Desktop signals — no MCP possible | **Replaces blocked Presence API**, Emotional Intelligence, Burnout Detection, Context Awareness. Active window tracking alone tells Donna: "Harvey is in VS Code editing LiveTable code" vs "Harvey is in PowerPoint" vs "Harvey is on a Teams call." Richer than any cloud API. Donna's **unfair advantage**. |
+| 25 | **Local SQLite** | Direct (embedded) | Not a remote service | Structured memory — every interaction, preference, decision, pattern |
+| 26 | **Vector DB** | Local (ChromaDB/LanceDB) | Not a remote service | Semantic search across all past conversations, documents, meeting notes |
+| 27 | **LinkedIn API** | OAuth2 REST | No MCP server exists yet | Professional network, job changes, skill endorsements, company updates |
+| 28 | **Weather API** | REST | Trivial, MCP overhead not worth it | Morning Briefing, commute planning |
+| 29 | **Travel APIs** | REST | No standard MCP server | Flight status, hotel bookings, trip management |
+| 30 | **Spotify API** | OAuth2 REST | Community MCP fragile | Focus playlists, music control, emotional intelligence |
+| 31 | **OCR / Vision** | Azure AI / Local | Specialized, not MCP | Screenshots, whiteboard photos, architecture diagrams |
+| 32 | **News/RSS** | REST / RSS | Trivial | Industry news, company news, tech trends |
+| 33 | **Maps API** | REST | No standard MCP | Commute time, traffic, ETA to meeting locations |
 
-**Why Windows Local APIs are #1 priority:** Donna is a **desktop app**. She can see everything Harvey does on his machine — no API key, no auth, no rate limits, no admin blocking. Active window tracking alone tells Donna: "Harvey is in VS Code editing LiveTable code" vs "Harvey is in PowerPoint building a deck" vs "Harvey is in Teams on a call." That's richer context than any cloud API provides. This is Donna's **unfair advantage** over cloud-only assistants.
-
-### Tier 2 — High Value, Specific Capabilities
-
-| # | Integration | Protocol | What It Gives Donna | Capabilities |
-|---|---|---|---|---|
-| 16 | **Bing Maps / Google Maps API** | REST | Real-time commute time, traffic, ETA to meeting locations, directions | Temporal Intelligence, Morning Briefing, "Leave in 15 min if you want to make the 3pm at Building 44" |
-| 17 | **Weather API** (OpenWeatherMap / MSN) | REST | Current weather, forecasts, severe weather alerts | Morning Briefing, The Donna Interception, "Raining today — grab an umbrella", "Flight to BLR might be delayed — monsoon warning" |
-| 18 | **Azure Cost Management** | REST | Subscription spend, budget alerts, cost trends, anomalies | Engineering Intelligence, The Protector, "Your dev subscription hit 80% of budget — mostly that forgotten AKS cluster" |
-| 19 | **FindMeetingTimes API** (via Graph) | REST | Suggest optimal meeting slots across attendees | The Closer, Temporal Intelligence, "Best slot for the 5-person sync is Thursday 2pm — everyone is free" |
-| 20 | **Room/Resource Booking** (via Graph) | REST | Conference room availability, equipment booking | The Closer, "Booked Room 42 for your 3pm — it has the good whiteboard" |
-
-### Tier 3 — Life & Personal
-
-| # | Integration | Protocol | What It Gives Donna | Capabilities |
-|---|---|---|---|---|
-| 21 | **Spotify API** | OAuth2 REST | Focus playlists, music control, listening history | Emotional Intelligence, "You seem stressed — here's your deep work playlist", "Pausing music for your call" |
-| 22 | **Travel APIs** (MakeMyTrip / Cleartrip / Amadeus) | REST | Flight status, hotel bookings, trip management | The Closer, Life Intelligence, "Your BLR flight is delayed 45 min — I've updated your calendar" |
-| 23 | **News/RSS APIs** | REST / RSS | Industry news (Azure, Data Engineering), company news, tech trends | Political Intelligence, Morning Briefing, "Azure announced a new Fabric feature yesterday — relevant to your project" |
-| 24 | **OCR / Vision** (Azure AI Vision or local) | REST / Local | Read screenshots, whiteboard photos, architecture diagrams | Document Brain, Knowledge, "That architecture diagram from Tuesday's meeting says the timeout is 30s" |
-
-### Tier 4 — Future / Experimental
+### Future / Experimental
 
 | # | Integration | What It Could Do | When |
 |---|---|---|---|
-| 25 | **Microsoft Copilot Extensibility** | Donna as a Copilot plugin across M365 | When platform matures |
-| 26 | **Teams Bot Framework** | Donna IN Teams (not just reading Teams) | After core is solid |
-| 27 | **Power Automate** | Complex workflow orchestration | After Handle-It patterns emerge |
-| 28 | **WhatsApp Business API** | Personal communication intelligence | If Harvey wants personal comms |
-| 29 | **Smart Home APIs** (Alexa/Google Home) | "Turn off office lights when Harvey leaves" | Far future |
+| 34 | **Work IQ MCP** (Microsoft 1st-party) | Replace Softeria M365 MCP when it GAs — admin-governed, enterprise-grade | When GA |
+| 35 | **Microsoft Copilot Extensibility** | Donna as a Copilot plugin across M365 | When platform matures |
+| 36 | **Teams Bot Framework** | Donna IN Teams (not just reading Teams) | After core is solid |
+| 37 | **Power Automate** | Complex workflow orchestration | After Handle-It patterns emerge |
+| 38 | **WhatsApp Business API** | Personal communication intelligence | If Harvey wants personal comms |
+| 39 | **Smart Home APIs** (Alexa/Google Home) | "Turn off office lights when Harvey leaves" | Far future |
 
 ### Integration Summary
 
 ```
-HAVE NOW:       11 integrations (Graph, GitHub, ADO, IcM, Kusto, Swiggy×3, Playwright, Stack, LLM)
-NEXT SPRINT:     4 integrations (Windows Local, LinkedIn, SQLite, Vector DB)
-HIGH VALUE:      5 integrations (Maps, Weather, Azure Cost, FindMeetingTimes, Room Booking)
-LIFE:            4 integrations (Spotify, Travel, News, OCR)
-FUTURE:          5 integrations (Copilot, Teams Bot, Power Automate, WhatsApp, Smart Home)
+MCP SERVERS:    14 servers × ~465 tools  (standard protocol, hours to integrate)
+DIRECT APIs:    10 integrations          (custom code, for gaps + desktop + local)
+FUTURE:          6 integrations          (when platforms mature)
                 ──
-TOTAL:          29 integrations powering 15+ Donna DNA capabilities
+TOTAL:          30 integrations powering 15+ Donna DNA capabilities
+
+BEFORE (old roadmap):  29 custom API integrations × weeks each
+AFTER  (MCP-first):    14 MCP servers + 10 direct APIs = MORE coverage, LESS code
 ```
 
 ### The Hierarchy of Intelligence Sources
@@ -895,30 +938,38 @@ TOTAL:          29 integrations powering 15+ Donna DNA capabilities
                     │   LLM Brain  │  ← Reasoning over everything below
                     └──────┬──────┘
                            │
-              ┌────────────┼────────────┐
-              │            │            │
-     ┌────────┴───┐  ┌────┴─────┐  ┌──┴──────────┐
-     │ Local State │  │  Memory  │  │ Cloud APIs   │
-     │ (Tier 1)    │  │ (Tier 1) │  │ (Tiers 1-3) │
-     └────────┬───┘  └────┬─────┘  └──┬──────────┘
-              │            │            │
-   ┌──────────┤     ┌──────┤     ┌──────┤
-   │ Windows  │     │SQLite│     │ Graph│
-   │ • Window │     │• All │     │ • 32 │
-   │ • Mic    │     │  past│     │   end│
-   │ • Idle   │     │  data│     │   pts│
-   │ • Clip   │     │      │     │      │
-   │ • Focus  │     │Vector│     │GitHub│
-   │ • Procs  │     │• Sem │     │ ADO  │
-   └──────────┘     │  srch│     │ IcM  │
-                    └──────┘     │Kusto │
-                                 │Swiggy│
-                                 │ etc. │
-                                 └──────┘
+         ┌─────────────────┼─────────────────┐
+         │                 │                 │
+  ┌──────┴──────┐   ┌─────┴──────┐   ┌──────┴──────┐
+  │ Local State  │   │   Memory   │   │  MCP Layer   │
+  │ (Direct)     │   │  (Direct)  │   │  (Standard)  │
+  └──────┬──────┘   └─────┬──────┘   └──────┬──────┘
+         │                │                  │
+  ┌──────┤         ┌──────┤         ┌────────┤
+  │Windows│        │SQLite│         │ M365   │ 171 tools
+  │• Window│       │• All │         │ Azure  │  55 tools
+  │• Mic   │       │ past │         │ ADO    │ ~40 tools
+  │• Idle  │       │ data │         │ IcM    │  23 tools
+  │• Clip  │       │      │         │ GitHub │ ~30 tools
+  │• Focus │       │Vector│         │ Fabric │  TBD
+  │• Procs │       │• Sem │         │Playwrt │ ~15 tools
+  └────────┘       │ srch │         │ Stack  │ ~10 tools
+                   └──────┘         │ Slack  │ ~20 tools
+                                    │Swiggy×3│ ~40 tools
+                                    │ +more  │
+                                    └────────┘
+                                         │
+                                  ┌──────┴──────┐
+                                  │Direct Fallbk│
+                                  │• Graph ×10  │
+                                  │• LinkedIn   │
+                                  │• Weather    │
+                                  │• Spotify    │
+                                  └─────────────┘
 
 The unfair advantage: Local State + Memory
-Every cloud assistant has API access.
-Only Donna has your desktop + your history.
+Every cloud assistant has API access via MCP.
+Only Donna has your desktop + your history + your personality.
 ```
 
 ---
