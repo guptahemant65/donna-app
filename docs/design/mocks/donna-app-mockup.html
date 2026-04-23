@@ -9,11 +9,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════════════════════════
-   THE VOID — Donna v7
-   An art installation that manages your workday.
+   THE STAGE — Donna v8
+   Not a chat app. A living status surface.
+   Donna doesn't narrate your work — she orchestrates it.
+   Built from DESIGN.md tokens.
    ═══════════════════════════════════════════════════════════ */
 
-/* Animatable custom properties for the living aurora */
 @property --aurora-1 {
   syntax: '<color>';
   initial-value: #0a0a1a;
@@ -29,34 +30,38 @@
   initial-value: #070d12;
   inherits: false;
 }
-@property --aurora-angle {
+@property --glow-angle {
   syntax: '<angle>';
-  initial-value: 200deg;
+  initial-value: 0deg;
   inherits: false;
 }
-@property --line-accent-width {
-  syntax: '<percentage>';
-  initial-value: 0%;
+@property --signal-opacity {
+  syntax: '<number>';
+  initial-value: 0;
+  inherits: false;
+}
+@property --grain-seed {
+  syntax: '<number>';
+  initial-value: 0;
   inherits: false;
 }
 
+/* ─── DESIGN TOKENS (from DESIGN.md) ─────────────────── */
 :root {
   --void: #050507;
-  --surface: rgba(255,255,255,0.02);
   --text: #d4d4d8;
   --text-dim: #71717a;
   --text-ghost: #3f3f46;
+  --outline: #27272a;
   --accent: #f43f5e;
   --accent-glow: rgba(244,63,94,0.1);
-  --accent-faint: rgba(244,63,94,0.04);
+  --accent-dim: rgba(244,63,94,0.04);
   --font: 'Space Grotesk', system-ui, sans-serif;
   --mono: 'Space Mono', monospace;
 }
 
 *, *::before, *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+  margin: 0; padding: 0; box-sizing: border-box;
 }
 
 ::selection {
@@ -64,21 +69,7 @@
   color: inherit;
 }
 
-/* Custom scrollbar — near invisible */
-::-webkit-scrollbar {
-  width: 3px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.06);
-  border-radius: 3px;
-  transition: background 0.3s;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.15);
-}
+::-webkit-scrollbar { width: 0; }
 
 html, body {
   height: 100%;
@@ -86,442 +77,423 @@ html, body {
   background: var(--void);
   color: var(--text);
   font-family: var(--font);
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 400;
-  line-height: 1.7;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  cursor: none;
 }
 
-/* ─── THE LIVING AURORA ──────────────────────────────── */
+/* ─── FILM GRAIN ─────────────────────────────────────── */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+}
+
+/* ─── CUSTOM CURSOR ──────────────────────────────────── */
+.cursor-dot {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text);
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s, height 0.2s, background 0.2s, opacity 0.15s;
+  mix-blend-mode: difference;
+  opacity: 0;
+}
+
+.cursor-dot.visible { opacity: 1; }
+
+.cursor-dot.hovering {
+  width: 32px;
+  height: 32px;
+  background: rgba(244,63,94,0.08);
+  mix-blend-mode: normal;
+}
+
+.cursor-ring {
+  position: fixed;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.06);
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease-out, height 0.3s ease-out, border-color 0.2s, opacity 0.15s;
+  opacity: 0;
+}
+
+.cursor-ring.visible { opacity: 1; }
+
+.cursor-ring.hovering {
+  width: 48px;
+  height: 48px;
+  border-color: rgba(244,63,94,0.12);
+}
+
+/* ─── THE AURORA ─────────────────────────────────────── */
 .aurora {
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 45%;
+  height: 40%;
   z-index: 0;
   pointer-events: none;
   opacity: 0;
   animation: aurora-breathe 30s ease-in-out infinite alternate,
-             aurora-appear 1.5s ease-out 0.5s forwards;
+             fade-in 2s ease-out 0.5s forwards;
   background: radial-gradient(
-    ellipse 120% 80% at 50% 100%,
+    ellipse 110% 70% at 50% 100%,
     var(--aurora-1) 0%,
     var(--aurora-2) 40%,
     var(--aurora-3) 70%,
     transparent 100%
   );
-  mask-image: linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 100%);
-}
-
-@keyframes aurora-appear {
-  to { opacity: 1; }
+  mask-image: linear-gradient(to top, rgba(0,0,0,0.35) 0%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.35) 0%, transparent 100%);
 }
 
 @keyframes aurora-breathe {
-  0% {
-    --aurora-1: #0a0a1a;
-    --aurora-2: #0d0a18;
-    --aurora-3: #070d12;
-  }
-  33% {
-    --aurora-1: #0d0818;
-    --aurora-2: #10081a;
-    --aurora-3: #080a14;
-  }
-  66% {
-    --aurora-1: #070d14;
-    --aurora-2: #0a0c18;
-    --aurora-3: #0d0a16;
-  }
-  100% {
-    --aurora-1: #0a0b1a;
-    --aurora-2: #0e0a15;
-    --aurora-3: #060c13;
-  }
+  0%   { --aurora-1: #0a0a1a; --aurora-2: #0d0a18; --aurora-3: #070d12; }
+  33%  { --aurora-1: #0d0818; --aurora-2: #10081a; --aurora-3: #080a14; }
+  66%  { --aurora-1: #070d14; --aurora-2: #0a0c18; --aurora-3: #0d0a16; }
+  100% { --aurora-1: #0a0b1a; --aurora-2: #0e0a15; --aurora-3: #060c13; }
 }
 
-/* ─── CURSOR TRAIL ───────────────────────────────────── */
-.cursor-trail {
-  position: fixed;
-  width: 250px;
-  height: 250px;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9999;
-  background: radial-gradient(circle, rgba(244,63,94,0.03) 0%, transparent 70%);
-  filter: blur(40px);
-  transform: translate(-50%, -50%);
-  transition: left 0.15s ease-out, top 0.15s ease-out;
-  will-change: left, top;
-  opacity: 0;
-  animation: trail-appear 2s ease-out 1s forwards;
-}
+@keyframes fade-in { to { opacity: 1; } }
 
-@keyframes trail-appear {
-  to { opacity: 1; }
-}
-
-/* ─── APP STRUCTURE ──────────────────────────────────── */
-.app {
+/* ─── THE STAGE ──────────────────────────────────────── */
+.stage {
   position: relative;
   z-index: 1;
   height: 100vh;
-  display: flex;
-  flex-direction: column;
-  max-width: 780px;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  max-width: 680px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 32px;
 }
 
-/* ─── CONVERSATION ───────────────────────────────────── */
-.conversation {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 80px 0 40px;
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    black 80px,
-    black calc(100% - 40px),
-    transparent 100%
-  );
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    black 80px,
-    black calc(100% - 40px),
-    transparent 100%
-  );
-  transition: opacity 0.4s ease;
-  scrollbar-gutter: stable;
-}
-
-.conversation.dimmed {
-  opacity: 0.92;
-}
-
-/* ─── SPOTLIGHT EFFECT ───────────────────────────────── */
-.conversation-spotlight {
-  position: fixed;
-  pointer-events: none;
-  width: 350px;
-  height: 350px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.018) 0%, transparent 70%);
-  transform: translate(-50%, -50%);
-  z-index: 2;
+/* ─── TEMPORAL HEADER ────────────────────────────────── */
+.temporal {
+  padding: 28px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
   opacity: 0;
-  transition: opacity 0.3s, left 0.08s linear, top 0.08s linear;
-  will-change: left, top, opacity;
+  animation: fade-in 0.6s ease-out 1s forwards;
 }
 
-.conversation:hover .conversation-spotlight {
-  opacity: 1;
-}
-
-/* ─── MESSAGES ───────────────────────────────────────── */
-.message {
-  max-width: 65%;
-  margin-bottom: 28px;
-  position: relative;
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.message.visible {
-  animation: msg-appear 0.5s ease-out forwards;
-}
-
-@keyframes msg-appear {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.message-name {
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--text-dim);
-  margin-bottom: 3px;
-  letter-spacing: 0.02em;
-}
-
-.message.donna .message-name {
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.message-text {
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 1.7;
-  color: var(--text);
-}
-
-/* Donna's curtain reveal */
-.message.donna .message-text {
-  clip-path: inset(0 100% 0 0);
-}
-.message.donna.visible .message-text {
-  animation: curtain-reveal 0.6s ease-out 0.15s forwards;
-}
-
-@keyframes curtain-reveal {
-  to {
-    clip-path: inset(0 0% 0 0);
-  }
-}
-
-/* Donna reveal line */
-.message.donna::before {
-  content: '';
-  position: absolute;
-  top: 22px;
-  left: 0;
-  height: 1px;
-  width: 0;
-  background: linear-gradient(90deg, var(--accent-glow), transparent);
-  opacity: 0;
-}
-.message.donna.visible::before {
-  animation: reveal-line 0.2s ease-out 0.05s forwards;
-}
-
-@keyframes reveal-line {
-  to {
-    width: 100%;
-    opacity: 1;
-  }
-}
-
-/* Harvey messages just fade in */
-.message.harvey .message-text {
-  opacity: 0;
-}
-.message.harvey.visible .message-text {
-  animation: fade-in 0.4s ease-out 0.1s forwards;
-}
-
-@keyframes fade-in {
-  to { opacity: 1; }
-}
-
-/* Timestamps — hidden until hover */
-.message-time {
-  position: absolute;
-  right: -70px;
-  top: 0;
+.temporal-time {
+  font-family: var(--mono);
   font-size: 11px;
+  font-weight: 400;
+  color: var(--text-ghost);
+  letter-spacing: 0.05em;
+}
+
+.temporal-status {
+  font-size: 10px;
   font-weight: 300;
   color: var(--text-ghost);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  white-space: nowrap;
-}
-.message:hover .message-time {
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
   opacity: 0.4;
 }
 
-/* Data emphasis */
-.data-point {
-  font-family: var(--mono);
-  font-size: 13px;
-  text-shadow: 0 0 20px rgba(244,63,94,0.12);
+/* ─── INTERVENTIONS (the main surface) ───────────────── */
+.interventions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+  padding: 20px 0;
+  overflow: hidden;
 }
 
-.sev-indicator {
+/* ─── SIGNAL: the universal intervention element ─────── */
+.signal {
+  position: relative;
+  padding: 14px 0 14px 20px;
+  opacity: 0;
+  transform: translateX(-8px);
+  cursor: default;
+  transition: background 0.3s;
+}
+
+.signal.live { animation: signal-in 0.5s ease-out forwards; }
+
+@keyframes signal-in {
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Left edge mark — the only "shape" in the UI */
+.signal::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--outline);
+  opacity: 0.5;
+  transition: background 0.3s, opacity 0.3s, box-shadow 0.3s;
+}
+
+.signal:hover::before { opacity: 0.8; }
+
+/* Signal types */
+.signal.critical::before {
+  background: var(--accent);
+  opacity: 0.7;
+  box-shadow: 0 0 12px rgba(244,63,94,0.15);
+  animation: signal-pulse 3s ease-in-out infinite;
+}
+
+@keyframes signal-pulse {
+  0%, 100% { opacity: 0.5; box-shadow: 0 0 8px rgba(244,63,94,0.08); }
+  50%      { opacity: 0.8; box-shadow: 0 0 16px rgba(244,63,94,0.2); }
+}
+
+.signal.action::before {
+  background: var(--text-dim);
+  opacity: 0.4;
+}
+
+.signal.resolved::before {
+  background: var(--text-ghost);
+  opacity: 0.25;
+}
+
+/* Signal header */
+.signal-type {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-ghost);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.signal-type .live-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: dot-blink 2s ease-in-out infinite;
+}
+
+@keyframes dot-blink {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 1; }
+}
+
+/* Signal body */
+.signal-body {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.signal-body .mono {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text);
+}
+
+.signal-body .sev {
   color: var(--accent);
   font-weight: 500;
 }
 
-/* ─── RICH INLINE CONTENT ────────────────────────────── */
-.rich-content {
-  max-width: 520px;
-  margin: 8px 0 28px;
-  padding-left: 16px;
-  border-left: 2px solid var(--text-ghost);
-  position: relative;
-  overflow: hidden;
+.signal-body .dim {
+  color: var(--text-dim);
+}
+
+/* Signal detail — revealed on hover */
+.signal-detail {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.25s;
   opacity: 0;
 }
 
-.rich-content.visible {
-  animation: rich-materialize 0.7s ease-out forwards;
+.signal-detail > div {
+  overflow: hidden;
 }
 
-.rich-content.incident {
-  border-left-color: var(--accent);
+.signal:hover .signal-detail {
+  grid-template-rows: 1fr;
+  opacity: 1;
 }
 
-@keyframes rich-materialize {
-  0% {
-    opacity: 0;
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-  40% {
-    opacity: 0;
-    max-height: 200px;
-    padding-top: 12px;
-    padding-bottom: 12px;
-  }
-  100% {
-    opacity: 1;
-    max-height: 200px;
-    padding-top: 12px;
-    padding-bottom: 12px;
-  }
+.signal-detail-inner {
+  padding-top: 8px;
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  display: flex;
+  gap: 24px;
 }
 
-/* The hairline that precedes materialization */
-.rich-content::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 1px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.08), transparent);
-}
-.rich-content.visible::before {
-  animation: hairline-sweep 0.25s ease-out forwards;
-}
-
-@keyframes hairline-sweep {
-  to { width: 100%; }
-}
-
-.rich-content:hover {
-  border-left-width: 2px;
-  background: rgba(255,255,255,0.008);
-}
-
-.rich-content:hover .rich-label {
-  opacity: 0.6;
-}
-
-.rich-label {
+.signal-detail-inner .mono {
+  font-family: var(--mono);
   font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  color: var(--text);
+}
+
+.signal-meta {
+  font-size: 10px;
   color: var(--text-ghost);
-  margin-bottom: 4px;
-  opacity: 0.5;
+  font-weight: 300;
+  margin-top: 6px;
+  letter-spacing: 0.02em;
+  opacity: 0;
   transition: opacity 0.2s;
 }
 
-.rich-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text);
-  margin-bottom: 4px;
-}
+.signal:hover .signal-meta { opacity: 0.5; }
 
-.rich-title .mono {
-  font-family: var(--mono);
-  font-size: 13px;
-}
-
-.rich-detail {
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--text-dim);
-  line-height: 1.6;
-}
-
-.rich-meta {
+/* ─── SPRINT TRACE (inline data visualization) ───────── */
+.sprint-trace {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-top: 6px;
+  gap: 12px;
+  padding: 6px 0;
 }
 
-.rich-meta-left {
-  font-size: 13px;
-  color: var(--text-dim);
-}
-
-.rich-meta-right {
-  font-size: 11px;
-  color: var(--text-ghost);
-  font-weight: 300;
-}
-
-/* Sprint progress bar */
-.sprint-bar-container {
-  margin: 8px 0 4px;
-  height: 4px;
+.sprint-bar {
+  flex: 1;
+  height: 2px;
   background: rgba(255,255,255,0.04);
-  border-radius: 2px;
+  border-radius: 1px;
   overflow: hidden;
   position: relative;
 }
 
-.sprint-bar-fill {
+.sprint-fill {
   height: 100%;
-  width: 63%;
-  background: linear-gradient(90deg, rgba(244,63,94,0.3), rgba(244,63,94,0.15));
-  border-radius: 2px;
+  width: 0%;
+  background: rgba(244,63,94,0.25);
+  border-radius: 1px;
   position: relative;
-  overflow: hidden;
+  transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.sprint-bar-fill::after {
+.sprint-fill.animate { width: 63%; }
+
+.sprint-fill::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255,255,255,0.15) 50%,
-    transparent 100%
-  );
-  animation: bar-shine 3s ease-in-out infinite;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  animation: shimmer 3s ease-in-out infinite;
 }
 
-@keyframes bar-shine {
-  0% { left: -100%; }
-  100% { left: 200%; }
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
 }
 
-.sprint-stats {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  margin-top: 6px;
-}
-
-.sprint-stats .mono {
+.sprint-label {
   font-family: var(--mono);
-  font-size: 12px;
-  color: var(--text);
+  font-size: 11px;
+  color: var(--text-dim);
+  white-space: nowrap;
 }
 
-.sprint-stats span {
-  color: var(--text-dim);
+/* ─── DONNA'S VOICE ──────────────────────────────────── */
+.voice {
+  padding: 24px 0 0;
+  opacity: 0;
+  animation: fade-in 0.5s ease-out 0.5s forwards;
 }
+
+.voice-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+  margin-bottom: 6px;
+}
+
+.voice-text {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.7;
+  max-width: 85%;
+}
+
+/* The typewriter caret */
+.voice-text .caret {
+  display: inline-block;
+  width: 1px;
+  height: 1.1em;
+  background: var(--accent);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: caret-blink 800ms ease-in-out infinite;
+}
+
+@keyframes caret-blink {
+  0%, 100% { opacity: 0; }
+  50%      { opacity: 1; }
+}
+
+/* Voice history — faded previous messages */
+.voice-history {
+  padding-top: 16px;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.voice-history.visible { opacity: 1; }
+
+.voice-ghost {
+  font-size: 13px;
+  color: var(--text-ghost);
+  line-height: 1.6;
+  padding: 4px 0;
+  opacity: 0.4;
+  transition: opacity 0.2s;
+}
+
+.voice-ghost:hover { opacity: 0.7; }
+
+.voice-ghost .ghost-name {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.voice-ghost .ghost-name.donna-ghost { color: rgba(244,63,94,0.3); }
+.voice-ghost .ghost-name.harvey-ghost { color: var(--text-ghost); }
 
 /* ─── INPUT AREA ─────────────────────────────────────── */
 .input-area {
   flex-shrink: 0;
-  padding: 24px 0 20px;
+  padding: 20px 0;
   position: relative;
   opacity: 0;
-  animation: input-appear 0.6s ease-out 1s forwards;
-}
-
-@keyframes input-appear {
-  to { opacity: 1; }
+  animation: fade-in 0.6s ease-out 1.2s forwards;
 }
 
 .input-field {
@@ -534,219 +506,185 @@ html, body {
   font-size: 15px;
   font-weight: 400;
   line-height: 1.7;
-  padding: 0 0 12px;
-  caret-color: var(--accent);
+  padding: 0 0 10px;
+  caret-color: transparent;
+  cursor: none;
 }
 
 .input-field::placeholder {
   color: var(--text-ghost);
   font-weight: 300;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.15em;
+  font-size: 13px;
 }
 
-/* The heartbeat line */
-.input-line-container {
+/* SVG wave input line */
+.input-wave-container {
   position: relative;
   width: 100%;
-  height: 1px;
-  opacity: 0;
-  animation: line-materialize 0.5s ease-out 1s forwards;
+  height: 12px;
+  overflow: visible;
 }
 
-@keyframes line-materialize {
-  0% {
-    opacity: 0;
-    transform: scaleX(0);
-  }
-  100% {
-    opacity: 1;
-    transform: scaleX(1);
-  }
-}
-
-.input-line {
+.input-wave {
   width: 100%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.12) 50%, transparent 95%);
-  animation: heartbeat 4s ease-in-out infinite;
+  height: 12px;
+  opacity: 0.35;
+  transition: opacity 0.3s;
 }
 
-@keyframes heartbeat {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
+.input-wave path {
+  stroke: rgba(255,255,255,0.12);
+  stroke-width: 1;
+  fill: none;
+  transition: stroke 0.4s;
 }
 
-/* Rose accent bleed on focus */
-.input-accent-line {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  transform: translateX(-50%);
-  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+.input-area.focused .input-wave {
   opacity: 0.6;
 }
 
-.input-area.focused .input-accent-line {
-  width: 100%;
+.input-area.focused .input-wave path {
+  stroke: var(--accent);
+  stroke-width: 0.8;
+  filter: drop-shadow(0 0 6px rgba(244,63,94,0.15));
 }
 
-.input-area.focused .input-line {
-  animation: none;
-  opacity: 0.3;
-}
-
-/* Rotating gradient border on focus */
+/* Glow on focus */
 .input-glow {
   position: absolute;
-  bottom: 29px;
-  left: -2px;
-  right: -2px;
-  height: 48px;
+  bottom: 24px;
+  left: -4px;
+  right: -4px;
+  height: 44px;
   border-radius: 4px;
   opacity: 0;
   transition: opacity 0.3s;
   pointer-events: none;
   z-index: -1;
+  background: conic-gradient(from var(--glow-angle, 0deg),
+    transparent 0%,
+    rgba(244,63,94,0.03) 10%,
+    transparent 20%,
+    rgba(244,63,94,0.015) 40%,
+    transparent 60%,
+    rgba(244,63,94,0.03) 80%,
+    transparent 100%
+  );
 }
 
 .input-area.focused .input-glow {
   opacity: 1;
-  background: conic-gradient(from var(--glow-angle, 0deg),
-    transparent 0%,
-    rgba(244,63,94,0.04) 10%,
-    transparent 20%,
-    rgba(244,63,94,0.02) 40%,
-    transparent 60%,
-    rgba(244,63,94,0.04) 80%,
-    transparent 100%
-  );
-  animation: glow-rotate 4s linear infinite;
+  animation: glow-rotate 6s linear infinite;
 }
 
-@keyframes glow-rotate {
-  to { --glow-angle: 360deg; }
+@keyframes glow-rotate { to { --glow-angle: 360deg; } }
+
+.input-footer {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 4px;
 }
 
-@property --glow-angle {
-  syntax: '<angle>';
-  initial-value: 0deg;
-  inherits: false;
-}
-
-.input-hint {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  font-size: 11px;
-  font-weight: 300;
-  color: var(--text-ghost);
-  opacity: 0;
-  transition: opacity 0.3s;
-  animation: hint-appear 0.5s ease-out 2.5s forwards;
-}
-
-@keyframes hint-appear {
-  to { opacity: 0.35; }
-}
-
-/* Brand mark */
 .brand-mark {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 300;
   color: var(--text-ghost);
   letter-spacing: 0.15em;
   opacity: 0;
-  animation: brand-appear 0.6s ease-out 1.5s forwards;
+  animation: fade-in 0.5s ease-out 2s forwards;
 }
 
-@keyframes brand-appear {
-  to { opacity: 0.2; }
+.brand-mark { animation: brand-in 0.5s ease-out 2s forwards; }
+@keyframes brand-in { to { opacity: 0.18; } }
+
+.input-hint {
+  font-size: 10px;
+  font-weight: 300;
+  color: var(--text-ghost);
+  opacity: 0;
+  animation: brand-in 0.5s ease-out 2.5s forwards;
 }
 
-/* ─── TYPING INDICATOR (seismograph) ─────────────────── */
+/* ─── SEISMOGRAPH TYPING INDICATOR ───────────────────── */
 .typing-indicator {
   position: absolute;
-  bottom: 33px;
+  bottom: 28px;
   left: 0;
   width: 100%;
-  height: 1px;
+  height: 12px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s;
 }
 
-.typing-indicator.active {
-  opacity: 1;
-}
+.typing-indicator.active { opacity: 1; }
 
-.typing-wave {
+.typing-wave-svg {
   width: 100%;
-  height: 1px;
-  background: var(--accent);
-  opacity: 0.4;
-  animation: seismograph 1.5s ease-in-out infinite;
-  transform-origin: left center;
+  height: 12px;
 }
 
-@keyframes seismograph {
-  0% { clip-path: inset(0 100% 0 0); }
-  50% { clip-path: inset(0 0% 0 0); }
-  100% { clip-path: inset(0 0% 0 100%); }
+.typing-wave-svg path {
+  stroke: var(--accent);
+  stroke-width: 1;
+  fill: none;
+  opacity: 0.5;
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  animation: seismo-draw 1.8s ease-in-out infinite;
+}
+
+@keyframes seismo-draw {
+  0%   { stroke-dashoffset: 600; }
+  50%  { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -600; }
 }
 
 /* ─── COMMAND PALETTE ────────────────────────────────── */
-.command-overlay {
+.cmd-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   z-index: 50;
   backdrop-filter: blur(0px);
   -webkit-backdrop-filter: blur(0px);
   background: rgba(5,5,7,0);
   pointer-events: none;
   opacity: 0;
-  transition: backdrop-filter 0.3s, -webkit-backdrop-filter 0.3s, background 0.3s, opacity 0.3s;
+  transition: all 0.3s;
 }
 
-.command-overlay.active {
+.cmd-overlay.active {
   pointer-events: auto;
   opacity: 1;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  background: rgba(5,5,7,0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: rgba(5,5,7,0.7);
 }
 
-.command-options {
+.cmd-options {
   position: fixed;
-  bottom: 32px;
+  bottom: 44px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 51;
   display: flex;
-  gap: 32px;
+  gap: 28px;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.25s ease;
+  transition: opacity 0.25s;
 }
 
-.command-options.active {
+.cmd-options.active {
   opacity: 1;
   pointer-events: auto;
 }
 
-.command-option {
-  font-size: 13px;
+.cmd-opt {
+  font-size: 12px;
   font-weight: 400;
   color: var(--text-dim);
-  cursor: pointer;
+  cursor: none;
   position: relative;
   padding-bottom: 4px;
   transition: color 0.2s;
@@ -754,104 +692,51 @@ html, body {
   transform: translateY(6px);
 }
 
-.command-options.active .command-option {
-  animation: cmd-stagger 0.3s ease-out forwards;
+.cmd-options.active .cmd-opt {
+  animation: cmd-in 0.3s ease-out forwards;
+}
+.cmd-options.active .cmd-opt:nth-child(1) { animation-delay: 0.04s; }
+.cmd-options.active .cmd-opt:nth-child(2) { animation-delay: 0.08s; }
+.cmd-options.active .cmd-opt:nth-child(3) { animation-delay: 0.12s; }
+.cmd-options.active .cmd-opt:nth-child(4) { animation-delay: 0.16s; }
+.cmd-options.active .cmd-opt:nth-child(5) { animation-delay: 0.2s;  }
+
+@keyframes cmd-in {
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.command-options.active .command-option:nth-child(1) { animation-delay: 0.05s; }
-.command-options.active .command-option:nth-child(2) { animation-delay: 0.1s; }
-.command-options.active .command-option:nth-child(3) { animation-delay: 0.15s; }
-.command-options.active .command-option:nth-child(4) { animation-delay: 0.2s; }
-.command-options.active .command-option:nth-child(5) { animation-delay: 0.25s; }
-.command-options.active .command-option:nth-child(6) { animation-delay: 0.3s; }
-
-@keyframes cmd-stagger {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.command-option::after {
+.cmd-opt::after {
   content: '';
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 1px;
+  bottom: 0; left: 0;
+  width: 0; height: 1px;
   background: var(--text);
   transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.command-option:hover {
-  color: #fff;
-}
-.command-option:hover::after {
-  width: 100%;
-}
+.cmd-opt:hover { color: #fafafa; }
+.cmd-opt:hover::after { width: 100%; }
 
-/* ─── TOAST ──────────────────────────────────────────── */
-.toast-container {
-  position: fixed;
-  bottom: 20px;
-  right: 24px;
-  z-index: 100;
+/* ─── CONVERSATION MODE ──────────────────────────────── */
+.stage.conversation-mode .interventions {
+  opacity: 0.3;
+  filter: blur(2px);
+  pointer-events: none;
+  transition: opacity 0.4s, filter 0.4s;
 }
 
-.toast {
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--text-dim);
-  opacity: 0;
-  transform: translateX(20px);
-  animation: toast-in 0.4s ease-out 4s forwards;
-  white-space: nowrap;
+.stage.conversation-mode .voice {
+  flex: 1;
+  overflow-y: auto;
+  mask-image: linear-gradient(to bottom, transparent, black 30px, black calc(100% - 20px), transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 30px, black calc(100% - 20px), transparent);
 }
 
-@keyframes toast-in {
-  to {
-    opacity: 0.45;
-    transform: translateX(0);
-  }
-}
-
-.toast.important {
-  color: var(--accent);
-}
-
-.toast.important {
-  animation-name: toast-in-important;
-}
-
-@keyframes toast-in-important {
-  to {
-    opacity: 0.65;
-    transform: translateX(0);
-  }
-}
-
-/* ─── PAGE LOAD CINEMATIC SEQUENCE ───────────────────── */
-.conversation .message:nth-child(1) { animation-delay: 2s; }
-.conversation .message:nth-child(1) .message-text { animation-delay: 2.15s; }
-.conversation .message:nth-child(1)::before { animation-delay: 2.05s; }
-
-.conversation .rich-content:nth-of-type(1) { animation-delay: 2.6s; }
-.conversation .rich-content:nth-of-type(2) { animation-delay: 3s; }
-.conversation .rich-content:nth-of-type(3) { animation-delay: 3.4s; }
-
-.conversation .message:nth-child(5) { animation-delay: 3.8s; }
-.conversation .message:nth-child(5) .message-text { animation-delay: 3.9s; }
-
-.conversation .message:nth-child(6) { animation-delay: 4s; }
-.conversation .message:nth-child(6) .message-text { animation-delay: 4.15s; }
-
-.conversation .message:nth-child(7) { animation-delay: 4.2s; }
-.conversation .message:nth-child(7) .message-text { animation-delay: 4.35s; }
-.conversation .message:nth-child(7)::before { animation-delay: 4.25s; }
-
-.conversation .message:nth-child(8) { animation-delay: 4.6s; }
-.conversation .message:nth-child(8) .message-text { animation-delay: 4.7s; }
-.conversation .message:nth-child(8)::before { animation-delay: 4.65s; }
+/* ─── CINEMATIC LOAD SEQUENCE ────────────────────────── */
+.signal:nth-child(1).live { animation-delay: 1.5s; }
+.signal:nth-child(2).live { animation-delay: 2.2s; }
+.signal:nth-child(3).live { animation-delay: 2.8s; }
+.signal:nth-child(4).live { animation-delay: 3.3s; }
 
 /* ─── REDUCED MOTION ─────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
@@ -861,116 +746,126 @@ html, body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  .message, .rich-content {
+  .signal, .voice, .temporal, .input-area {
     opacity: 1 !important;
     transform: none !important;
-    clip-path: none !important;
-    max-height: none !important;
   }
-  .message .message-text {
-    opacity: 1 !important;
-    clip-path: none !important;
-  }
-  .aurora { opacity: 0.3 !important; }
-  .input-area, .input-line-container, .input-hint { opacity: 1 !important; }
-  .brand-mark { opacity: 0.2 !important; }
-  .cursor-trail { display: none; }
-}
-
-/* ─── SCROLL DEPTH PARALLAX CLASSES ──────────────────── */
-.message.donna,
-.rich-content {
-  will-change: transform;
+  .aurora { opacity: 0.25 !important; }
+  .grain { display: none; }
+  .cursor-dot, .cursor-ring { display: none; }
+  html, body { cursor: auto; }
+  .input-field { cursor: auto; caret-color: var(--text); }
+  .cmd-opt { cursor: pointer; }
 }
 </style>
 </head>
 <body>
 
-<!-- The living aurora at the bottom of the void -->
+<!-- Film grain — SVG turbulence for cinematic void -->
+<svg class="grain" aria-hidden="true">
+  <filter id="grain-filter">
+    <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter>
+  <rect width="100%" height="100%" filter="url(#grain-filter)"/>
+</svg>
+
+<!-- Custom cursor -->
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- Aurora -->
 <div class="aurora"></div>
 
-<!-- Cursor trail — responds to your presence -->
-<div class="cursor-trail" id="cursorTrail"></div>
+<!-- The Stage -->
+<div class="stage" id="stage">
 
-<!-- Spotlight that follows mouse over conversation -->
-<div class="conversation-spotlight" id="spotlight"></div>
+  <!-- Temporal header -->
+  <div class="temporal">
+    <span class="temporal-time" id="clock"></span>
+    <span class="temporal-status">online</span>
+  </div>
 
-<div class="app">
+  <!-- Interventions — the primary surface -->
+  <div class="interventions" id="interventions">
 
-  <!-- Conversation — the entire interface -->
-  <div class="conversation" id="conversation">
-
-    <!-- Donna's opening message -->
-    <div class="message donna visible">
-      <div class="message-name">Donna</div>
-      <div class="message-text">Morning. Three things.</div>
-      <div class="message-time">8:47 AM</div>
-    </div>
-
-    <!-- Incident: materialization -->
-    <div class="rich-content incident visible">
-      <div class="rich-label">Incident</div>
-      <div class="rich-title"><span class="mono">IcM 526834</span> · <span class="sev-indicator">Sev1</span> · westus2</div>
-      <div class="rich-detail">Error rate spiked <span class="data-point">0.2%</span> → <span class="data-point">12.8%</span> at 03:42 UTC</div>
-      <div class="rich-meta">
-        <span class="rich-meta-left">Auto-mitigation stabilized to <span class="data-point">3.1%</span></span>
-        <span class="rich-meta-right">03:42 UTC</span>
+    <!-- CRITICAL: Sev1 incident -->
+    <div class="signal critical live">
+      <div class="signal-type"><span class="live-dot"></span> incident · monitoring</div>
+      <div class="signal-body">
+        <span class="mono">IcM 526834</span> · <span class="sev">Sev1</span> · westus2
+        <span class="dim"> — error rate</span> <span class="mono">12.8%</span> <span class="dim">→</span> <span class="mono">3.1%</span>
       </div>
+      <div class="signal-detail"><div>
+        <div class="signal-detail-inner">
+          <span>Spiked at <span class="mono">03:42 UTC</span></span>
+          <span>Auto-mitigation active</span>
+          <span>Watch until <span class="mono">&lt;1%</span></span>
+        </div>
+      </div></div>
+      <div class="signal-meta">03:42 UTC · Donna is monitoring</div>
     </div>
 
-    <!-- PR: materialization -->
-    <div class="rich-content visible">
-      <div class="rich-label">Pull Request</div>
-      <div class="rich-title"><span class="mono">#4821</span> · auth-refactor</div>
-      <div class="rich-detail">14 files changed · All checks passing</div>
-      <div class="rich-meta">
-        <span class="rich-meta-left">Token refresh middleware refactored for MSAL v4</span>
-        <span class="rich-meta-right">Sanjeev K.</span>
+    <!-- ACTION: PR review -->
+    <div class="signal action live">
+      <div class="signal-type">pull request · reviewed</div>
+      <div class="signal-body">
+        <span class="mono">#4821</span> auth-refactor
+        <span class="dim"> — 14 files,</span> all checks <span class="dim">✓</span>
       </div>
+      <div class="signal-detail"><div>
+        <div class="signal-detail-inner">
+          <span>MSAL v4 token refresh</span>
+          <span>By <span class="mono">Sanjeev K.</span></span>
+          <span>Ready to merge</span>
+        </div>
+      </div></div>
+      <div class="signal-meta">Donna approved · waiting on your sign-off</div>
     </div>
 
-    <!-- Sprint: materialization -->
-    <div class="rich-content visible">
-      <div class="rich-label">Sprint 47 · Day 8</div>
-      <div class="sprint-bar-container">
-        <div class="sprint-bar-fill"></div>
+    <!-- RESOLVED: Sprint -->
+    <div class="signal resolved live">
+      <div class="signal-type">sprint 47 · day 8</div>
+      <div class="sprint-trace">
+        <div class="sprint-bar"><div class="sprint-fill" id="sprintFill"></div></div>
+        <span class="sprint-label">12/19</span>
       </div>
-      <div class="sprint-stats">
-        <span><span class="mono">12</span>/19 items</span>
-        <span><span class="mono">63%</span></span>
+      <div class="signal-detail"><div>
+        <div class="signal-detail-inner">
+          <span><span class="mono">3</span> blocked</span>
+          <span><span class="mono">4</span> in review</span>
+          <span>Velocity: <span class="mono">on track</span></span>
+        </div>
+      </div></div>
+      <div class="signal-meta">63% · standup draft ready</div>
+    </div>
+
+    <!-- ACTION: Coffee -->
+    <div class="signal action live">
+      <div class="signal-type">standing order · queued</div>
+      <div class="signal-body">
+        Vietnamese Cold Brew <span class="dim">· Kink HSR ·</span> <span class="mono">₹279</span>
       </div>
-    </div>
-
-    <!-- Donna's follow-up -->
-    <div class="message donna visible">
-      <div class="message-name">Donna</div>
-      <div class="message-text">Standup in 45 minutes. Draft update's ready.</div>
-      <div class="message-time">8:47 AM</div>
-    </div>
-
-    <!-- Harvey responds -->
-    <div class="message harvey visible">
-      <div class="message-name">Harvey</div>
-      <div class="message-text">good. what about the connection pool bug?</div>
-      <div class="message-time">8:49 AM</div>
-    </div>
-
-    <!-- Donna responds -->
-    <div class="message donna visible">
-      <div class="message-name">Donna</div>
-      <div class="message-text">Bug <span class="data-point">5401</span> — westus2 connection pool leak. Priya pushed a fix yesterday, tests are passing.</div>
-      <div class="message-time">8:49 AM</div>
-    </div>
-
-    <div class="message donna visible">
-      <div class="message-name">Donna</div>
-      <div class="message-text">Deploying to staging now. Should be in prod by EOD.</div>
-      <div class="message-time">8:49 AM</div>
+      <div class="signal-detail"><div>
+        <div class="signal-detail-inner">
+          <span>Coupon applied: <span class="mono">₹125 off</span></span>
+          <span>ETA <span class="mono">~25 min</span></span>
+        </div>
+      </div></div>
+      <div class="signal-meta">Awaiting your go</div>
     </div>
 
   </div>
 
-  <!-- Input area — the heartbeat -->
+  <!-- Donna's voice — the annotation layer -->
+  <div class="voice" id="voiceArea">
+    <div class="voice-name">Donna</div>
+    <div class="voice-text" id="voiceText"><span class="caret"></span></div>
+
+    <div class="voice-history" id="voiceHistory"></div>
+  </div>
+
+  <!-- Input -->
   <div class="input-area" id="inputArea">
     <div class="input-glow"></div>
     <input
@@ -981,32 +876,32 @@ html, body {
       autocomplete="off"
       spellcheck="false"
     >
-    <div class="input-line-container">
-      <div class="input-line"></div>
-      <div class="input-accent-line"></div>
+    <div class="input-wave-container">
+      <svg class="input-wave" viewBox="0 0 680 12" preserveAspectRatio="none" id="inputWaveSvg">
+        <path d="" id="wavePath"/>
+      </svg>
     </div>
     <div class="typing-indicator" id="typingIndicator">
-      <div class="typing-wave"></div>
+      <svg class="typing-wave-svg" viewBox="0 0 680 12" preserveAspectRatio="none">
+        <path d="" id="typingPath"/>
+      </svg>
     </div>
-    <span class="brand-mark">donna</span>
-    <span class="input-hint">Ctrl+K</span>
+    <div class="input-footer">
+      <span class="brand-mark">donna</span>
+      <span class="input-hint">Ctrl+K</span>
+    </div>
   </div>
+
 </div>
 
-<!-- Command palette overlay -->
-<div class="command-overlay" id="commandOverlay"></div>
-<div class="command-options" id="commandOptions">
-  <span class="command-option" data-cmd="overview">overview</span>
-  <span class="command-option" data-cmd="chat">chat</span>
-  <span class="command-option" data-cmd="sprint">sprint</span>
-  <span class="command-option" data-cmd="prs">prs</span>
-  <span class="command-option" data-cmd="incidents">incidents</span>
-  <span class="command-option" data-cmd="coffee">coffee</span>
-</div>
-
-<!-- Toast whisper -->
-<div class="toast-container">
-  <div class="toast">Build #2847 passed · 247 tests</div>
+<!-- Command palette -->
+<div class="cmd-overlay" id="cmdOverlay"></div>
+<div class="cmd-options" id="cmdOptions">
+  <span class="cmd-opt" data-cmd="incidents">incidents</span>
+  <span class="cmd-opt" data-cmd="prs">prs</span>
+  <span class="cmd-opt" data-cmd="sprint">sprint</span>
+  <span class="cmd-opt" data-cmd="coffee">coffee</span>
+  <span class="cmd-opt" data-cmd="chat">chat</span>
 </div>
 
 <script>
@@ -1016,53 +911,215 @@ html, body {
   const $ = s => document.querySelector(s);
   const $$ = s => document.querySelectorAll(s);
 
-  const conversation = $('#conversation');
+  /* ─── Clock ────────────────────────────────────────── */
+  function updateClock() {
+    const d = new Date();
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    let h = d.getHours(), m = d.getMinutes();
+    const ap = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    m = m < 10 ? '0' + m : m;
+    $('#clock').textContent = `${h}:${m} ${ap}  ${days[d.getDay()]}`;
+  }
+  updateClock();
+  setInterval(updateClock, 30000);
+
+  /* ─── Custom cursor ────────────────────────────────── */
+  const dot = $('#cursorDot');
+  const ring = $('#cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX;
+    my = e.clientY;
+    dot.style.left = mx + 'px';
+    dot.style.top = my + 'px';
+    dot.classList.add('visible');
+    ring.classList.add('visible');
+  });
+
+  // Ring follows with lag
+  function animateRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top = ry + 'px';
+    requestAnimationFrame(animateRing);
+  }
+  animateRing();
+
+  // Hover state for interactive elements
+  document.addEventListener('mouseover', e => {
+    const el = e.target.closest('.signal, .cmd-opt, .input-field');
+    if (el) {
+      dot.classList.add('hovering');
+      ring.classList.add('hovering');
+    }
+  });
+  document.addEventListener('mouseout', e => {
+    const el = e.target.closest('.signal, .cmd-opt, .input-field');
+    if (el) {
+      dot.classList.remove('hovering');
+      ring.classList.remove('hovering');
+    }
+  });
+
+  /* ─── SVG wave generator ───────────────────────────── */
+  function generateWave(width, amplitude, frequency, phase) {
+    const points = [];
+    const steps = 100;
+    for (let i = 0; i <= steps; i++) {
+      const x = (i / steps) * width;
+      const y = 6 + Math.sin((i / steps) * Math.PI * frequency + phase) * amplitude;
+      points.push(`${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(2)}`);
+    }
+    return points.join(' ');
+  }
+
+  // Animate input wave
+  const wavePath = $('#wavePath');
+  const typingPathEl = $('#typingPath');
+  let wavePhase = 0;
+  let waveAmplitude = 0.8;
+  let targetAmplitude = 0.8;
+
+  function animateWave() {
+    wavePhase += 0.015;
+    waveAmplitude += (targetAmplitude - waveAmplitude) * 0.05;
+    wavePath.setAttribute('d', generateWave(680, waveAmplitude, 4, wavePhase));
+    typingPathEl.setAttribute('d', generateWave(680, 2.5, 8, wavePhase * 3));
+    requestAnimationFrame(animateWave);
+  }
+  animateWave();
+
+  /* ─── Sprint bar animation ─────────────────────────── */
+  setTimeout(() => {
+    const fill = $('#sprintFill');
+    if (fill) fill.classList.add('animate');
+  }, 3500);
+
+  /* ─── Donna's typewriter voice ─────────────────────── */
+  const voiceText = $('#voiceText');
+  const messages = [
+    "Morning. The incident is stabilizing — I'm watching it.",
+    "PR 4821 looks clean. I've approved. Your call on merge.",
+    "Standup in 40 minutes. Draft is ready.",
+    "Coffee's queued. Say 'go' when you want it sent."
+  ];
+  let msgIndex = 0;
+  let charIndex = 0;
+  let currentText = '';
+
+  function typeNextChar() {
+    if (msgIndex >= messages.length) {
+      voiceText.innerHTML = currentText;
+      return;
+    }
+
+    const msg = messages[msgIndex];
+    if (charIndex < msg.length) {
+      currentText += msg[charIndex];
+      voiceText.innerHTML = currentText + '<span class="caret"></span>';
+      charIndex++;
+
+      // Variable speed — faster on common chars, pause on punctuation
+      const ch = msg[charIndex - 1];
+      let delay = 25 + Math.random() * 15;
+      if (ch === '.' || ch === '—') delay = 280 + Math.random() * 120;
+      else if (ch === ',') delay = 140 + Math.random() * 60;
+      else if (ch === ' ') delay = 45 + Math.random() * 20;
+
+      setTimeout(typeNextChar, delay);
+    } else {
+      // Message complete — pause, then start next
+      voiceText.innerHTML = currentText;
+      msgIndex++;
+      if (msgIndex < messages.length) {
+        setTimeout(() => {
+          // Move old text to history
+          pushToHistory(currentText);
+          currentText = '';
+          charIndex = 0;
+          voiceText.innerHTML = '<span class="caret"></span>';
+          setTimeout(typeNextChar, 300);
+        }, 2000);
+      }
+    }
+  }
+
+  function pushToHistory(text) {
+    const ghost = document.createElement('div');
+    ghost.className = 'voice-ghost';
+    ghost.innerHTML = '<div class="ghost-name donna-ghost">Donna</div>' + text;
+    const history = $('#voiceHistory');
+    history.prepend(ghost);
+    history.classList.add('visible');
+  }
+
+  // Start typing after signals have loaded
+  setTimeout(typeNextChar, 4000);
+
+  /* ─── Input focus ──────────────────────────────────── */
   const inputField = $('#inputField');
   const inputArea = $('#inputArea');
-  const cursorTrail = $('#cursorTrail');
-  const spotlight = $('#spotlight');
-  const commandOverlay = $('#commandOverlay');
-  const commandOptions = $('#commandOptions');
-  const typingIndicator = $('#typingIndicator');
 
-  /* ─── Cursor trail ─────────────────────────────────── */
-  let trailX = 0, trailY = 0;
-  document.addEventListener('mousemove', e => {
-    trailX = e.clientX;
-    trailY = e.clientY;
-    cursorTrail.style.left = trailX + 'px';
-    cursorTrail.style.top = trailY + 'px';
-  });
-
-  /* ─── Conversation spotlight ───────────────────────── */
-  conversation.addEventListener('mousemove', e => {
-    spotlight.style.left = e.clientX + 'px';
-    spotlight.style.top = e.clientY + 'px';
-    spotlight.style.opacity = '1';
-  });
-  conversation.addEventListener('mouseleave', () => {
-    spotlight.style.opacity = '0';
-  });
-
-  /* ─── Input focus effects ──────────────────────────── */
   inputField.addEventListener('focus', () => {
     inputArea.classList.add('focused');
-    conversation.classList.add('dimmed');
+    targetAmplitude = 2.5;
     inputField.placeholder = '';
   });
+
   inputField.addEventListener('blur', () => {
     inputArea.classList.remove('focused');
-    conversation.classList.remove('dimmed');
+    targetAmplitude = 0.8;
     if (!inputField.value) inputField.placeholder = '...';
   });
 
-  /* ─── Command palette (Ctrl+K) ─────────────────────── */
+  /* ─── Send message (Enter) ─────────────────────────── */
+  inputField.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !paletteOpen && inputField.value.trim()) {
+      e.preventDefault();
+      const text = inputField.value.trim();
+      inputField.value = '';
+
+      // Push current Donna text to history
+      if (voiceText.textContent.trim()) {
+        pushToHistory(voiceText.textContent);
+      }
+
+      // Show Harvey's message as ghost
+      const hGhost = document.createElement('div');
+      hGhost.className = 'voice-ghost';
+      hGhost.innerHTML = '<div class="ghost-name harvey-ghost">Harvey</div>' + escapeHtml(text);
+      $('#voiceHistory').prepend(hGhost);
+      $('#voiceHistory').classList.add('visible');
+
+      // Donna responds
+      voiceText.innerHTML = '<span class="caret"></span>';
+      const typingInd = $('#typingIndicator');
+      typingInd.classList.add('active');
+
+      setTimeout(() => {
+        typingInd.classList.remove('active');
+        currentText = '';
+        charIndex = 0;
+        msgIndex = 0;
+        messages.length = 0;
+        messages.push("On it. Give me a moment.");
+        typeNextChar();
+      }, 1500);
+    }
+  });
+
+  /* ─── Command palette ──────────────────────────────── */
   let paletteOpen = false;
+  const cmdOverlay = $('#cmdOverlay');
+  const cmdOptions = $('#cmdOptions');
 
   function openPalette() {
     paletteOpen = true;
-    commandOverlay.classList.add('active');
-    commandOptions.classList.add('active');
+    cmdOverlay.classList.add('active');
+    cmdOptions.classList.add('active');
     inputField.placeholder = 'command...';
     inputField.value = '';
     inputField.focus();
@@ -1070,12 +1127,11 @@ html, body {
 
   function closePalette() {
     paletteOpen = false;
-    commandOverlay.classList.remove('active');
-    commandOptions.classList.remove('active');
+    cmdOverlay.classList.remove('active');
+    cmdOptions.classList.remove('active');
     inputField.placeholder = '...';
     inputField.value = '';
-    // Reset stagger animations
-    $$('.command-option').forEach(el => {
+    $$('.cmd-opt').forEach(el => {
       el.style.opacity = '0';
       el.style.transform = 'translateY(6px)';
     });
@@ -1084,8 +1140,7 @@ html, body {
   document.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
       e.preventDefault();
-      if (paletteOpen) closePalette();
-      else openPalette();
+      paletteOpen ? closePalette() : openPalette();
     }
     if (e.key === 'Escape' && paletteOpen) {
       e.preventDefault();
@@ -1093,114 +1148,37 @@ html, body {
     }
   });
 
-  commandOverlay.addEventListener('click', () => {
-    if (paletteOpen) closePalette();
-  });
+  cmdOverlay.addEventListener('click', () => { if (paletteOpen) closePalette(); });
 
-  /* Filter commands as you type */
   inputField.addEventListener('input', () => {
     if (!paletteOpen) return;
     const q = inputField.value.toLowerCase();
-    $$('.command-option').forEach(el => {
-      const match = !q || el.dataset.cmd.includes(q);
-      el.style.display = match ? '' : 'none';
+    $$('.cmd-opt').forEach(el => {
+      el.style.display = (!q || el.dataset.cmd.includes(q)) ? '' : 'none';
     });
   });
 
-  /* Command selection */
-  $$('.command-option').forEach(el => {
-    el.addEventListener('click', () => {
-      closePalette();
-    });
+  $$('.cmd-opt').forEach(el => {
+    el.addEventListener('click', () => closePalette());
   });
 
-  /* ─── Send message (Enter key) ─────────────────────── */
-  inputField.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !paletteOpen && inputField.value.trim()) {
-      e.preventDefault();
-      const text = inputField.value.trim();
-      inputField.value = '';
-
-      // Add Harvey's message
-      const msg = document.createElement('div');
-      msg.className = 'message harvey';
-      msg.innerHTML = `
-        <div class="message-name">Harvey</div>
-        <div class="message-text">${escapeHtml(text)}</div>
-        <div class="message-time">${formatTime()}</div>
-      `;
-      conversation.appendChild(msg);
-      requestAnimationFrame(() => {
-        msg.classList.add('visible');
-        conversation.scrollTop = conversation.scrollHeight;
-      });
-
-      // Simulate Donna typing then responding
-      typingIndicator.classList.add('active');
-      setTimeout(() => {
-        typingIndicator.classList.remove('active');
-
-        const reply = document.createElement('div');
-        reply.className = 'message donna';
-        reply.innerHTML = `
-          <div class="message-name">Donna</div>
-          <div class="message-text">I'll look into that. Give me a minute.</div>
-          <div class="message-time">${formatTime()}</div>
-        `;
-        conversation.appendChild(reply);
-        requestAnimationFrame(() => {
-          reply.classList.add('visible');
-          conversation.scrollTop = conversation.scrollHeight;
-        });
-      }, 1800);
+  /* ─── Grain animation (subtle seed shift) ──────────── */
+  const grainFilter = document.querySelector('#grain-filter feTurbulence');
+  let grainFrame = 0;
+  function animateGrain() {
+    grainFrame++;
+    if (grainFrame % 3 === 0) {
+      grainFilter.setAttribute('seed', Math.floor(Math.random() * 100));
     }
-  });
-
-  /* ─── Parallax depth on scroll ─────────────────────── */
-  let ticking = false;
-  conversation.addEventListener('scroll', () => {
-    if (!ticking) {
-      requestAnimationFrame(() => {
-        const scrollY = conversation.scrollTop;
-        conversation.querySelectorAll('.message.donna, .rich-content').forEach(el => {
-          const offset = scrollY * 0.02;
-          el.style.transform = `translateY(${-offset}px)`;
-        });
-        ticking = false;
-      });
-      ticking = true;
-    }
-  });
-
-  /* ─── Toast auto-dismiss ───────────────────────────── */
-  setTimeout(() => {
-    const toast = $('.toast');
-    if (toast) {
-      toast.style.transition = 'opacity 0.3s, transform 0.3s';
-      toast.style.opacity = '0';
-      toast.style.transform = 'translateX(-10px)';
-    }
-  }, 9000);
-
-  /* ─── Scroll to bottom on load ─────────────────────── */
-  setTimeout(() => {
-    conversation.scrollTop = conversation.scrollHeight;
-  }, 5000);
+    requestAnimationFrame(animateGrain);
+  }
+  animateGrain();
 
   /* ─── Utilities ────────────────────────────────────── */
   function escapeHtml(str) {
     const d = document.createElement('div');
     d.textContent = str;
     return d.innerHTML;
-  }
-
-  function formatTime() {
-    const d = new Date();
-    let h = d.getHours(), m = d.getMinutes();
-    const ap = h >= 12 ? 'PM' : 'AM';
-    h = h % 12 || 12;
-    m = m < 10 ? '0' + m : m;
-    return h + ':' + m + ' ' + ap;
   }
 
 })();
