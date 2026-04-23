@@ -802,6 +802,19 @@ Donna uses **MCP (Model Context Protocol) servers** as her primary integration l
 | 4 | **IcM MCP Server** | 23 | Incidents, on-call, customer impact, summaries, mitigation hints. Azure CLI auth. |
 | 5 | **Fabric MCP Server** | TBD | LiveTable, Lakehouse, real-time analytics. Harvey's own product. Official `microsoft/mcp` catalog. |
 | 6 | **GitHub MCP** (Official) | ~30 | Repos, PRs, issues, code search, commits, actions, workflows |
+| 7 | **Geneva / Jarvis MCP** | TBD | Metrics (MDM), health/alerts, logs. DRI-grade telemetry. Server exists in `AIOps-Evaluator-Agentic-Platform`. Alt: Grafana MCP with Geneva datasource backend. (Source: Stack Internal Q457808) |
+| 8 | **Ev2 MCP** | TBD | Deployment rollouts, rollout logs, failure investigation. Ev2 team confirmed "in the works." Community version already built. (Source: Stack Internal Q462388) |
+| 9 | **SCOPE MCP** | ~5 | Cosmos/SCOPE script validation (`scope_compile`). Exists: `gim-home/scopemcpserver`. (Source: Stack Internal Q467657) |
+
+**Tier 1.5 — Coming Soon (Confirmed in development)**
+
+| # | Server | Status | What Donna Gets |
+|---|--------|--------|-----------------|
+| 10 | **Nitro V2 MCP** | In dev | Data pipeline management. Nitro team confirmed. (Source: Stack Internal Q467657) |
+| 11 | **Work IQ MCP** (Microsoft 1P) | Preview | Official M365 MCP — admin-governed. Will replace Softeria when GA. |
+| 12 | **Azure SRE Agent** | Available | Uses MDM metrics via MCP. Same telemetry on-call SRE agents use. |
+
+**1ES MCP Registry (`aka.ms/1mcp`):** The 1ES team is building a standardized catalog for all 1P MCP servers. As product teams publish, Donna discovers new tools automatically. Policy: each team owns their own MCP — ecosystem grows organically.
 
 **Tier 2 — Ecosystem**
 
@@ -824,11 +837,13 @@ Donna uses **MCP (Model Context Protocol) servers** as her primary integration l
 **MCP Summary:**
 ```
 TIER 0 (Azure):      1 server  ×  55 tools  =  Full cloud infrastructure
-TIER 1 (Microsoft):  5 servers × ~300 tools =  Graph + ADO + IcM + Fabric + GitHub
+TIER 1 (Microsoft):  8 servers × ~330 tools =  Graph + ADO + IcM + Fabric + GitHub + Geneva + Ev2 + SCOPE
+TIER 1.5 (Coming):   3 servers ×  TBD tools =  Nitro V2 + Work IQ + SRE Agent
 TIER 2 (Ecosystem):  5 servers ×  ~70 tools =  Browser, Knowledge, Slack, Gmail, GCal
 TIER 3 (Life):       3 servers ×  ~40 tools =  Food, groceries, dining
                      ──
-TOTAL:              14 MCP servers, ~465 tools, standard protocol
+TOTAL:              20 MCP servers, ~500+ tools, standard protocol
++ 1ES Registry (aka.ms/1mcp) auto-discovers new MCPs as teams publish
 ```
 
 ### Direct API Layer (Fallback — No MCP Available)
@@ -921,14 +936,15 @@ TOTAL:              14 MCP servers, ~465 tools, standard protocol
 ### Integration Summary
 
 ```
-MCP SERVERS:    14 servers × ~465 tools  (standard protocol, hours to integrate)
+MCP SERVERS:    20 servers × ~500+ tools (standard protocol, hours to integrate)
 DIRECT APIs:    10 integrations          (custom code, for gaps + desktop + local)
 FUTURE:          6 integrations          (when platforms mature)
                 ──
-TOTAL:          30 integrations powering 15+ Donna DNA capabilities
+TOTAL:          36 integrations powering 15+ Donna DNA capabilities
 
 BEFORE (old roadmap):  29 custom API integrations × weeks each
-AFTER  (MCP-first):    14 MCP servers + 10 direct APIs = MORE coverage, LESS code
+AFTER  (MCP-first):    20 MCP servers + 10 direct APIs = MORE coverage, LESS code
+DISCOVERY:             1ES Registry (aka.ms/1mcp) + Stack Internal = new MCPs found automatically
 ```
 
 ### The Hierarchy of Intelligence Sources
@@ -949,12 +965,15 @@ AFTER  (MCP-first):    14 MCP servers + 10 direct APIs = MORE coverage, LESS cod
   │Windows│        │SQLite│         │ M365   │ 171 tools
   │• Window│       │• All │         │ Azure  │  55 tools
   │• Mic   │       │ past │         │ ADO    │ ~40 tools
-  │• Idle  │       │ data │         │ IcM    │  23 tools
-  │• Clip  │       │      │         │ GitHub │ ~30 tools
+  │• Idle  │       │ data │         │ GitHub │ ~30 tools
+  │• Clip  │       │      │         │ IcM    │  23 tools
   │• Focus │       │Vector│         │ Fabric │  TBD
-  │• Procs │       │• Sem │         │Playwrt │ ~15 tools
-  └────────┘       │ srch │         │ Stack  │ ~10 tools
-                   └──────┘         │ Slack  │ ~20 tools
+  │• Procs │       │• Sem │         │Geneva  │  TBD  ← NEW
+  └────────┘       │ srch │         │ Ev2    │  TBD  ← NEW
+                   └──────┘         │ SCOPE  │  ~5   ← NEW
+                                    │Playwrt │ ~15 tools
+                                    │ Stack  │ ~10 tools
+                                    │ Slack  │ ~20 tools
                                     │Swiggy×3│ ~40 tools
                                     │ +more  │
                                     └────────┘

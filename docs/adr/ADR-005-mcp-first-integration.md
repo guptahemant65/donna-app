@@ -83,12 +83,30 @@ For a personal assistant, the ~15ms overhead is imperceptible. We only go direct
 | IcM MCP | 23 | Azure CLI | Incidents, on-call, customer impact, summaries, mitigation |
 | Fabric MCP | TBD | Entra ID | LiveTable, Lakehouse, real-time analytics — Harvey's own product |
 | GitHub MCP | ~30 | OAuth | Repos, PRs, issues, code search, commits, actions, workflows |
+| Geneva / Jarvis MCP | TBD | Azure CLI/MI | Metrics (MDM), health/alerts, logs. Server exists: `AIOps-Evaluator-Agentic-Platform` PR #14508805. Alternative: Grafana MCP with Geneva datasource backend. DRI-grade telemetry. |
+| Ev2 MCP | TBD | Entra ID | Deployment rollouts, rollout logs, failure investigation. Ev2 team confirmed "one in the works." Community version already built for DRI copilot use. |
+| SCOPE MCP | ~5 | Local | Cosmos/SCOPE script validation (`scope_compile`). Exists: `gim-home/scopemcpserver` on GitHub. |
+
+### Tier 1.5 — Coming Soon (Confirmed in development)
+| Server | Status | What Donna Gets |
+|--------|--------|-----------------|
+| Nitro V2 MCP | In development | Data pipeline management. Nitro team confirmed: "We are working on MCP servers for Nitro V2." |
+| Work IQ MCP (Microsoft 1P) | Preview | Official M365 MCP — mail, calendar, Teams, presence. Admin-governed. Will replace Softeria when GA. |
+| Azure SRE Agent MCP | Available | Uses MDM metrics via MCP. Same telemetry the on-call SRE agents use. Docs: `eng.ms/docs/.../sre-agent/.../usemdmmetrics` |
+
+### Discovery: 1ES MCP Registry (`aka.ms/1mcp`)
+
+The **1ES team** is building a standardized registry for all 1P MCP servers across Microsoft. This is the official catalog — one place to discover every internal MCP as product teams publish them. Jasmine Wang (1ES) is leading the effort to standardize MCP publishing and consumption.
+
+**Key policy:** "DO NOT build an MCP Server to access resources whose API is owned by another Microsoft team unless the owning team explicitly grants permission." This means product teams are building their OWN MCPs — the ecosystem will keep growing organically.
+
+**Source:** Stack Internal research (Q457808, Q462388, Q467657, Q471080).
 
 ### Tier 2 — Ecosystem (Productivity & communication)
 | Server | Tools | Auth | What Donna Gets |
 |--------|-------|------|-----------------|
 | Playwright MCP | ~15 | Local | Browser automation — anything without an API |
-| Stack Overflow Teams MCP | ~10 | Auth | Internal knowledge, Q&A, articles |
+| Stack Overflow Teams MCP | ~10 | Auth | Internal knowledge search, Q&A, articles — also Donna's internal research tool |
 | Slack MCP (official) | ~20 | OAuth | Slack messages, channels, DMs, reactions |
 | Gmail MCP (Google) | ~15 | OAuth | Personal email management |
 | Google Calendar MCP | ~10 | OAuth | Personal calendar (if Harvey uses GCal too) |
@@ -106,12 +124,15 @@ For a personal assistant, the ~15ms overhead is imperceptible. We only go direct
 ## Consequences
 
 ### Positive
-- Integration count explodes from 29 custom APIs to **6 MCP servers + ~10 direct APIs** covering MORE surface area
+- Integration count explodes from 29 custom APIs to **18+ MCP servers + ~10 direct APIs** covering MORE surface area
 - Time to integrate drops from weeks per integration to hours
 - LLM can dynamically discover available tools — no hardcoded mapping
-- Community maintains MCP servers — we inherit updates for free
+- Community AND product teams maintain MCP servers — we inherit updates for free
 - Graph probe POC isn't wasted — it becomes the fallback layer
 - Azure MCP Server alone gives us 55 cloud management tools we never planned for
+- Geneva MCP gives DRI-grade telemetry — metrics, health, logs — without custom integration
+- 1ES MCP Registry (`aka.ms/1mcp`) means new MCPs appear automatically as teams publish them
+- Stack Internal proved invaluable as a research tool — Donna should use it for ongoing discovery
 
 ### Negative
 - Dependency on third-party MCP servers (Softeria is community, not Microsoft)
