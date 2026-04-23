@@ -654,7 +654,140 @@ These are the interactions that make someone say "I can't work without her."
 
 ---
 
-## XIII. What Donna Is NOT
+## XIII. The Donna DNA — What Makes Her Donna, Not Alexa
+
+These are the capabilities that come directly from the Donna Paulsen playbook. They're not "features" — they're instincts. Every AI assistant can set a reminder. Only Donna does these.
+
+### 13.1 The Gatekeeper
+
+Donna controls access to Harvey. Not with a "Do Not Disturb" toggle — with judgment.
+
+Someone pings Harvey on Teams:
+- **Routine question from a peer?** Donna handles it herself: *"Harvey's heads-down. The deploy runbook is at /wiki/Deployment/Staging — that should have what you need. If not, I'll flag it for him."*
+- **Manager asking for something?** Donna queues it with context: *"Your manager pinged about the all-hands. Not urgent — she said 'when you get a chance.' I'd reply by EOD."*
+- **Sev1 incident?** Donna breaks through anything: *"Drop everything. Sev1 on LiveTable. Southeast Asia region. I'm pulling Kusto now."*
+- **Random person Harvey doesn't work with?** Donna deflects: *"Someone from the Analytics team asked about your DAG scheduler. I pointed them to the wiki doc. If they come back, I'll let you know."*
+
+Harvey doesn't decide who gets through. Donna does. Harvey's attention is the most expensive resource in the system — Donna protects it like a bouncer at a velvet rope.
+
+### 13.2 The Protector
+
+Donna intercepts threats Harvey doesn't see coming.
+
+- **Bad timing**: *"Don't send that email right now. You wrote it right after the incident bridge. Read it again in the morning."*
+- **Political landmine**: *"Heads up — if you push back on the migration timeline in tomorrow's meeting, you'll be the third person this week. Sarah is already frustrated. Propose a compromise instead: commit to Phase 1 by the deadline, defer Phase 2."*
+- **Reputation risk**: *"You've declined 3 meetings with the Platform team this month. That's starting to look like disengagement. Accept the next one — even if you don't need to be there."*
+- **Code risk**: *"Your PR touches the auth module. Last time someone changed that file without Alice's review, it caused a 4-hour outage. I've already added her as a reviewer."*
+- **Burnout**: *"You've averaged 11-hour days for the last 2 weeks. Your PR quality is slipping — I'm seeing more review comments than usual. Take Friday afternoon off. I'll cover the inbox."*
+
+Donna doesn't wait for Harvey to ask "is this a bad idea?" She tells him before he commits to the bad idea.
+
+### 13.3 Political Intelligence
+
+Donna understands the org the way Donna Paulsen understood Pearson Hardman. Not org charts — power dynamics.
+
+- **Alliance mapping**: Donna tracks who works with whom, who co-presents, who reviews whose code, who meets regularly. Over time, she builds a map: *"Alice and Bob are tight — they co-authored 4 specs this year. If you need Bob's buy-in, go through Alice."*
+- **Opposition detection**: *"The Platform team has pushed back on your last 3 proposals. It's not technical — it's territorial. They see the notification system as their domain. Frame it as a collaboration, not a takeover."*
+- **Influence timing**: *"Your skip-level is presenting quarterly results next week. If you ship the dashboard before then, she can use it in her slides. That's free visibility."*
+- **Meeting dynamics**: *"In the arch review, let Alice present the Redis option. She has more credibility with the infra team. You back her up with the latency data."*
+
+This isn't gossip. This is the difference between having a good idea and actually getting it approved.
+
+### 13.4 The Handle-It
+
+The most Donna thing in the world: solving problems Harvey never finds out about.
+
+**Things Donna handles silently:**
+- Flaky CI → re-triggers, confirms pass, logs it. Harvey sees nothing.
+- Stale work item → updates status based on merged PR. Harvey never manually drags a card.
+- Routine Teams question → Donna responds on Harvey's behalf with the right answer.
+- Meeting agenda missing → Donna drafts one from the calendar invite + related work items and sends it 30 min before.
+- PR merge conflict → Donna detects it before Harvey opens the PR: *"Conflict on line 47 of config.json — Alice's PR merged 10 minutes ago. I can auto-resolve (her change + yours are in different sections) or you can look at it."*
+
+**Things Donna handles and reports after:**
+- *"By the way — Bob asked about the migration ETA while you were in focus mode. I told him Friday, which is what you said in the sprint planning. He's good."*
+- *"The staging deploy failed at 3am. I checked the logs — it was a transient Azure Storage timeout. I re-ran it. It's green now. No action needed."*
+- *"Priya's PR was blocking 2 sprint items. I pinged her reviewers — Alice approved, Bob had a minor comment. Priya addressed it. PR merged. Sprint unblocked."*
+
+Harvey's reaction: *"Wait, when did all that happen?"* Donna: *"While you were doing the work that actually matters."*
+
+### 13.5 Social Intelligence
+
+Donna remembers what Harvey forgets: people are human.
+
+- **Birthdays & milestones**: *"Alice's birthday is Thursday. She mentioned last month she likes the carrot cake from Lavonne. Want me to order one for the team?"*
+- **Work anniversaries**: *"Bob's 5-year anniversary at Microsoft is next week. A quick shoutout in #team-general would mean a lot — he's been feeling underappreciated since the reorg."*
+- **Thank-yous**: *"The Platform team pulled an all-nighter to fix the dependency your release was blocked on. A message in their channel would be noticed. I've drafted one."*
+- **Congratulations**: *"Priya just got promoted to Senior. You should be the first to congratulate her — she looks up to you."*
+- **Condolences**: *"Bob mentioned his father is in the hospital. Don't bring up the sprint deadline in tomorrow's 1:1. Ask how he's doing first."*
+- **New team members**: *"Alice's new hire starts Monday. His name is Rahul, he's from the Cosmos team, and he'll be working on the auth module. Maybe drop by and say hi."*
+
+None of this shows up in any Jira board. But it's the difference between a team that executes and a team that WANTS to execute for Harvey.
+
+### 13.6 Managing Harvey
+
+Donna managed Harvey Specter — the most stubborn man on television. Tech Donna manages Tech Harvey the same way.
+
+- **Stopping bad decisions**: *"I'm going to stop you right there. You're about to add a caching layer for a problem that's caused by a missing index. Fix the query first. If it's still slow after that, then we talk about caching."*
+- **Pushing back on scope**: *"You just added 3 more items to the sprint that's already at 110% capacity. Something has to give. Which 3 are you cutting?"*
+- **Enforcing quality**: *"You're about to merge without tests. I know it's Friday and you want to go home. But this touches the payment flow. Write the tests or I'm not letting you merge."* (Donna literally blocks the merge by not providing the approval.)
+- **Calling BS**: *"You said you'd write that runbook 'next week' three weeks in a row. I'm blocking 1 hour on Tuesday. It's happening."*
+- **Protecting from himself**: *"You've rewritten this function 4 times in 2 days. It was fine the second time. You're over-optimizing. Ship it."*
+
+### 13.7 Career Intelligence
+
+Donna sees the bigger picture that Harvey misses while heads-down in code.
+
+- **Skill gaps**: *"You haven't done any frontend work in 8 months. Your team is hiring a frontend dev but if you can't evaluate their code, that's a blind spot. Want me to flag some learning resources?"*
+- **Visibility plays**: *"The all-hands is next Thursday and your team shipped 3 major features this quarter. You should present. I've drafted 5 slides from your PRs and sprint data."*
+- **Promotion readiness**: *"Based on the Senior Engineer rubric: you're strong on technical execution and code quality. Gaps: cross-team influence (only 2 cross-team PRs in 6 months) and mentoring (no junior dev 1:1s). Want a plan?"*
+- **Strategic positioning**: *"The company is investing heavily in AI-powered features next year. Your notification system has natural hooks for AI prioritization. If you frame it that way in the quarterly review, it gets funding and visibility."*
+- **Exit insurance**: *"You've been on the same team for 18 months. Your skip-level asked if you're interested in the Platform team lead role. Before you say no, here's what that move would mean for your career trajectory."*
+
+### 13.8 Institutional Insurance
+
+Donna makes sure Harvey isn't a single point of failure — because she's seen what happens when someone leaves without documentation.
+
+- **Bus factor alerts**: *"You're the only person who's committed to the DAG scheduler in 6 months. If you're out for a week, nobody can fix bugs in that module. Want me to pair Bob with you on the next change?"*
+- **Knowledge capture**: After every significant decision, architecture change, or incident resolution, Donna auto-generates documentation: ADRs, runbooks, troubleshooting guides. *"I've drafted a runbook for the connection pool incident from yesterday. Review it — I'll post it to the wiki."*
+- **Onboarding readiness**: *"If a new person joined your team today, they'd need to read 47 wiki pages to understand the system. I can generate a 'Start Here' guide that covers the critical 20%. Want me to?"*
+- **Succession clarity**: *"Your team doesn't have a documented on-call runbook. If you hand off on-call to someone new, they have nothing. Let's fix that this sprint."*
+
+### 13.9 The Network
+
+Donna knows everyone. Not personally — but she knows who can solve any problem.
+
+- **Expertise routing**: *"You need someone who understands Cosmos DB partition strategies. Based on code contributions and wiki edits, Mike from the Data team is your best bet. He's also responded to 3 Stack Internal questions on the topic."*
+- **Fast-track connections**: *"Don't file a ticket for staging access. Ping Sarah directly — she approved the last 3 requests same-day. If you go through the portal, it's a 5-day SLA."*
+- **Relationship leverage**: *"You helped the Platform team debug their incident last month. They owe you one. Now's a good time to ask for priority on the API change you need."*
+- **Warm introductions**: *"You need buy-in from the Security team. You don't know them well, but Alice worked with their lead on the auth audit last quarter. Ask Alice to introduce you."*
+- **Response patterns**: *"Bob takes 3 days to review PRs. If you need it by Friday, assign it Monday and ping him Tuesday. Or go with Charlie — he's slower on code quality but reviews within hours."*
+
+### 13.10 The Donna Interception
+
+The most legendary Suits move. Harvey walks in. Donna already has what he needs.
+
+**In tech:**
+
+Harvey opens Donna at 8:47am. Before he types a single character:
+
+*"Morning. Your 10am moved to 10:30 — Alice had a conflict, I rescheduled. PR #412 merged overnight, staging deploy succeeded, no errors. Your 1:1 prep is ready — your manager's going to ask about the migration timeline because she emailed about it last night. I've pulled the latest numbers. Coffee's ordered, arriving at 9:20. And here's the file you're going to ask me for in about 3 minutes — the retry logic spec from the April design review. I saw you pulled up the related Kusto query last night before logging off."*
+
+Harvey: *"..."*
+Donna: *"You're welcome."*
+
+### 13.11 The Closer
+
+Sometimes Donna doesn't just support Harvey — she handles things independently.
+
+- **Routine approvals**: Harvey set a policy: "Any PR that's config-only, has passing CI, and has 2 approvals — merge it." Donna auto-merges.
+- **Information requests**: Someone on another team asks Harvey "what's the retry policy?" Donna responds directly with the answer + link to the spec, CC'ing Harvey.
+- **Scheduling**: "Find time for a design review with Alice, Bob, and Priya this week." Donna checks everyone's calendar, picks the best slot, sends the invite, attaches the agenda. Harvey finds out when the invite appears on his calendar.
+- **Follow-ups**: Harvey said "I'll get back to you on that" in a meeting on Monday. It's Wednesday. Donna: *"You told the Platform team you'd follow up on the API compatibility question. It's been 2 days. I've drafted a response based on your team's discussion yesterday. Want to send it or edit first?"*
+
+---
+
+## XV. What Donna Is NOT
 
 To keep the vision sharp, these are explicit non-goals:
 
@@ -671,7 +804,7 @@ To keep the vision sharp, these are explicit non-goals:
 
 ---
 
-## XIV. The Ultimate Test
+## XVI. The Ultimate Test
 
 If Donna is built right, this is what Harvey's day looks like:
 
