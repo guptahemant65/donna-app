@@ -632,25 +632,149 @@ These are the interactions that make someone say "I can't work without her."
 
 ---
 
-## XII. Integration Map — What Powers It All
+## XII. Integration Roadmap — Donna's Full Arsenal
 
-| Integration | Protocol | Powers |
+### What We Have (Verified ✓)
+
+| # | Integration | Protocol | Access | Powers |
+|---|---|---|---|---|
+| 1 | **Microsoft Graph** | WAM Broker + REST | **32/44 endpoints** | Calendar R/W, Email R/W+Send, Teams R/W, Tasks R/W, Files R/W, People, OneNote, Org, Search, Insights, SharePoint, Profile |
+| 2 | **IcM** | MCP Server | Full | Incidents, on-call, severity, mitigation, customer impact |
+| 3 | **Azure DevOps** | MCP Server | Full | Work items, PRs, boards, repos, builds, sprints, wikis |
+| 4 | **GitHub** | MCP Server | Full | Repos, PRs, issues, code search, commits, actions |
+| 5 | **Kusto / ADX** | MCP Server | Full | Log analysis, error patterns, metrics, telemetry |
+| 6 | **Swiggy Food** | MCP Server | Full | Restaurant search, menu, cart, orders, tracking |
+| 7 | **Swiggy Instamart** | MCP Server | Full | Grocery search, cart, orders, tracking |
+| 8 | **Swiggy Dineout** | MCP Server | Full | Restaurant discovery, reservations, booking |
+| 9 | **Playwright** | MCP Server | Full | Browser automation fallback for anything without an API |
+| 10 | **Stack Overflow Teams** | MCP Server | Full | Internal knowledge search, Q&A, articles |
+| 11 | **LLM (Copilot CLI)** | Direct | Full | Reasoning, summarization, decision-making — the brain |
+
+### Microsoft Graph — Detailed Access Map (POC Verified 2026-04-23)
+
+**Auth method:** WAM Broker (`pymsalruntime`) → silent token acquisition via Microsoft Office first-party app (`d3590ed6`). Only method that satisfies corp conditional access + token protection policy. See `poc/graph_probe.py`.
+
+**Accessible (32 endpoints):**
+
+| Domain | Endpoints | Access Level | Donna Capabilities Unlocked |
+|---|---|---|---|
+| Calendar | calendarView, calendars, events, calendarGroups | **Read/Write** | Temporal Intelligence, Meeting Prep, Schedule Awareness, Morning Briefing |
+| Email | messages, mailFolders, send | **Read/Write/Send** | Communications Intelligence, Priority Triage, The Gatekeeper, The Closer |
+| People | people (relevance), contacts, manager, directReports | **Read** | Social Intelligence, People Graph, The Network, Political Intelligence |
+| Teams & Chat | joinedTeams, chats, channelMessages | **Read/Write/Send** | Communications, Handle-It, The Closer, The Network |
+| Tasks | todo/lists, planner/tasks | **Read/Write** | Productivity Intelligence, Follow-up Tracking, The Handle-It |
+| Files & OneDrive | drive, recent files | **Read/Write** | Document Brain, Context Awareness, Knowledge Base |
+| OneNote | notebooks | **Read/Create** | Knowledge Base, Meeting Notes, Institutional Insurance |
+| Search | /search/query (POST) | **Full** | Cross-M365 search (email + files + Teams + people in one query) |
+| Insights | used docs, shared docs | **Read** | "Here are docs relevant to your 2pm meeting" |
+| Profile (beta) | skills, interests, projects | **Read** | Career Intelligence, People Graph |
+| Organization | org info, memberOf, transitiveMemberOf | **Read** | Political Intelligence, Career Intelligence, Org Brain |
+| SharePoint | sites/root | **Read** | Team wikis, shared docs, project sites |
+| Outlook | masterCategories | **Read** | Email categorization awareness |
+| Settings | user settings | **Read** | Personalization |
+| Notifications | notification feed | **Read** | Cross-M365 activity awareness |
+
+**Blocked (admin policy — cannot work around):**
+
+| Endpoint | Why | Workaround |
 |---|---|---|
-| **IcM** | MCP Server | Incidents, on-call, severity, mitigation, customer impact |
-| **Azure DevOps** | MCP Server | Work items, PRs, boards, repos, builds, sprints, wikis |
-| **GitHub** | MCP Server | Repos, PRs, issues, code search, commits, actions |
-| **Kusto** | MCP Server | Log analysis, error patterns, metrics, telemetry |
-| **Swiggy Food** | MCP Server | Restaurant search, menu, cart, orders, tracking |
-| **Swiggy Instamart** | MCP Server | Grocery search, cart, orders, tracking |
-| **Swiggy Dineout** | MCP Server | Restaurant discovery, reservations, booking |
-| **Microsoft Graph** | REST API / MCP | Calendar, email, Teams presence, contacts, files |
-| **Outlook/Exchange** | via Graph | Email read/send, calendar CRUD, meeting rooms |
-| **Teams** | via Graph + Bot | Messages, channels, presence, DND, auto-replies |
-| **Azure Cost Mgmt** | REST API | Subscription spend, budget alerts, cost trends |
-| **Playwright** | MCP Server | Browser automation fallback for anything without an API |
-| **Local file system** | Direct | Clipboard monitoring, file watching, screenshot capture |
-| **SQLite** | Local DB | Memory, preferences, decisions, patterns, conversation history |
-| **Vector DB** | Local (embedded) | Semantic search across conversations and documents |
+| Presence (`/me/presence`) | Token protection + admin policy | Windows Local APIs: active window, mic/camera state, idle time — actually **richer** than Presence enum |
+| Work Analytics (`/beta/me/analytics`) | MyAnalytics admin lockdown | Build our own from Calendar + Email + Teams patterns over time |
+| Sensitivity Labels | Security admin policy | Not critical for Donna |
+
+**Blocked (need additional consent — potentially fixable):**
+
+| Endpoint | Missing Scope | Impact if Unblocked |
+|---|---|---|
+| Online Meetings | `OnlineMeetings.Read` | Meeting transcripts, recording access |
+| Inbox Rules | `MailboxSettings.Read` | Donna could read/create auto-rules |
+| Trending Insights | Broader `Sites.Read.All` | "Docs trending in your org right now" |
+| Followed SharePoint Sites | Broader consent | Project site awareness |
+
+### Tier 1 — Massive Unlocks (Next to Integrate)
+
+| # | Integration | Protocol | What It Gives Donna | Capabilities |
+|---|---|---|---|---|
+| 12 | **Windows Local APIs** | Tauri native (Rust/JS) | Active window title, mic/camera state, clipboard history, idle time, Focus Assist/DND, running processes, battery/power, network state, file system watcher, global hotkeys, system tray | **Replaces blocked Presence API**, Emotional Intelligence, Burnout Detection, Context Awareness, "Harvey is presenting right now — hold all notifications" |
+| 13 | **LinkedIn API** | OAuth2 REST | Professional network, job changes, skill endorsements, company updates, industry news | People Intelligence, Career Intelligence, The Network, "Your skip-level just updated to Open-to-Work", "3 people in your org endorsed Azure Kubernetes this week" |
+| 14 | **Local SQLite** | Direct (embedded) | Structured memory — every interaction, preference, decision, pattern, conversation | Historical Intelligence, Anticipatory Intelligence, Eidetic Brain, "You asked about this same error 3 months ago — here's what fixed it" |
+| 15 | **Vector DB** | Local (embedded, e.g. ChromaDB) | Semantic search across all past conversations, documents, meeting notes | Knowledge retrieval, "Find that architecture discussion from February", fuzzy recall |
+
+**Why Windows Local APIs are #1 priority:** Donna is a **desktop app**. She can see everything Harvey does on his machine — no API key, no auth, no rate limits, no admin blocking. Active window tracking alone tells Donna: "Harvey is in VS Code editing LiveTable code" vs "Harvey is in PowerPoint building a deck" vs "Harvey is in Teams on a call." That's richer context than any cloud API provides. This is Donna's **unfair advantage** over cloud-only assistants.
+
+### Tier 2 — High Value, Specific Capabilities
+
+| # | Integration | Protocol | What It Gives Donna | Capabilities |
+|---|---|---|---|---|
+| 16 | **Bing Maps / Google Maps API** | REST | Real-time commute time, traffic, ETA to meeting locations, directions | Temporal Intelligence, Morning Briefing, "Leave in 15 min if you want to make the 3pm at Building 44" |
+| 17 | **Weather API** (OpenWeatherMap / MSN) | REST | Current weather, forecasts, severe weather alerts | Morning Briefing, The Donna Interception, "Raining today — grab an umbrella", "Flight to BLR might be delayed — monsoon warning" |
+| 18 | **Azure Cost Management** | REST | Subscription spend, budget alerts, cost trends, anomalies | Engineering Intelligence, The Protector, "Your dev subscription hit 80% of budget — mostly that forgotten AKS cluster" |
+| 19 | **FindMeetingTimes API** (via Graph) | REST | Suggest optimal meeting slots across attendees | The Closer, Temporal Intelligence, "Best slot for the 5-person sync is Thursday 2pm — everyone is free" |
+| 20 | **Room/Resource Booking** (via Graph) | REST | Conference room availability, equipment booking | The Closer, "Booked Room 42 for your 3pm — it has the good whiteboard" |
+
+### Tier 3 — Life & Personal
+
+| # | Integration | Protocol | What It Gives Donna | Capabilities |
+|---|---|---|---|---|
+| 21 | **Spotify API** | OAuth2 REST | Focus playlists, music control, listening history | Emotional Intelligence, "You seem stressed — here's your deep work playlist", "Pausing music for your call" |
+| 22 | **Travel APIs** (MakeMyTrip / Cleartrip / Amadeus) | REST | Flight status, hotel bookings, trip management | The Closer, Life Intelligence, "Your BLR flight is delayed 45 min — I've updated your calendar" |
+| 23 | **News/RSS APIs** | REST / RSS | Industry news (Azure, Data Engineering), company news, tech trends | Political Intelligence, Morning Briefing, "Azure announced a new Fabric feature yesterday — relevant to your project" |
+| 24 | **OCR / Vision** (Azure AI Vision or local) | REST / Local | Read screenshots, whiteboard photos, architecture diagrams | Document Brain, Knowledge, "That architecture diagram from Tuesday's meeting says the timeout is 30s" |
+
+### Tier 4 — Future / Experimental
+
+| # | Integration | What It Could Do | When |
+|---|---|---|---|
+| 25 | **Microsoft Copilot Extensibility** | Donna as a Copilot plugin across M365 | When platform matures |
+| 26 | **Teams Bot Framework** | Donna IN Teams (not just reading Teams) | After core is solid |
+| 27 | **Power Automate** | Complex workflow orchestration | After Handle-It patterns emerge |
+| 28 | **WhatsApp Business API** | Personal communication intelligence | If Harvey wants personal comms |
+| 29 | **Smart Home APIs** (Alexa/Google Home) | "Turn off office lights when Harvey leaves" | Far future |
+
+### Integration Summary
+
+```
+HAVE NOW:       11 integrations (Graph, GitHub, ADO, IcM, Kusto, Swiggy×3, Playwright, Stack, LLM)
+NEXT SPRINT:     4 integrations (Windows Local, LinkedIn, SQLite, Vector DB)
+HIGH VALUE:      5 integrations (Maps, Weather, Azure Cost, FindMeetingTimes, Room Booking)
+LIFE:            4 integrations (Spotify, Travel, News, OCR)
+FUTURE:          5 integrations (Copilot, Teams Bot, Power Automate, WhatsApp, Smart Home)
+                ──
+TOTAL:          29 integrations powering 15+ Donna DNA capabilities
+```
+
+### The Hierarchy of Intelligence Sources
+
+```
+                    ┌─────────────┐
+                    │   LLM Brain  │  ← Reasoning over everything below
+                    └──────┬──────┘
+                           │
+              ┌────────────┼────────────┐
+              │            │            │
+     ┌────────┴───┐  ┌────┴─────┐  ┌──┴──────────┐
+     │ Local State │  │  Memory  │  │ Cloud APIs   │
+     │ (Tier 1)    │  │ (Tier 1) │  │ (Tiers 1-3) │
+     └────────┬───┘  └────┬─────┘  └──┬──────────┘
+              │            │            │
+   ┌──────────┤     ┌──────┤     ┌──────┤
+   │ Windows  │     │SQLite│     │ Graph│
+   │ • Window │     │• All │     │ • 32 │
+   │ • Mic    │     │  past│     │   end│
+   │ • Idle   │     │  data│     │   pts│
+   │ • Clip   │     │      │     │      │
+   │ • Focus  │     │Vector│     │GitHub│
+   │ • Procs  │     │• Sem │     │ ADO  │
+   └──────────┘     │  srch│     │ IcM  │
+                    └──────┘     │Kusto │
+                                 │Swiggy│
+                                 │ etc. │
+                                 └──────┘
+
+The unfair advantage: Local State + Memory
+Every cloud assistant has API access.
+Only Donna has your desktop + your history.
+```
 
 ---
 
