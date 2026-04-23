@@ -1,0 +1,224 @@
+{
+  "timestamp": "2026-04-23T06:13:09.776038+00:00",
+  "total_probes": 22,
+  "results": [
+    {
+      "endpoint": "/me",
+      "label": "Basic profile",
+      "status": 429,
+      "error_code": "TooManyRequests",
+      "has_data": false,
+      "domain": "Identity (Who is Harvey?)"
+    },
+    {
+      "endpoint": "/me/photo/$value",
+      "label": "Profile photo",
+      "status": 404,
+      "error_code": "ImageNotFound",
+      "has_data": false,
+      "domain": "Identity (Who is Harvey?)"
+    },
+    {
+      "endpoint": "/me/calendarView?startDateTime={start}&endDateTime={end}",
+      "label": "Today's meetings",
+      "status": 200,
+      "error_code": "",
+      "has_data": true,
+      "domain": "Calendar (Temporal Intelligence)"
+    },
+    {
+      "endpoint": "/me/calendars",
+      "label": "Available calendars",
+      "status": 200,
+      "error_code": "",
+      "has_data": true,
+      "domain": "Calendar (Temporal Intelligence)"
+    },
+    {
+      "endpoint": "/me/events?$top=5&$orderby=start/dateTime",
+      "label": "Upcoming events",
+      "status": 200,
+      "error_code": "",
+      "has_data": true,
+      "domain": "Calendar (Temporal Intelligence)"
+    },
+    {
+      "endpoint": "/me/messages?$top=5&$orderby=receivedDateTime desc",
+      "label": "Recent emails",
+      "status": 200,
+      "error_code": "",
+      "has_data": true,
+      "domain": "Email (Communications Intelligence)"
+    },
+    {
+      "endpoint": "/me/mailFolders",
+      "label": "Mail folders",
+      "status": 200,
+      "error_code": "",
+      "has_data": true,
+      "domain": "Email (Communications Intelligence)"
+    },
+    {
+      "endpoint": "/me/messages?$top=3&$filter=importance eq 'high'&$orderby=receivedDateTime desc",
+      "label": "High-importance emails",
+      "status": 400,
+      "error_code": "InefficientFilter",
+      "has_data": false,
+      "domain": "Email (Communications Intelligence)"
+    },
+    {
+      "endpoint": "/me/people?$top=10",
+      "label": "Relevant people",
+      "status": 200,
+      "error_code": "",
+      "has_data": true,
+      "domain": "People (Social Intelligence)"
+    },
+    {
+      "endpoint": "/me/contacts?$top=5",
+      "label": "Contacts",
+      "status": 200,
+      "error_code": "",
+      "has_data": true,
+      "domain": "People (Social Intelligence)"
+    },
+    {
+      "endpoint": "/me/directReports",
+      "label": "Direct reports",
+      "status": 429,
+      "error_code": "TooManyRequests",
+      "has_data": false,
+      "domain": "People (Social Intelligence)"
+    },
+    {
+      "endpoint": "/me/manager",
+      "label": "Manager",
+      "status": 429,
+      "error_code": "TooManyRequests",
+      "has_data": false,
+      "domain": "People (Social Intelligence)"
+    },
+    {
+      "endpoint": "/me/presence",
+      "label": "Current presence status",
+      "status": 403,
+      "error_code": "Forbidden",
+      "has_data": false,
+      "domain": "Presence (Emotional/Contextual)"
+    },
+    {
+      "endpoint": "/me/joinedTeams",
+      "label": "Joined Teams",
+      "status": 200,
+      "error_code": "",
+      "has_data": true,
+      "domain": "Teams & Chat (Communications)"
+    },
+    {
+      "endpoint": "/me/chats?$top=5",
+      "label": "Recent chats",
+      "status": 200,
+      "error_code": "",
+      "has_data": true,
+      "domain": "Teams & Chat (Communications)"
+    },
+    {
+      "endpoint": "/me/todo/lists",
+      "label": "To-Do lists",
+      "status": 200,
+      "error_code": "",
+      "has_data": true,
+      "domain": "Tasks (Productivity)"
+    },
+    {
+      "endpoint": "/me/planner/tasks?$top=5",
+      "label": "Planner tasks",
+      "status": 200,
+      "error_code": "",
+      "has_data": true,
+      "domain": "Tasks (Productivity)"
+    },
+    {
+      "endpoint": "/me/drive/root/children?$top=5",
+      "label": "OneDrive root",
+      "status": 200,
+      "error_code": "",
+      "has_data": true,
+      "domain": "Files & OneDrive (Document Brain)"
+    },
+    {
+      "endpoint": "/me/drive/recent?$top=5",
+      "label": "Recent files",
+      "status": 200,
+      "error_code": "",
+      "has_data": true,
+      "domain": "Files & OneDrive (Document Brain)"
+    },
+    {
+      "endpoint": "/me/onenote/notebooks",
+      "label": "OneNote notebooks",
+      "status": 200,
+      "error_code": "",
+      "has_data": true,
+      "domain": "OneNote (Knowledge)"
+    },
+    {
+      "endpoint": "/organization",
+      "label": "Org info",
+      "status": 429,
+      "error_code": "TooManyRequests",
+      "has_data": false,
+      "domain": "Organization (Political Intelligence)"
+    },
+    {
+      "endpoint": "/me/memberOf?$top=10",
+      "label": "Group memberships",
+      "status": 429,
+      "error_code": "TooManyRequests",
+      "has_data": false,
+      "domain": "Organization (Political Intelligence)"
+    }
+  ],
+  "domain_summary": {
+    "Identity (Who is Harvey?)": {
+      "ok": 0,
+      "total": 2
+    },
+    "Calendar (Temporal Intelligence)": {
+      "ok": 3,
+      "total": 3
+    },
+    "Email (Communications Intelligence)": {
+      "ok": 2,
+      "total": 3
+    },
+    "People (Social Intelligence)": {
+      "ok": 2,
+      "total": 4
+    },
+    "Presence (Emotional/Contextual)": {
+      "ok": 0,
+      "total": 1
+    },
+    "Teams & Chat (Communications)": {
+      "ok": 2,
+      "total": 2
+    },
+    "Tasks (Productivity)": {
+      "ok": 2,
+      "total": 2
+    },
+    "Files & OneDrive (Document Brain)": {
+      "ok": 2,
+      "total": 2
+    },
+    "OneNote (Knowledge)": {
+      "ok": 1,
+      "total": 1
+    },
+    "Organization (Political Intelligence)": {
+      "ok": 0,
+      "total": 2
+    }
+  }
+}
