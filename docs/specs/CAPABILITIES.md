@@ -507,6 +507,125 @@ Some things Donna does autonomously:
 
 ## IX. Memory — The Eidetic Brain
 
+> *"I remember everything. Not because I try to — because I can't help it."*
+
+### The Research Behind Donna's Memory
+
+Donna's memory is not a database bolted onto a chatbot. It's a **cognitive architecture** informed by the latest research in AI agent memory systems (2025–2026). The field has converged on a clear winner: **hybrid multi-tier memory** combining human-inspired memory types with modern retrieval systems.
+
+**Key research that shapes Donna's brain:**
+
+| System | Key Innovation | What Donna Takes From It |
+|---|---|---|
+| **MemGPT / Letta** (UC Berkeley, NeurIPS 2023) | OS-inspired virtual context management — core/recall/archival tiers, agents page data in/out like an OS pages virtual memory. 92% recall vs 32% for GPT-4 baseline. | The three-tier architecture. Donna manages her own context window, pulling relevant memories in and summarizing old ones out. |
+| **A-MEM** (Rutgers/Ant Group, NeurIPS 2025) | Self-organizing Zettelkasten-inspired memory — each memory node has content, timestamp, keywords, tags, embeddings, and links. Memories autonomously restructure over time. | Self-organizing memory graph. Donna's memories form a living network that evolves — new information updates old nodes, creates new links, drops obsolete facts. |
+| **Zep / Graphiti** (arXiv:2501.13956) | Temporal knowledge graph — bi-temporal fact triplets (when fact was true + when it was learned), episodic/semantic/community subgraphs, incremental real-time updates. | Temporal reasoning. Donna knows not just WHAT but WHEN — "Harvey preferred X until September, then switched to Y." Contradictions are resolved temporally, not overwritten. |
+| **Mem0** | Graph memory layer with automatic entity extraction, preference learning, and relationship mapping. REST API for CRUD on memories with provenance tracking. | Entity extraction + preference graph. Every interaction automatically enriches Donna's model of Harvey's world — people, projects, preferences, patterns. |
+
+### Architecture: The Four Memory Tiers
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    DONNA'S MEMORY ARCHITECTURE               │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │  TIER 1: WORKING MEMORY (in-context)                   │  │
+│  │  ──────────────────────────────────────────────────────│  │
+│  │  Current conversation + active task state               │  │
+│  │  Always in the LLM's context window                     │  │
+│  │  Capacity: ~128K tokens                                 │  │
+│  │  Eviction: Summarize → push to Tier 2                   │  │
+│  │                                                          │  │
+│  │  Contains RIGHT NOW:                                     │  │
+│  │  • Harvey's current request and recent turns             │  │
+│  │  • Active context (what repo, what file, what task)      │  │
+│  │  • Retrieved relevant memories from deeper tiers         │  │
+│  │  • Today's schedule, active incidents, pending items     │  │
+│  └────────────────────────────────────────────────────────┘  │
+│                          ↕ page in/out                       │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │  TIER 2: EPISODIC MEMORY (recall buffer)               │  │
+│  │  ──────────────────────────────────────────────────────│  │
+│  │  Storage: SQLite (structured) + Vector DB (semantic)    │  │
+│  │  Content: Timestamped interaction logs, full transcripts │  │
+│  │  Retrieval: Date, topic, person, semantic similarity     │  │
+│  │  Retention: Indefinite (never deleted, summarized)       │  │
+│  │                                                          │  │
+│  │  Every conversation, decision, request is here:          │  │
+│  │  • "April 15, 3pm: Harvey asked about retry logic"       │  │
+│  │  • "April 18: Decided to use exponential backoff"        │  │
+│  │  • "April 22: Harvey rejected v8 mockup direction"       │  │
+│  │  • "April 23: Graph API probe — 32/44 endpoints work"   │  │
+│  └────────────────────────────────────────────────────────┘  │
+│                          ↕ consolidate                       │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │  TIER 3: SEMANTIC MEMORY (knowledge graph)             │  │
+│  │  ──────────────────────────────────────────────────────│  │
+│  │  Storage: Temporal Knowledge Graph (Graphiti-inspired)   │  │
+│  │  Content: Distilled facts, entities, relationships       │  │
+│  │  Retrieval: Entity lookup, relationship traversal,       │  │
+│  │             semantic search, temporal queries             │  │
+│  │                                                          │  │
+│  │  Donna's world model — extracted from episodes:          │  │
+│  │                                                          │  │
+│  │  ENTITIES:                                                │  │
+│  │  • Harvey → [role: Senior Dev, team: FLT, mood: focused] │  │
+│  │  • Alice → [role: Auth owner, response: fast, reliable]  │  │
+│  │  • LiveTable → [repo, active PR #847, sprint on track]   │  │
+│  │                                                          │  │
+│  │  RELATIONSHIPS:                                           │  │
+│  │  • Harvey --[manages]--> eDog Studio                      │  │
+│  │  • Harvey --[works_with]--> Alice (since 2024)            │  │
+│  │  • Harvey --[prefers]--> short emails (confidence: 0.95)  │  │
+│  │                                                          │  │
+│  │  TEMPORAL FACTS (bi-temporal):                            │  │
+│  │  • Harvey prefers Kink coffee (since: always)             │  │
+│  │  • Harvey's mockup direction = v2/v3 (since: Apr 22)     │  │
+│  │  • Harvey's mockup direction = v8 (Apr 22, SUPERSEDED)   │  │
+│  └────────────────────────────────────────────────────────┘  │
+│                          ↕ learn patterns                    │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │  TIER 4: PROCEDURAL MEMORY (learned behaviors)         │  │
+│  │  ──────────────────────────────────────────────────────│  │
+│  │  Storage: Config + code store (SQLite)                   │  │
+│  │  Content: Workflows, routines, automation rules          │  │
+│  │  Trigger: Context-based, time-based, event-based         │  │
+│  │                                                          │  │
+│  │  Learned from Harvey's patterns over time:               │  │
+│  │  • After standup → queue PR reviews                       │  │
+│  │  • Friday 4pm → prep sprint summary                       │  │
+│  │  • When CI fails → check last commit, known flakes        │  │
+│  │  • When Harvey says "handle it" → full autonomy granted   │  │
+│  │  • When Sev2+ incident → interrupt regardless of meeting  │  │
+│  └────────────────────────────────────────────────────────┘  │
+│                                                              │
+├─────────────────────────────────────────────────────────────┤
+│  MEMORY PROCESSES (running continuously)                     │
+│  • Consolidation: Episodes → distilled facts (nightly)       │
+│  • Forgetting: Strategic — evict noise, keep signal           │
+│  • Linking: New memories auto-link to related existing ones  │
+│  • Contradiction resolution: Temporal — newer supersedes     │  
+│  • Pattern extraction: Behaviors → procedural rules          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Implementation Stack
+
+| Layer | Technology | Why |
+|---|---|---|
+| **Working Memory** | LLM context window | Fast, always-available, managed by Donna herself |
+| **Episodic Store** | SQLite (structured) | Fast local queries, no server, portable, full-text search built-in |
+| **Semantic Search** | ChromaDB or LanceDB (embedded vector DB) | Semantic similarity over all memories, runs locally, no server needed |
+| **Knowledge Graph** | SQLite + custom graph schema (Graphiti-inspired) | Temporal fact triplets, entity-relationship model, bi-temporal validity |
+| **Procedural Store** | SQLite (rules table) | Trigger-condition-action rules learned from behavior patterns |
+
+**Why all local, no cloud?**
+- **Privacy:** Harvey's memories never leave his machine. Period.
+- **Speed:** Local SQLite + embedded vector DB = sub-millisecond queries.
+- **Offline:** Donna's memory works without internet.
+- **Portability:** One folder, one backup, one machine.
+
 ### 9.1 Conversation Memory
 
 Every conversation with Harvey is remembered. Not just stored — understood.
@@ -534,7 +653,7 @@ Over weeks and months, Donna sees patterns:
 
 ### 9.4 Decision Memory
 
-(See VI.6.4 above.) Every significant decision is logged with context, alternatives, and rationale. This prevents re-litigating settled decisions and provides institutional memory.
+Every significant decision is logged with context, alternatives, and rationale. This prevents re-litigating settled decisions and provides institutional memory.
 
 ### 9.5 Project Context
 
@@ -556,6 +675,32 @@ eDog Studio:
 - Active incident: None
 - Key people: Just you (for now)
 ```
+
+### 9.6 The Self-Organizing Brain (A-MEM Inspired)
+
+Donna's memories are not flat entries in a database. They form a **living, self-organizing network** inspired by the Zettelkasten method (A-MEM, NeurIPS 2025):
+
+- **Every memory node** has: content, timestamp, keywords, tags, vector embedding, and links to related memories
+- **New information auto-links** to existing memories via semantic similarity and contextual overlap
+- **Memories evolve** — new facts update old nodes, create new edges, or mark old facts as superseded
+- **Emergent structure** — over time, clusters form around projects, people, topics. Donna can traverse these clusters for multi-hop reasoning: "The person who reviewed your retry PR also filed the incident that required the retry fix in the first place."
+
+### 9.7 Temporal Reasoning (Graphiti Inspired)
+
+Donna doesn't just know facts — she knows WHEN facts were true:
+
+- **Bi-temporal model:** Each fact has two timestamps — when it became true in the world, and when Donna learned it
+- **Contradiction resolution:** "Harvey prefers v8 direction" (Apr 22 morning) → superseded by "Harvey prefers v2/v3 direction" (Apr 22 afternoon). Donna doesn't delete the old fact — she marks it superseded and remembers the change.
+- **Temporal queries:** "What was the incident status last Thursday?" "Who was on-call when the last Sev2 happened?" "What did we decide about caching before we changed our mind?"
+
+### 9.8 Memory Consolidation Process
+
+Donna runs a continuous background process (inspired by human sleep consolidation):
+
+1. **Nightly consolidation:** Episodic memories from the day are distilled into semantic facts, entities, and relationships
+2. **Weekly patterns:** Behavioral patterns are extracted and proposed as procedural rules
+3. **Monthly pruning:** Low-relevance memories are summarized (never deleted) to keep the working set efficient
+4. **Strategic forgetting:** Noise is compressed, signal is preserved. "Harvey searched for 'python datetime format' 47 times" becomes "Harvey frequently needs datetime formatting help — proactively include format strings in relevant responses."
 
 ---
 
