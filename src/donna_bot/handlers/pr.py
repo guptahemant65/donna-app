@@ -1,19 +1,23 @@
-"""PR Intelligence — GitHub pull request monitoring.
+"""PR Intelligence — Azure DevOps pull request monitoring.
 
-Uses GitHub REST API to show:
+Uses ADO REST API to show PRs across multiple orgs/projects/repos:
   - Open PRs authored by Harvey
   - PRs awaiting Harvey's review
-  - PR detail with review status, CI checks
+  - PR detail with diff stats, reviewers, vote status
 
 ConversationHandler flow:
   /pr → PR_LIST (my PRs + review requests)
-    ↕ tap PR → PR_DETAIL (diff summary, reviews, CI)
+    ↕ tap PR → PR_DETAIL (changes, reviewers, CI)
     ↕ "close" → END
 """
 
 from __future__ import annotations
 
+import asyncio
+import base64
+import json
 import logging
+from dataclasses import dataclass
 from typing import Any
 
 import httpx
@@ -32,29 +36,80 @@ from donna_bot.state.machine import State
 
 logger = logging.getLogger(__name__)
 
-GITHUB_API = "https://api.github.com"
 TIMEOUT = 15.0
+API_VERSION = "7.0"
 
 
-# ── GitHub API ──────────────────────────────────────────────────────────
+# ── ADO Repo Config ────────────────────────────────────────────────────
 
-async def _github_get(
-    path: str,
-    token: str,
+@dataclass(frozen=True)
+class AdoRepo:
+    """A single ADO repository to monitor."""
+
+    org: str
+    project: str
+    repo: str
+
+    @property
+    def base_url(self) -> str:
+        return f"https://dev.azure.com/{self.org}"
+
+    @property
+    def label(self) -> str:
+        return f"{self.org}/{self.project}/{self.repo}"
+
+
+def parse_ado_repos(repos_json: str) -> list[AdoRepo]:
+    """Parse ADO_REPOS env var — JSON array or semicolon-separated triples.
+
+    Formats:
+      JSON: [{"org":"powerbi","project":"MWC","repo":"workload-fabriclivetable"}]
+      Simple: powerbi/MWC/workload-fabriclivetable;msdata/HDInsight/repo2
+    """
+    if not repos_json:
+        return []
+
+    repos_json = repos_json.strip()
+
+    if repos_json.startswith("["):
+        items = json.loads(repos_json)
+        return [AdoRepo(org=r["org"], project=r["project"], repo=r["repo"]) for r in items]
+
+    result = []
+    for triple in repos_json.split(";"):
+        triple = triple.strip()
+        if not triple:
+            continue
+        parts = triple.split("/", 2)
+        if len(parts) == 3:
+            result.append(AdoRepo(org=parts[0], project=parts[1], repo=parts[2]))
+        else:
+            logger.warning("Invalid ADO repo spec: %s (expected org/project/repo)", triple)
+    return result
+
+
+# ── ADO REST API ────────────────────────────────────────────────────────
+
+def _auth_header(pat: str) -> str:
+    """Build Basic auth header from ADO PAT."""
+    encoded = base64.b64encode(f":{pat}".encode()).decode()
+    return f"Basic {encoded}"
+
+
+async def _ado_get(
+    url: str,
+    pat: str,
     params: dict[str, str] | None = None,
-) -> dict[str, Any] | list[dict[str, Any]]:
-    """Make an authenticated GitHub API request."""
-    async with httpx.AsyncClient(
-        base_url=GITHUB_API,
-        timeout=TIMEOUT,
-    ) as client:
+) -> dict[str, Any]:
+    """Make an authenticated ADO REST API request."""
+    if params is None:
+        params = {}
+    params["api-version"] = API_VERSION
+
+    async with httpx.AsyncClient(timeout=TIMEOUT) as client:
         resp = await client.get(
-            path,
-            headers={
-                "Authorization": f"token {token}",
-                "Accept": "application/vnd.github+json",
-                "X-GitHub-Api-Version": "2022-11-28",
-            },
+            url,
+            headers={"Authorization": _auth_header(pat)},
             params=params,
         )
         resp.raise_for_status()
@@ -62,96 +117,136 @@ async def _github_get(
 
 
 async def get_my_prs(
-    token: str,
-    username: str,
-    org: str = "",
+    pat: str,
+    repos: list[AdoRepo],
+    email: str,
 ) -> list[dict[str, Any]]:
-    """Get open PRs authored by the user."""
-    query = f"is:pr is:open author:{username}"
-    if org:
-        query += f" org:{org}"
+    """Get open PRs authored by the user across all configured repos."""
+    tasks = [_fetch_prs(pat, repo, creator=email) for repo in repos]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    data = await _github_get(
-        "/search/issues",
-        token=token,
-        params={"q": query, "sort": "updated", "per_page": "10"},
-    )
-    return [_parse_pr(item) for item in data.get("items", [])]
+    all_prs = []
+    for i, result in enumerate(results):
+        if isinstance(result, Exception):
+            logger.warning("Failed to fetch PRs from %s: %s", repos[i].label, result)
+            continue
+        all_prs.extend(result)
+
+    # Sort by most recently updated
+    all_prs.sort(key=lambda p: p.get("updated", ""), reverse=True)
+    return all_prs[:10]
 
 
 async def get_review_requests(
-    token: str,
-    username: str,
-    org: str = "",
+    pat: str,
+    repos: list[AdoRepo],
+    email: str,
 ) -> list[dict[str, Any]]:
-    """Get PRs where the user is requested for review."""
-    query = f"is:pr is:open review-requested:{username}"
-    if org:
-        query += f" org:{org}"
+    """Get PRs where the user is a reviewer across all repos."""
+    tasks = [_fetch_prs(pat, repo, reviewer=email) for repo in repos]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    data = await _github_get(
-        "/search/issues",
-        token=token,
-        params={"q": query, "sort": "updated", "per_page": "10"},
-    )
-    return [_parse_pr(item) for item in data.get("items", [])]
+    all_prs = []
+    for i, result in enumerate(results):
+        if isinstance(result, Exception):
+            logger.warning("Failed to fetch review PRs from %s: %s", repos[i].label, result)
+            continue
+        all_prs.extend(result)
+
+    all_prs.sort(key=lambda p: p.get("updated", ""), reverse=True)
+    return all_prs[:10]
+
+
+async def _fetch_prs(
+    pat: str,
+    repo: AdoRepo,
+    creator: str = "",
+    reviewer: str = "",
+) -> list[dict[str, Any]]:
+    """Fetch PRs from a single ADO repo."""
+    url = f"{repo.base_url}/{repo.project}/_apis/git/repositories/{repo.repo}/pullrequests"
+
+    params: dict[str, str] = {
+        "searchCriteria.status": "active",
+        "$top": "10",
+    }
+    if creator:
+        params["searchCriteria.creatorRefName"] = creator
+    if reviewer:
+        params["searchCriteria.reviewerRefName"] = reviewer
+
+    data = await _ado_get(url, pat, params)
+    return [_parse_pr(item, repo) for item in data.get("value", [])]
 
 
 async def get_pr_detail(
-    token: str,
-    owner: str,
-    repo: str,
-    number: int,
+    pat: str,
+    repo: AdoRepo,
+    pr_id: int,
 ) -> dict[str, Any]:
-    """Get PR details including reviews and checks."""
-    pr = await _github_get(f"/repos/{owner}/{repo}/pulls/{number}", token=token)
-    return _parse_pr_detail(pr)
+    """Get detailed PR info from ADO."""
+    url = f"{repo.base_url}/{repo.project}/_apis/git/repositories/{repo.repo}/pullrequests/{pr_id}"
+    data = await _ado_get(url, pat)
+    return _parse_pr_detail(data, repo)
 
 
-def _parse_pr(item: dict[str, Any]) -> dict[str, Any]:
-    """Parse a PR search result."""
-    repo_url = item.get("repository_url", "")
-    repo_name = "/".join(repo_url.split("/")[-2:]) if repo_url else ""
+def _parse_pr(item: dict[str, Any], repo: AdoRepo) -> dict[str, Any]:
+    """Parse an ADO PR into a clean dict."""
+    reviewers = []
+    for r in item.get("reviewers", []):
+        vote = r.get("vote", 0)
+        vote_icon = _vote_icon(vote)
+        reviewers.append({
+            "name": r.get("displayName", "?"),
+            "vote": vote,
+            "icon": vote_icon,
+        })
 
-    labels = [lbl.get("name", "") for lbl in item.get("labels", [])]
+    pr_url = (
+        f"https://dev.azure.com/{repo.org}/{repo.project}"
+        f"/_git/{repo.repo}/pullrequest/{item.get('pullRequestId', 0)}"
+    )
 
     return {
-        "number": item.get("number", 0),
+        "id": item.get("pullRequestId", 0),
         "title": item.get("title", "?"),
-        "repo": repo_name,
-        "author": item.get("user", {}).get("login", "?"),
-        "url": item.get("html_url", ""),
-        "created": item.get("created_at", "")[:10],
-        "updated": item.get("updated_at", "")[:10],
-        "comments": item.get("comments", 0),
-        "labels": labels,
-        "draft": item.get("draft", False),
+        "repo": repo.repo,
+        "repo_label": repo.label,
+        "author": item.get("createdBy", {}).get("displayName", "?"),
+        "author_email": item.get("createdBy", {}).get("uniqueName", ""),
+        "url": pr_url,
+        "created": item.get("creationDate", "")[:10],
+        "updated": (item.get("closedDate") or item.get("creationDate", ""))[:10],
+        "status": item.get("status", "active"),
+        "isDraft": item.get("isDraft", False),
+        "source": item.get("sourceRefName", "").replace("refs/heads/", ""),
+        "target": item.get("targetRefName", "").replace("refs/heads/", ""),
+        "reviewers": reviewers,
+        "merge_status": item.get("mergeStatus", ""),
+        "_repo": repo,
     }
 
 
-def _parse_pr_detail(pr: dict[str, Any]) -> dict[str, Any]:
-    """Parse full PR detail."""
-    return {
-        "number": pr.get("number", 0),
-        "title": pr.get("title", "?"),
-        "body": (pr.get("body", "") or "")[:300],
-        "author": pr.get("user", {}).get("login", "?"),
-        "url": pr.get("html_url", ""),
-        "state": pr.get("state", ""),
-        "draft": pr.get("draft", False),
-        "mergeable": pr.get("mergeable"),
-        "additions": pr.get("additions", 0),
-        "deletions": pr.get("deletions", 0),
-        "changed_files": pr.get("changed_files", 0),
-        "base": pr.get("base", {}).get("ref", "?"),
-        "head": pr.get("head", {}).get("ref", "?"),
-        "created": pr.get("created_at", "")[:10],
-        "updated": pr.get("updated_at", "")[:10],
-        "reviewers": [
-            r.get("login", "?")
-            for r in pr.get("requested_reviewers", [])
-        ],
-    }
+def _parse_pr_detail(pr: dict[str, Any], repo: AdoRepo) -> dict[str, Any]:
+    """Parse full PR detail from ADO."""
+    base = _parse_pr(pr, repo)
+    base["description"] = (pr.get("description", "") or "")[:300]
+    base["merge_id"] = pr.get("lastMergeSourceCommit", {}).get("commitId", "")[:8]
+    base["labels"] = [lbl.get("name", "") for lbl in pr.get("labels", [])]
+    return base
+
+
+def _vote_icon(vote: int) -> str:
+    """Map ADO reviewer vote to icon."""
+    if vote == 10:
+        return "✅"   # Approved
+    if vote == 5:
+        return "👍"   # Approved with suggestions
+    if vote == -5:
+        return "⏳"   # Waiting for author
+    if vote == -10:
+        return "❌"   # Rejected
+    return "⬜"       # No vote
 
 
 # ── Formatters ──────────────────────────────────────────────────────────
@@ -171,11 +266,12 @@ def _format_pr_list(
         lines.append(f"{md2_bold('YOUR PRs')} {md2_italic('(' + str(len(my_prs)) + ')')}")
         lines.append("")
         for pr in my_prs[:5]:
-            draft = " ✏️" if pr.get("draft") else ""
+            draft = " ✏️" if pr.get("isDraft") else ""
             title = md2(pr.get("title", "?")[:40])
-            repo = md2(pr.get("repo", "?").split("/")[-1][:15])
-            lines.append(f"  {md2_bold('#' + str(pr['number']))} {title}{draft}")
-            lines.append(f"      {repo} · {md2(pr.get('updated', ''))}")
+            repo = md2(pr.get("repo", "?")[:20])
+            votes = " ".join(r["icon"] for r in pr.get("reviewers", [])[:4])
+            lines.append(f"  {md2_bold('!' + str(pr['id']))} {title}{draft}")
+            lines.append(f"      {repo} {votes}")
             lines.append("")
     else:
         lines.append(md2_italic("No open PRs. Go write some code."))
@@ -187,8 +283,8 @@ def _format_pr_list(
         for pr in review_prs[:5]:
             title = md2(pr.get("title", "?")[:40])
             author = md2(pr.get("author", "?"))
-            lines.append(f"  {md2_bold('#' + str(pr['number']))} {title}")
-            lines.append(f"      by {author} · {md2(pr.get('updated', ''))}")
+            lines.append(f"  {md2_bold('!' + str(pr['id']))} {title}")
+            lines.append(f"      by {author}")
             lines.append("")
 
     lines.append(md2_separator())
@@ -199,33 +295,38 @@ def _format_pr_detail(pr: dict[str, Any]) -> str:
     """Format PR detail card."""
     lines = [
         md2_header(),
-        f"🔧 {md2_bold('PR #' + str(pr['number']))}",
+        f"🔧 {md2_bold('PR !' + str(pr['id']))}",
         "",
         md2_bold(md2(pr.get("title", "?"))),
         "",
-        f"  {md2_bold('Branch:')} {md2(pr.get('head', '?'))} → {md2(pr.get('base', '?'))}",
+        f"  {md2_bold('Branch:')} {md2(pr.get('source', '?'))} → {md2(pr.get('target', '?'))}",
         f"  {md2_bold('Author:')} {md2(pr.get('author', '?'))}",
-        f"  {md2_bold('Changes:')} {md2_italic('+' + str(pr.get('additions', 0)))} / "
-        f"{md2_italic('-' + str(pr.get('deletions', 0)))} "
-        f"in {md2(str(pr.get('changed_files', 0)))} files",
+        f"  {md2_bold('Repo:')} {md2(pr.get('repo', '?'))}",
     ]
 
-    if pr.get("draft"):
+    if pr.get("isDraft"):
         lines.append(f"  {md2_bold('Status:')} ✏️ Draft")
 
-    mergeable = pr.get("mergeable")
-    if mergeable is True:
-        lines.append(f"  {md2_bold('Merge:')} ✅ Ready")
-    elif mergeable is False:
+    merge = pr.get("merge_status", "")
+    if merge == "succeeded":
+        lines.append(f"  {md2_bold('Merge:')} ✅ No conflicts")
+    elif merge == "conflicts":
         lines.append(f"  {md2_bold('Merge:')} ❌ Conflicts")
 
     reviewers = pr.get("reviewers", [])
     if reviewers:
-        lines.append(f"  {md2_bold('Reviewers:')} {md2(', '.join(reviewers[:4]))}")
+        rv_lines = [f"{r['icon']} {md2(r['name'])}" for r in reviewers[:6]]
+        lines.append(f"  {md2_bold('Reviewers:')}")
+        for rv in rv_lines:
+            lines.append(f"    {rv}")
 
-    body = pr.get("body", "")
-    if body:
-        lines.extend(["", md2(body[:200])])
+    labels = pr.get("labels", [])
+    if labels:
+        lines.append(f"  {md2_bold('Labels:')} {md2(', '.join(labels[:4]))}")
+
+    desc = pr.get("description", "")
+    if desc:
+        lines.extend(["", md2(desc[:200])])
 
     lines.extend(["", md2_separator()])
     return "\n".join(lines)
@@ -239,12 +340,13 @@ def _pr_list_keyboard(
     buttons = []
 
     for pr in (my_prs + review_prs)[:8]:
-        label = f"#{pr['number']} {pr.get('title', '?')[:20]}"
-        repo = pr.get("repo", "")
+        label = f"!{pr['id']} {pr.get('title', '?')[:20]}"
+        # Encode repo index for callback routing
+        repo_label = pr.get("repo_label", "")
         buttons.append([
             InlineKeyboardButton(
                 label,
-                callback_data=f"pr:detail:{repo}:{pr['number']}",
+                callback_data=f"pr:detail:{repo_label}:{pr['id']}",
             ),
         ])
 
@@ -258,7 +360,7 @@ def _pr_list_keyboard(
 
 def _pr_detail_keyboard(pr: dict[str, Any]) -> InlineKeyboardMarkup:
     """Build keyboard for PR detail."""
-    buttons = [[InlineKeyboardButton("🔗 Open in GitHub", url=pr.get("url", ""))]]
+    buttons = [[InlineKeyboardButton("🔗 Open in ADO", url=pr.get("url", ""))]]
     buttons.append([
         InlineKeyboardButton("◀ Back", callback_data="pr:back"),
         InlineKeyboardButton("✕ Close", callback_data="pr:close"),
@@ -268,55 +370,65 @@ def _pr_detail_keyboard(pr: dict[str, Any]) -> InlineKeyboardMarkup:
 
 # ── Handlers ────────────────────────────────────────────────────────────
 
-def _get_github_config(context: ContextTypes.DEFAULT_TYPE) -> tuple[str, str, str]:
-    """Get GitHub token, username, and org from settings."""
+def _get_ado_config(context: ContextTypes.DEFAULT_TYPE) -> tuple[str, list[AdoRepo], str]:
+    """Get ADO PAT, repos, and email from settings."""
     settings = context.bot_data.get("settings")
-    token = getattr(settings, "github_token", "") if settings else ""
-    username = getattr(settings, "github_username", "") if settings else ""
-    org = getattr(settings, "github_org", "") if settings else ""
-    return token, username, org
+    pat = getattr(settings, "ado_pat", "") if settings else ""
+    repos_json = getattr(settings, "ado_repos_json", "") if settings else ""
+    email = getattr(settings, "ado_email", "") if settings else ""
+    repos = parse_ado_repos(repos_json)
+    return pat, repos, email
 
 
 @harvey_only
 async def pr_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Handle /pr — show open PRs."""
-    token, username, org = _get_github_config(context)
+    """Handle /pr — show open PRs across ADO repos."""
+    pat, repos, email = _get_ado_config(context)
 
-    if not token or not username:
+    if not pat or not repos:
         await update.message.reply_text(
             f"{md2_header()}\n\n"
-            f"{md2('GitHub not configured.')}\n"
-            f"{md2('Set GITHUB_TOKEN and GITHUB_USERNAME in .env')}",
+            f"{md2('Azure DevOps not configured.')}\n"
+            f"{md2('Set ADO_PAT and ADO_REPOS in .env')}",
             parse_mode="MarkdownV2",
         )
         return ConversationHandler.END
 
-    return await _show_pr_list(update, context, token, username, org)
+    return await _show_pr_list(update, context, pat, repos, email)
 
 
 async def _show_pr_list(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    token: str,
-    username: str,
-    org: str,
+    pat: str,
+    repos: list[AdoRepo],
+    email: str,
     edit: bool = False,
 ) -> int:
     """Fetch and display PR list."""
     try:
-        my_prs = await get_my_prs(token, username, org)
-        review_prs = await get_review_requests(token, username, org)
+        my_prs, review_prs = await asyncio.gather(
+            get_my_prs(pat, repos, email),
+            get_review_requests(pat, repos, email),
+        )
     except Exception:
-        logger.exception("GitHub API failed")
-        error = f"{md2_header()}\n\n{md2('Failed to fetch PRs from GitHub.')}"
+        logger.exception("ADO API failed")
+        error = f"{md2_header()}\n\n{md2('Failed to fetch PRs from Azure DevOps.')}"
         if edit and update.callback_query:
             await update.callback_query.edit_message_text(error, parse_mode="MarkdownV2")
         else:
             await update.message.reply_text(error, parse_mode="MarkdownV2")
         return ConversationHandler.END
 
+    # Remove duplicates (same PR in both lists)
+    review_ids = {p["id"] for p in my_prs}
+    review_prs = [p for p in review_prs if p["id"] not in review_ids]
+
     context.user_data["my_prs"] = my_prs
     context.user_data["review_prs"] = review_prs
+    context.user_data["all_prs"] = {
+        f"{p['repo_label']}:{p['id']}": p for p in my_prs + review_prs
+    }
 
     text = _format_pr_list(my_prs, review_prs)
     kb = _pr_list_keyboard(my_prs, review_prs)
@@ -348,16 +460,17 @@ async def pr_list_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         return ConversationHandler.END
 
     if data == "pr:refresh":
-        token, username, org = _get_github_config(context)
-        return await _show_pr_list(update, context, token, username, org, edit=True)
+        pat, repos, email = _get_ado_config(context)
+        return await _show_pr_list(update, context, pat, repos, email, edit=True)
 
     if data.startswith("pr:detail:"):
-        # Format: pr:detail:owner/repo:number
-        parts = data.replace("pr:detail:", "").rsplit(":", 1)
+        # Format: pr:detail:org/project/repo:id
+        rest = data[len("pr:detail:"):]
+        parts = rest.rsplit(":", 1)
         if len(parts) == 2:
-            repo_full = parts[0]
-            number = int(parts[1])
-            return await _show_pr_detail(update, context, repo_full, number)
+            repo_label = parts[0]
+            pr_id = int(parts[1])
+            return await _show_pr_detail(update, context, repo_label, pr_id)
 
     return State.PR_LIST
 
@@ -365,22 +478,30 @@ async def pr_list_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 async def _show_pr_detail(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
-    repo_full: str,
-    number: int,
+    repo_label: str,
+    pr_id: int,
 ) -> int:
     """Show PR detail card."""
-    token, _, _ = _get_github_config(context)
+    pat, _, _ = _get_ado_config(context)
 
-    parts = repo_full.split("/")
-    if len(parts) != 2:
-        return State.PR_LIST
+    # Try to find cached PR first
+    all_prs = context.user_data.get("all_prs", {})
+    key = f"{repo_label}:{pr_id}"
+    cached = all_prs.get(key)
 
-    owner, repo = parts
+    if cached and "_repo" in cached:
+        repo = cached["_repo"]
+    else:
+        # Parse repo_label back into AdoRepo
+        parts = repo_label.split("/", 2)
+        if len(parts) != 3:
+            return State.PR_LIST
+        repo = AdoRepo(org=parts[0], project=parts[1], repo=parts[2])
 
     try:
-        pr = await get_pr_detail(token, owner, repo, number)
+        pr = await get_pr_detail(pat, repo, pr_id)
     except Exception:
-        logger.exception("Failed to fetch PR #%d from %s", number, repo_full)
+        logger.exception("Failed to fetch PR !%d from %s", pr_id, repo_label)
         await update.callback_query.edit_message_text(
             f"{md2_header()}\n\n{md2('Failed to load PR details.')}",
             parse_mode="MarkdownV2",
@@ -414,8 +535,8 @@ async def pr_detail_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
         return ConversationHandler.END
 
     if data == "pr:back":
-        token, username, org = _get_github_config(context)
-        return await _show_pr_list(update, context, token, username, org, edit=True)
+        pat, repos, email = _get_ado_config(context)
+        return await _show_pr_list(update, context, pat, repos, email, edit=True)
 
     return State.PR_DETAIL
 
@@ -427,7 +548,7 @@ def build_pr_conversation() -> ConversationHandler:
     return ConversationHandler(
         entry_points=[
             CommandHandler("pr", pr_command),
-            CommandHandler("prs", pr_command),  # alias
+            CommandHandler("prs", pr_command),
         ],
         states={
             State.PR_LIST: [

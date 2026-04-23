@@ -67,7 +67,7 @@ def create_app(settings: Settings | None = None) -> Application:
     if settings.feature_search:
         app.add_handler(build_search_conversation())
 
-    if settings.feature_pr and settings.github_token:
+    if settings.feature_pr and settings.ado_pat:
         app.add_handler(build_pr_conversation())
 
     # Natural language fallback — lowest priority
