@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 
-from telegram.ext import Application, CommandHandler
+from telegram.ext import Application, CommandHandler, MessageHandler, filters
 
 from donna_bot.auth.token_manager import TokenManager
 from donna_bot.config import Settings
@@ -12,7 +12,10 @@ from donna_bot.graph.client import GraphClient
 from donna_bot.handlers.briefing import brief_handler
 from donna_bot.handlers.calendar import build_calendar_conversation
 from donna_bot.handlers.email import build_email_conversation
+from donna_bot.handlers.fallback import fallback_handler
 from donna_bot.handlers.people import build_people_conversation
+from donna_bot.handlers.pr import build_pr_conversation
+from donna_bot.handlers.search import build_search_conversation
 from donna_bot.handlers.start import help_handler, start_handler
 from donna_bot.middleware.logging_mw import log_request
 from donna_bot.scheduler.jobs import schedule_eod_summary, schedule_morning_briefing
@@ -60,6 +63,18 @@ def create_app(settings: Settings | None = None) -> Application:
     app.add_handler(build_email_conversation())
     app.add_handler(build_calendar_conversation())
     app.add_handler(build_people_conversation())
+
+    if settings.feature_search:
+        app.add_handler(build_search_conversation())
+
+    if settings.feature_pr and settings.github_token:
+        app.add_handler(build_pr_conversation())
+
+    # Natural language fallback — lowest priority
+    app.add_handler(MessageHandler(
+        filters.TEXT & ~filters.COMMAND,
+        fallback_handler,
+    ))
 
     # Scheduled jobs
     schedule_morning_briefing(app, settings)

@@ -53,6 +53,11 @@ class Settings:
     feature_food: bool = False
     feature_focus: bool = False
 
+    # GitHub (for PR Intelligence)
+    github_token: str = ""
+    github_username: str = ""
+    github_org: str = ""
+
     # Schedule (24h, IST)
     briefing_hour: int = 8
     briefing_minute: int = 30
@@ -74,6 +79,9 @@ class Settings:
             feature_pr=_env_bool("FEATURE_PR", False),
             feature_food=_env_bool("FEATURE_FOOD", False),
             feature_focus=_env_bool("FEATURE_FOCUS", False),
+            github_token=os.environ.get("GITHUB_TOKEN", ""),
+            github_username=os.environ.get("GITHUB_USERNAME", ""),
+            github_org=os.environ.get("GITHUB_ORG", ""),
             briefing_hour=_env_int("BRIEFING_HOUR", 8),
             briefing_minute=_env_int("BRIEFING_MINUTE", 30),
             eod_hour=_env_int("EOD_HOUR", 18),
