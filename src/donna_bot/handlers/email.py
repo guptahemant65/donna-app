@@ -37,8 +37,6 @@ from donna_bot.formatters.escape import md2, md2_bold, md2_header, md2_italic, m
 from donna_bot.formatters.keyboards import (
     confirm_keyboard,
     email_action_keyboard,
-    email_list_keyboard,
-    pagination_keyboard,
 )
 from donna_bot.graph.client import GraphClient
 from donna_bot.graph.mail import archive, get_email, get_inbox, get_unread, mark_read, reply

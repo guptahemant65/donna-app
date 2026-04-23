@@ -12,7 +12,6 @@ from donna_bot.formatters.escape import (
     md2_italic,
     md2_link,
     md2_progress_bar,
-    md2_section,
     md2_separator,
 )
 

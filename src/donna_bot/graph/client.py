@@ -82,6 +82,31 @@ class GraphClient:
         resp.raise_for_status()
         return {}
 
+    async def patch(
+        self,
+        path: str,
+        json: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """PATCH request to Graph API with retry on 429."""
+        client = await self._ensure_client()
+
+        for attempt in range(MAX_RETRIES):
+            resp = await client.patch(path, headers=self._headers(), json=json)
+
+            if resp.status_code == 429:
+                retry_after = int(resp.headers.get("Retry-After", "2"))
+                logger.warning("Throttled (429) — retry %d in %ds", attempt + 1, retry_after)
+                await asyncio.sleep(retry_after)
+                continue
+
+            if resp.status_code == 204:
+                return {}
+            resp.raise_for_status()
+            return resp.json()
+
+        resp.raise_for_status()
+        return {}
+
     async def close(self) -> None:
         if self._client and not self._client.is_closed:
             await self._client.aclose()

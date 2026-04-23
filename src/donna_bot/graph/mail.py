@@ -91,16 +91,16 @@ async def archive(graph: GraphClient, email_id: str) -> None:
     else:
         # Fallback: mark as read
         logger.warning("No Archive folder found — marking as read instead")
-        await graph.client.patch(
-            f"https://graph.microsoft.com/v1.0/me/messages/{email_id}",
+        await graph.patch(
+            f"/me/messages/{email_id}",
             json={"isRead": True},
         )
 
 
 async def mark_read(graph: GraphClient, email_id: str) -> None:
     """Mark an email as read."""
-    await graph.client.patch(
-        f"https://graph.microsoft.com/v1.0/me/messages/{email_id}",
+    await graph.patch(
+        f"/me/messages/{email_id}",
         json={"isRead": True},
     )
 

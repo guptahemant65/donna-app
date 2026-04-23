@@ -10,7 +10,9 @@ from donna_bot.auth.token_manager import TokenManager
 from donna_bot.config import Settings
 from donna_bot.graph.client import GraphClient
 from donna_bot.handlers.briefing import brief_handler
+from donna_bot.handlers.calendar import build_calendar_conversation
 from donna_bot.handlers.email import build_email_conversation
+from donna_bot.handlers.people import build_people_conversation
 from donna_bot.handlers.start import help_handler, start_handler
 from donna_bot.middleware.logging_mw import log_request
 from donna_bot.scheduler.jobs import schedule_eod_summary, schedule_morning_briefing
@@ -56,6 +58,8 @@ def create_app(settings: Settings | None = None) -> Application:
 
     # Conversation flows
     app.add_handler(build_email_conversation())
+    app.add_handler(build_calendar_conversation())
+    app.add_handler(build_people_conversation())
 
     # Scheduled jobs
     schedule_morning_briefing(app, settings)
