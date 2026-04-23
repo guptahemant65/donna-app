@@ -17,6 +17,14 @@ desktop.ini
 # Tauri
 src-tauri/target/
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.egg
+.pytest_cache/
+
 # Environment
 .env
 .env.local
