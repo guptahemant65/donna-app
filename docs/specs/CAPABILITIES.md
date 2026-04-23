@@ -806,15 +806,30 @@ Donna uses **MCP (Model Context Protocol) servers** as her primary integration l
 | 8 | **Ev2 MCP** | TBD | Deployment rollouts, rollout logs, failure investigation. Ev2 team confirmed "in the works." Community version already built. (Source: Stack Internal Q462388) |
 | 9 | **SCOPE MCP** | ~5 | Cosmos/SCOPE script validation (`scope_compile`). Exists: `gim-home/scopemcpserver`. (Source: Stack Internal Q467657) |
 
-**Tier 1.5 — Coming Soon (Confirmed in development)**
+**Tier 1.5 — Confirmed / Coming Soon**
 
 | # | Server | Status | What Donna Gets |
 |---|--------|--------|-----------------|
-| 10 | **Nitro V2 MCP** | In dev | Data pipeline management. Nitro team confirmed. (Source: Stack Internal Q467657) |
-| 11 | **Work IQ MCP** (Microsoft 1P) | Preview | Official M365 MCP — admin-governed. Will replace Softeria when GA. |
-| 12 | **Azure SRE Agent** | Available | Uses MDM metrics via MCP. Same telemetry on-call SRE agents use. |
+| 10 | **PowerBI MCP** | ✅ Live | NL queries over semantic models. Remote: `api.fabric.microsoft.com/v1/mcp/powerbi`. (Source: M365 Search — files by Grant Culbertson, Microsoft Fabric Security) |
+| 11 | **Modeling MCP** | ✅ Live | Fabric Modeling operations. (Source: M365 Search — Microsoft Fabric Security file) |
+| 12 | **Fabric RTI MCP** (`microsoft/fabric-rti-mcp`) | ✅ Live | Eventhouse, Azure Data Explorer (ADX), real-time analytics. GitHub: `microsoft/fabric-rti-mcp`. (Source: M365 Search — Teams msgs from FMLV team) |
+| 13 | **Kusto AI Chat MCP** | ✅ Live | KQL chat bot via custom MCP server. (Source: M365 Search — Jonathan Saraco pptx) |
+| 14 | **Nitro V2 MCP** | In dev | Data pipeline management. Nitro team confirmed. (Source: Stack Internal Q467657) |
+| 15 | **Work IQ MCP** (Microsoft 1P) | Preview | Official M365 MCP — admin-governed. Will replace Softeria when GA. |
+| 16 | **Azure SRE Agent** | Available | Uses MDM metrics via MCP. Same telemetry on-call SRE agents use. |
+| 17 | **DGrep MCP** | Wanted | Geneva log search. DGrep SDK exists. Requested on Stack Internal Q480901. |
 
 **1ES MCP Registry (`aka.ms/1mcp`):** The 1ES team is building a standardized catalog for all 1P MCP servers. As product teams publish, Donna discovers new tools automatically. Policy: each team owns their own MCP — ecosystem grows organically.
+
+**Agent Platforms Discovered (via M365 Search):**
+
+| # | Platform | By | What It Does |
+|---|----------|----|-------------|
+| A1 | **Daemon Foundry** | Akshat Bordia | Command Copilot CLI agents FROM Microsoft Teams threads. Live progress updates. Directory browser for skills. Donna's remote trigger mechanism. |
+| A2 | **Agency Cowork** | Yang You, Nikhil Kaul | AI agent framework — turns Copilot into multi-agent orchestrator. GitHub: `ahsi-microsoft/agency-cowork`. Has Teams monitor. |
+| A3 | **Agency Session Manager** | Kunal Babre, Imran Siddique | Unified platform to discover, start, and compose AI agents. |
+| A4 | **Scout** | Harsha Nagulapalli | AI Investigation Partner for ICM. Uses Kusto MCP + IcM MCP. Persona-based agents. |
+| A5 | **copilot-toolkit** | Karlen Lie | Reusable skills & agents repo — includes generate-design-doc, pr-review, and more. |
 
 **Tier 2 — Ecosystem**
 
@@ -838,13 +853,26 @@ Donna uses **MCP (Model Context Protocol) servers** as her primary integration l
 ```
 TIER 0 (Azure):      1 server  ×  55 tools  =  Full cloud infrastructure
 TIER 1 (Microsoft):  8 servers × ~330 tools =  Graph + ADO + IcM + Fabric + GitHub + Geneva + Ev2 + SCOPE
-TIER 1.5 (Coming):   3 servers ×  TBD tools =  Nitro V2 + Work IQ + SRE Agent
+TIER 1.5 (Confirmed):8 servers ×  TBD tools =  PowerBI + Modeling + Fabric RTI + Kusto Chat + Nitro V2 + Work IQ + SRE Agent + DGrep
 TIER 2 (Ecosystem):  5 servers ×  ~70 tools =  Browser, Knowledge, Slack, Gmail, GCal
 TIER 3 (Life):       3 servers ×  ~40 tools =  Food, groceries, dining
                      ──
-TOTAL:              20 MCP servers, ~500+ tools, standard protocol
+TOTAL:              25 MCP servers, ~550+ tools, standard protocol
 + 1ES Registry (aka.ms/1mcp) auto-discovers new MCPs as teams publish
++ 5 agent platforms (Daemon Foundry, Agency Cowork, Session Manager, Scout, copilot-toolkit)
 ```
+
+### Research Tools — Donna's Discovery Engine
+
+Donna uses two research tools to continuously discover new APIs and MCPs:
+
+1. **Stack Overflow Teams** — Internal Q&A search. 15+ searches found Geneva, Ev2, SCOPE, Nitro MCPs, 1ES registry, WAM auth guidance.
+2. **Microsoft Graph `/search/query`** — Searches ALL of Harvey's M365 tenant (emails, files, Teams messages, events). Three waves of research found:
+   - **106 emails** about MCP servers (Scout, Daemon Foundry, copilot-toolkit)
+   - **39,610 files** matching (PowerBI MCP, Modeling MCP, Fabric RTI MCP, Kusto AI Chat MCP, security guides)
+   - **1,209 Teams messages** (real-time MCP discussions, troubleshooting, architecture)
+   - Key contacts: Akshat Bordia (Daemon Foundry), Yang You (Agency Cowork), Harsha Nagulapalli (Scout), Karlen Lie (copilot-toolkit), Jonathan Saraco (Kusto Chat MCP)
+   - POC: `poc/graph_search.py` — WAM broker auth + POST `/search/query`
 
 ### Direct API Layer (Fallback — No MCP Available)
 

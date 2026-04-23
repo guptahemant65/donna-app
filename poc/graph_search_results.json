@@ -1,0 +1,158 @@
+{
+  "PowerBI MCP server fabric": {
+    "message": {
+      "status": 200,
+      "total": 0,
+      "shown": 0
+    },
+    "driveItem": {
+      "status": 200,
+      "total": 3461,
+      "shown": 5
+    },
+    "chatMessage": {
+      "status": 200,
+      "total": 3,
+      "shown": 3
+    },
+    "event": {
+      "status": 200,
+      "total": 0,
+      "shown": 0
+    },
+    "listItem": {
+      "status": 403,
+      "error": "Access to ListItem in Graph API requires the following permissions: Sites.Read.All or Sites.ReadWrite.All or Sites.Selected. However, the application only has the following permissions granted: Calendars.ReadWrite, ChannelMessage.Read.All, Chat.ReadWrite, Files.Read, Files.Read.All, Files.ReadWrite.All, FileStorageContainer.Selected, Group.Read.All, Mail.ReadWrite, People.Read, People.Read.All, User.ReadWrite"
+    }
+  },
+  "fabric-rti-mcp eventhouse real-time": {
+    "message": {
+      "status": 200,
+      "total": 0,
+      "shown": 0
+    },
+    "driveItem": {
+      "status": 200,
+      "total": 9,
+      "shown": 5
+    },
+    "chatMessage": {
+      "status": 200,
+      "total": 3,
+      "shown": 3
+    },
+    "event": {
+      "status": 200,
+      "total": 0,
+      "shown": 0
+    },
+    "listItem": {
+      "status": 403,
+      "error": "Access to ListItem in Graph API requires the following permissions: Sites.Read.All or Sites.ReadWrite.All or Sites.Selected. However, the application only has the following permissions granted: Calendars.ReadWrite, ChannelMessage.Read.All, Chat.ReadWrite, Files.Read, Files.Read.All, Files.ReadWrite.All, FileStorageContainer.Selected, Group.Read.All, Mail.ReadWrite, People.Read, People.Read.All, User.ReadWrite"
+    }
+  },
+  "Agency Cowork framework": {
+    "message": {
+      "status": 200,
+      "total": 0,
+      "shown": 0
+    },
+    "driveItem": {
+      "status": 200,
+      "total": 414,
+      "shown": 5
+    },
+    "chatMessage": {
+      "status": 200,
+      "total": 1,
+      "shown": 1
+    },
+    "event": {
+      "status": 200,
+      "total": 0,
+      "shown": 0
+    },
+    "listItem": {
+      "status": 403,
+      "error": "Access to ListItem in Graph API requires the following permissions: Sites.Read.All or Sites.ReadWrite.All or Sites.Selected. However, the application only has the following permissions granted: Calendars.ReadWrite, ChannelMessage.Read.All, Chat.ReadWrite, Files.Read, Files.Read.All, Files.ReadWrite.All, FileStorageContainer.Selected, Group.Read.All, Mail.ReadWrite, People.Read, People.Read.All, User.ReadWrite"
+    }
+  },
+  "Agency Session Manager": {
+    "message": {
+      "status": 200,
+      "total": 0,
+      "shown": 0
+    },
+    "driveItem": {
+      "status": 200,
+      "total": 150147,
+      "shown": 5
+    },
+    "chatMessage": {
+      "status": 200,
+      "total": 3,
+      "shown": 2
+    },
+    "event": {
+      "status": 200,
+      "total": 0,
+      "shown": 0
+    },
+    "listItem": {
+      "status": 403,
+      "error": "Access to ListItem in Graph API requires the following permissions: Sites.Read.All or Sites.ReadWrite.All or Sites.Selected. However, the application only has the following permissions granted: Calendars.ReadWrite, ChannelMessage.Read.All, Chat.ReadWrite, Files.Read, Files.Read.All, Files.ReadWrite.All, FileStorageContainer.Selected, Group.Read.All, Mail.ReadWrite, People.Read, People.Read.All, User.ReadWrite"
+    }
+  },
+  "DGrep MCP logs": {
+    "message": {
+      "status": 200,
+      "total": 0,
+      "shown": 0
+    },
+    "driveItem": {
+      "status": 200,
+      "total": 275,
+      "shown": 5
+    },
+    "chatMessage": {
+      "status": 200,
+      "total": 0,
+      "shown": 0
+    },
+    "event": {
+      "status": 200,
+      "total": 0,
+      "shown": 0
+    },
+    "listItem": {
+      "status": 403,
+      "error": "Access to ListItem in Graph API requires the following permissions: Sites.Read.All or Sites.ReadWrite.All or Sites.Selected. However, the application only has the following permissions granted: Calendars.ReadWrite, ChannelMessage.Read.All, Chat.ReadWrite, Files.Read, Files.Read.All, Files.ReadWrite.All, FileStorageContainer.Selected, Group.Read.All, Mail.ReadWrite, People.Read, People.Read.All, User.ReadWrite"
+    }
+  },
+  "Geneva Actions copilot SAW": {
+    "message": {
+      "status": 200,
+      "total": 0,
+      "shown": 0
+    },
+    "driveItem": {
+      "status": 200,
+      "total": 3725,
+      "shown": 5
+    },
+    "chatMessage": {
+      "status": 200,
+      "total": 0,
+      "shown": 0
+    },
+    "event": {
+      "status": 200,
+      "total": 0,
+      "shown": 0
+    },
+    "listItem": {
+      "status": 403,
+      "error": "Access to ListItem in Graph API requires the following permissions: Sites.Read.All or Sites.ReadWrite.All or Sites.Selected. However, the application only has the following permissions granted: Calendars.ReadWrite, ChannelMessage.Read.All, Chat.ReadWrite, Files.Read, Files.Read.All, Files.ReadWrite.All, FileStorageContainer.Selected, Group.Read.All, Mail.ReadWrite, People.Read, People.Read.All, User.ReadWrite"
+    }
+  }
+}

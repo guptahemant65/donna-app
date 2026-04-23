@@ -87,12 +87,17 @@ For a personal assistant, the ~15ms overhead is imperceptible. We only go direct
 | Ev2 MCP | TBD | Entra ID | Deployment rollouts, rollout logs, failure investigation. Ev2 team confirmed "one in the works." Community version already built for DRI copilot use. |
 | SCOPE MCP | ~5 | Local | Cosmos/SCOPE script validation (`scope_compile`). Exists: `gim-home/scopemcpserver` on GitHub. |
 
-### Tier 1.5 — Coming Soon (Confirmed in development)
+### Tier 1.5 — Confirmed / Coming Soon
 | Server | Status | What Donna Gets |
 |--------|--------|-----------------|
+| PowerBI MCP | ✅ Live | NL queries over Power BI semantic models. Remote endpoint: `api.fabric.microsoft.com/v1/mcp/powerbi`. Docs + guides found in SharePoint. |
+| Modeling MCP | ✅ Live | Fabric Modeling operations. Published by Microsoft Fabric Security team. |
+| Fabric RTI MCP (`microsoft/fabric-rti-mcp`) | ✅ Live | Eventhouse, Azure Data Explorer (ADX), real-time analytics. GitHub open source. Actively used by FMLV, S360/Breeze teams. |
+| Kusto AI Chat MCP | ✅ Live | KQL chat bot via custom MCP. Presentation by Jonathan Saraco. |
 | Nitro V2 MCP | In development | Data pipeline management. Nitro team confirmed: "We are working on MCP servers for Nitro V2." |
 | Work IQ MCP (Microsoft 1P) | Preview | Official M365 MCP — mail, calendar, Teams, presence. Admin-governed. Will replace Softeria when GA. |
 | Azure SRE Agent MCP | Available | Uses MDM metrics via MCP. Same telemetry the on-call SRE agents use. Docs: `eng.ms/docs/.../sre-agent/.../usemdmmetrics` |
+| DGrep MCP | Wanted | Geneva log search. DGrep SDK exists for programmatic search. Requested on Stack Internal Q480901. |
 
 ### Discovery: 1ES MCP Registry (`aka.ms/1mcp`)
 
@@ -100,7 +105,27 @@ The **1ES team** is building a standardized registry for all 1P MCP servers acro
 
 **Key policy:** "DO NOT build an MCP Server to access resources whose API is owned by another Microsoft team unless the owning team explicitly grants permission." This means product teams are building their OWN MCPs — the ecosystem will keep growing organically.
 
-**Source:** Stack Internal research (Q457808, Q462388, Q467657, Q471080).
+**Source:** Stack Internal research (Q457808, Q462388, Q467657, Q471080) + M365 `/search/query` mining (3 waves, 17 queries).
+
+### Agent Platforms Discovered (via M365 Search)
+
+| Platform | Creator | What | Donna Relevance |
+|----------|---------|------|-----------------|
+| Daemon Foundry | Akshat Bordia | Command Copilot CLI agents from Teams threads. Live progress updates, directory browser. | Remote trigger for Donna — command her from Teams |
+| Agency Cowork | Yang You, Nikhil Kaul | AI agent framework, multi-agent orchestration. `ahsi-microsoft/agency-cowork`. | Architecture reference for Donna's agent model |
+| Agency Session Manager | Kunal Babre, Imran Siddique | Unified platform to discover, start, compose AI agents. | Session management patterns |
+| Scout | Harsha Nagulapalli | AI ICM investigation partner. Kusto MCP + IcM MCP. Persona system. | Template for Donna's DRI mode |
+| copilot-toolkit | Karlen Lie | Reusable skills & agents — generate-design-doc, pr-review, etc. | Skill library reference |
+
+### Research Tools — Discovery Engine
+
+Donna maintains awareness of new MCPs via two internal research tools:
+
+1. **Stack Overflow Teams search** — keyword search across internal Q&A. Found Geneva, Ev2, SCOPE, Nitro MCPs, 1ES registry, WAM guidance.
+2. **Microsoft Graph `/search/query`** — POST endpoint searching Harvey's entire M365 tenant (emails, files, Teams, events). POC: `poc/graph_search.py` (WAM broker auth).
+   - "MCP server": 106 emails, 39,610 files, 1,209 Teams messages
+   - Found: PowerBI MCP, Modeling MCP, Fabric RTI MCP, Kusto AI Chat MCP, Daemon Foundry, Agency Cowork, Scout, copilot-toolkit
+   - Key contacts identified for follow-up: Akshat Bordia, Yang You, Harsha Nagulapalli, Karlen Lie, Jonathan Saraco
 
 ### Tier 2 — Ecosystem (Productivity & communication)
 | Server | Tools | Auth | What Donna Gets |
@@ -124,7 +149,7 @@ The **1ES team** is building a standardized registry for all 1P MCP servers acro
 ## Consequences
 
 ### Positive
-- Integration count explodes from 29 custom APIs to **18+ MCP servers + ~10 direct APIs** covering MORE surface area
+- Integration count explodes from 29 custom APIs to **25+ MCP servers + ~10 direct APIs** covering MORE surface area
 - Time to integrate drops from weeks per integration to hours
 - LLM can dynamically discover available tools — no hardcoded mapping
 - Community AND product teams maintain MCP servers — we inherit updates for free
@@ -132,7 +157,10 @@ The **1ES team** is building a standardized registry for all 1P MCP servers acro
 - Azure MCP Server alone gives us 55 cloud management tools we never planned for
 - Geneva MCP gives DRI-grade telemetry — metrics, health, logs — without custom integration
 - 1ES MCP Registry (`aka.ms/1mcp`) means new MCPs appear automatically as teams publish them
-- Stack Internal proved invaluable as a research tool — Donna should use it for ongoing discovery
+- Stack Internal + Graph `/search/query` proved invaluable as research tools — Donna uses them for ongoing discovery
+- PowerBI MCP (`api.fabric.microsoft.com/v1/mcp/powerbi`) is live and gives NL querying over semantic models — no setup
+- Daemon Foundry pattern shows how to command Donna from Teams — ready-made remote trigger architecture
+- 5 agent platform discoveries provide architecture references for Donna's multi-agent model
 
 ### Negative
 - Dependency on third-party MCP servers (Softeria is community, not Microsoft)
